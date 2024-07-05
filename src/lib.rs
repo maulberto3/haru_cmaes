@@ -3,13 +3,13 @@ use anyhow::Result;
 #[allow(unused_imports)]
 // use blas_src;
 mod fitness;
-use fitness::square_and_sum;
+// use fitness::square_and_sum;
 
 mod params;
 use params::CmaesParams;
 
 mod state;
-use state::CmaesState;
+// use state::CmaesState;
 
 mod strategy;
 use strategy::Cmaes;
@@ -27,37 +27,33 @@ pub fn work() -> Result<()> {
 
     // Step 1: Choose initial parameters
     let params = CmaesParams {
-        // Required
-        // mean: vec![0.0],
-        mean: vec![0.0, 1.0],
-        // mean: vec![0.0; 20],
-        sigma: 1.0,
+        num_dims: 2,
         popsize: 6,
     };
     // dbg!(&params);
 
     // STEP 2: Instantiate Cmaes algorithm with parameters
     let cmaes = Cmaes::new(&params)?;
-    // dbg!(&cmaes.params);
+    dbg!(&cmaes);
 
-    // Step 3: Instantiate a Cmaes State
-    let mut state = CmaesState::init_state(&params)?;
-    // println!("{:+.4?}", &state);
-    // println!("\n");
+    // // Step 3: Instantiate a Cmaes State
+    // let mut state = CmaesState::init_state(&params)?;
+    // // println!("{:+.4?}", &state);
+    // // println!("\n");
 
-    // Step 4: Loop
-    for i in 0..100 {
-        let mut pop = cmaes.ask(&mut state)?;
-        println!("\n");
-        // dbg!(&pop.xs);
-        let mut fitness = square_and_sum(&pop)?;
-        // dbg!(&fitness.fit);
-        state = cmaes.tell(state, &mut pop, &mut fitness)?;
-        // println!("{:+.4?}", &state);
-        println!("\n");
-        dbg!(&state);
-        // dbg!(&fitness);
-    }
+    // // Step 4: Loop
+    // for i in 0..100 {
+    //     let mut pop = cmaes.ask(&mut state)?;
+    //     println!("\n");
+    //     // dbg!(&pop.xs);
+    //     let mut fitness = square_and_sum(&pop)?;
+    //     // dbg!(&fitness.fit);
+    //     state = cmaes.tell(state, &mut pop, &mut fitness)?;
+    //     // println!("{:+.4?}", &state);
+    //     println!("\n");
+    //     dbg!(&state);
+    //     // dbg!(&fitness);
+    // }
     // println!("{:+.4?}", &pop);
     // println!("\n");
     // let fitness = square_and_sum(&pop)?;
