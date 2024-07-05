@@ -1,0 +1,69 @@
+name: Rust Project Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - ´*´
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Use Github Actions logic
+      - uses: actions/checkout@v2
+
+      # Cache apty installs
+      - name: Cache APT packages
+        uses: actions/cache@v2
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
+      # Install system dependencies
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libopenblas-dev graphviz
+
+      # Cache
+      - name: Cache Cargo registry
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache Cargo build
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
+
+      # Set up Rust
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      # Install cargo package cargo-depgraph
+      - name: Install cargo
+        run: cargo install cargo-depgraph
+        
+      # Set terminal 
+      - name: Set up terminal
+        run: echo "TERM=xterm" >> $GITHUB_ENV
+
+      # Prepare    
+      - name: Format the code
+        run: make prep
+
+      # run tests
+      - name: Run tests
+        run: cargo test

@@ -1,0 +1,18 @@
+[package]
+name = "haru_cmaes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0.86" }
+rand = { version = "0.8.5" }
+rayon = { version = "1.10.0" }
+
+ndarray = { version = "0.15", features = ["blas", "rayon"] }
+blas-src = { version = "0.10", features = ["openblas"] }
+openblas-src = { version = "0.10", features = ["cblas", "system"] }
+ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
+ndarray-rand = { version = "0.14" }
+ndarray-stats = { version = "0.5.1" }
+
+
