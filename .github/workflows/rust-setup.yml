@@ -15,20 +15,24 @@ jobs:
       # Use Github Actions logic
       - uses: actions/checkout@v2
 
-      # Cache apty installs
-      - name: Cache APT packages
+      # Cache APT packages and lists
+      - name: Cache APT packages and lists
         uses: actions/cache@v2
         with:
-          path: /var/cache/apt
+          path: |
+            /var/cache/apt
+            /var/lib/apt/lists
           key: ${{ runner.os }}-apt-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-apt-
 
       # Install system dependencies
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libopenblas-dev graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev graphviz
 
-      # Cache
+      # Cache Cargo registry
       - name: Cache Cargo registry
         uses: actions/cache@v2
         with:
@@ -64,6 +68,6 @@ jobs:
       - name: Format the code
         run: make prep
 
-      # run tests
+      # Run tests
       - name: Run tests
         run: cargo test
