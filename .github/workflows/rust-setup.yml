@@ -53,7 +53,7 @@ jobs:
           toolchain: stable
 
       # Install cargo package cargo-depgraph
-      - name: Install cargo
+      - name: Install cargo-depgraph
         run: cargo install cargo-depgraph
         
       # Set terminal 
