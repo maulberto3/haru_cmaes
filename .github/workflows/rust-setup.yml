@@ -9,15 +9,15 @@ on:
       - ´*´
 
 jobs:
-  tests:
+  install:
     runs-on: ubuntu-latest
     steps:
       # Use Github Actions logic
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      # Cache APT packages and lists
+      # Cache installs
       - name: Cache APT packages and lists
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /var/cache/apt
@@ -26,28 +26,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-apt-
 
-      # Install system dependencies
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libopenblas-dev graphviz
-
-      # Cache Cargo registry
       - name: Cache Cargo registry
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
 
-      - name: Cache Cargo build
-        uses: actions/cache@v2
+      - name: Cache Rust toolchain
+        uses: actions/cache@v3
         with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          path: ~/.rustup/toolchains
+          key: ${{ runner.os }}-rust-toolchain-${{ hashFiles('rust-toolchain') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-build-
+            ${{ runner.os }}-rust-toolchain-
+
+      # Install system dependencies
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev graphviz
 
       # Set up Rust
       - name: Set up Rust
@@ -64,10 +63,14 @@ jobs:
       - name: Set up terminal
         run: echo "TERM=xterm" >> $GITHUB_ENV
 
-      # Prepare    
-      - name: Format the code
-        run: make prep
+  lint:
+    steps:
+    # Prepare code
+    - name: Format the code
+      run: make prep
 
-      # Run tests
-      - name: Run tests
-        run: cargo test
+  test:
+    steps:
+    # Run tests
+    - name: Run tests
+      run: cargo test

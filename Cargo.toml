@@ -18,4 +18,8 @@ ndarray-stats = { version = "0.5.1" }
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
+[[bench]]
+name = "bch1"
+harness = false
+
 

@@ -24,6 +24,9 @@ deps:
 prep:
 	clear && cargo fmt && cargo clippy && cargo build
 
+bch:
+	clear && cargo bench --bench bch1
+
 test:
 	clear && cargo test --lib
 
