@@ -1,15 +1,12 @@
 use anyhow::Result;
-
-// use ndarray::{s, Array1, Array2};
-// use ndarray_linalg::Norm;
-// use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
+use ndarray::{Array1, Array2};
+use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
 use crate::{
     // fitness::Fitness,
     params::{CmaesParams, CmaesParamsValid},
-    // state::CmaesState,
+    state::CmaesState,
 };
-// use crate::state::CmaesState;
 
 #[derive(Debug)]
 pub struct Cmaes {
@@ -17,15 +14,15 @@ pub struct Cmaes {
     // pub state: CmaesState,
 }
 
-// #[derive(Debug, Clone)]
-// pub struct Individual {
-//     pub x: Array1<f32>,
-// }
+#[derive(Debug, Clone)]
+pub struct Individual {
+    pub x: Array1<f32>,
+}
 
-// #[derive(Debug, Clone)]
-// pub struct Population {
-//     pub xs: Array2<f32>,
-// }
+#[derive(Debug, Clone)]
+pub struct Population {
+    pub xs: Array2<f32>,
+}
 
 impl Cmaes {
     pub fn new(params: &CmaesParams) -> Result<Cmaes> {
@@ -33,37 +30,37 @@ impl Cmaes {
         Ok(Cmaes { params })
     }
 
-    // fn ask_one(&self, params: &CmaesParamsValid, state: &CmaesState) -> Result<Individual> {
-    //     // Generate one individual from params and current state
-    //     // z ~ N(0, I)
-    //     let z: Array1<f32> = Array1::random((params.mean.len(),), StandardNormal);
+    fn ask_one(&self, params: &CmaesParamsValid, state: &CmaesState) -> Result<Individual> {
+        // Generate one individual from params and current state
+        // z ~ N(0, I)
+        let z: Array1<f32> = Array1::random((params.xstart.len(),), StandardNormal);
 
-    //     // Rotate towards eigen i.e. y = B * D_diag * z
-    //     let y: Array1<f32> = state
-    //         .eig_vecs
-    //         .dot(&Array2::from_diag(&state.eig_vals))
-    //         .dot(&z);
+        // Rotate towards eigen i.e. y = B @ D_diag^0.5 @ (z*sigma)
+        let y: Array1<f32> = state
+            .eig_vecs
+            .dot(&Array2::from_diag(&state.eig_vals))
+            .dot(&z.mapv(|elem| elem * state.sigma));
 
-    //     // Scale and translate i.e. x =  σ * y + μ
-    //     let x: Array1<f32> = y.mapv(|elem| elem * state.sigma) + &state.mean;
+        // Scale and translate i.e. x =  y + μ
+        let x: Array1<f32> = y + &state.mean;
 
-    //     Ok(Individual { x })
-    // }
+        Ok(Individual { x })
+    }
 
-    // pub fn ask(&self, state: &mut CmaesState) -> Result<Population> {
-    //     // Prepare before ask population
-    //     state.prepare_ask()?;
+    pub fn ask(&self, state: &mut CmaesState) -> Result<Population> {
+        // Prepare before ask population
+        state.prepare_ask()?;
 
-    //     // Create population by looping ask_one
-    //     let popsize = self.params_valid.popsize;
-    //     let mut xs: Array2<f32> =
-    //         Array2::zeros((popsize as usize, self.params_valid.mean.len() as usize));
-    //     for i in 0..popsize {
-    //         let indiv: Individual = self.ask_one(&self.params_valid, &state)?;
-    //         xs.row_mut(i as usize).assign(&indiv.x);
-    //     }
-    //     Ok(Population { xs })
-    // }
+        // Create population by looping ask_one
+        let popsize = self.params.popsize;
+        let mut xs: Array2<f32> =
+            Array2::zeros((popsize as usize, self.params.xstart.len() as usize));
+        for i in 0..popsize {
+            let indiv: Individual = self.ask_one(&self.params, &state)?;
+            xs.row_mut(i as usize).assign(&indiv.x);
+        }
+        Ok(Population { xs })
+    }
 
     // pub fn tell(
     //     &self,
@@ -101,18 +98,18 @@ impl Cmaes {
 
     //     // Selection and recombination for evolution
     //     // Select top μ individuals and their weights
-    //     let y_mu: Array2<f32> = pop.xs.slice(s![..self.params_valid.mu, ..]).t().to_owned();
+    //     let y_mu: Array2<f32> = pop.xs.slice(s![..self.params.mu, ..]).t().to_owned();
     //     let weights_mu: Array2<f32> = self
     //         .params_valid
     //         .weights_prime
-    //         .slice(s![..self.params_valid.mu])
+    //         .slice(s![..self.params.mu])
     //         .view()
-    //         .into_shape((self.params_valid.mu, 1))
+    //         .into_shape((self.params.mu, 1))
     //         .unwrap()
     //         .to_owned();
     //     let y_w: Array1<f32> = y_mu.dot(&weights_mu).sum_axis(Axis(1));
     //     // Update mean of distribution: m = m + cm * σ * y_w
-    //     state.mean = state.mean + y_w.mapv(|x| x * self.params_valid.cm * self.params_valid.sigma);
+    //     state.mean = state.mean + y_w.mapv(|x| x * self.params.cm * self.params.sigma);
 
     //     // Step-size control
     //     // Compute the inverse square root of the covariance matrix C (using its eigendecomposition i.e. C^(-1/2) = B * D^(-1) * B^T)
@@ -122,10 +119,10 @@ impl Cmaes {
     //         .dot(&state.eig_vecs.t());
 
     //     // Update the evolution path for for the covariance matrix (using the inverse square root of C and the weighted sum of individuals (y_w))
-    //     state.p_sigma = (1.0 - self.params_valid.c_sigma) * state.p_sigma
-    //         + (self.params_valid.c_sigma
-    //             * (2.0 - self.params_valid.c_sigma)
-    //             * self.params_valid.mu_eff)
+    //     state.p_sigma = (1.0 - self.params.c_sigma) * state.p_sigma
+    //         + (self.params.c_sigma
+    //             * (2.0 - self.params.c_sigma)
+    //             * self.params.mu_eff)
     //             .sqrt()
     //             * c_2.dot(&y_w);
 
@@ -134,17 +131,17 @@ impl Cmaes {
 
     //     // Update the global step-size control parameter (sigma)
     //     state.sigma = state.sigma
-    //         * ((self.params_valid.c_sigma / self.params_valid.d_sigma)
-    //             * (norm_p_sigma / self.params_valid.chi_n - 1.0))
+    //         * ((self.params.c_sigma / self.params.d_sigma)
+    //             * (norm_p_sigma / self.params.chi_n - 1.0))
     //             .exp();
 
     //     // Covariance matrix adaption
     //     // Calculate the left condition for h_sigma
     //     let h_sigma_cond_left: f32 =
-    //         norm_p_sigma / (1.0 - (1.0 - self.params_valid.c_sigma).powi(2 * (state.g + 1))).sqrt();
+    //         norm_p_sigma / (1.0 - (1.0 - self.params.c_sigma).powi(2 * (state.g + 1))).sqrt();
     //     // Calculate the right condition for h_sigma
     //     let h_sigma_cond_right: f32 =
-    //         (1.4 + 2.0 / (self.params_valid.num_dims + 1.0)) * self.params_valid.chi_n;
+    //         (1.4 + 2.0 / (self.params.num_dims + 1.0)) * self.params.chi_n;
     //     // Determine h_sigma (based on comparing the left and right conditions)
     //     let h_sigma: f32 = match h_sigma_cond_left < h_sigma_cond_right {
     //         true => 1.0,
@@ -153,20 +150,20 @@ impl Cmaes {
 
     //     // (eq.45)
     //     // Update evolution path of covariance matrix adaptation
-    //     state.p_c = (1.0 - self.params_valid.cc) * &state.p_c
+    //     state.p_c = (1.0 - self.params.cc) * &state.p_c
     //         + h_sigma
-    //             * (self.params_valid.cc * (2.0 - self.params_valid.cc) * self.params_valid.mu_eff)
+    //             * (self.params.cc * (2.0 - self.params.cc) * self.params.mu_eff)
     //                 .sqrt()
     //             * &y_w;
 
     //     // (eq.46)
-    //     let w_io = &self.params_valid.weights
+    //     let w_io = &self.params.weights
     //         * &self
     //             .params_valid
     //             .weights
     //             .mapv(|w| if w >= 0.0 { 1.0 } else { 0.0 });
 
-    //     let delta_h_sigma = (1.0 - h_sigma) * self.params_valid.cc * (2.0 - self.params_valid.cc);
+    //     let delta_h_sigma = (1.0 - h_sigma) * self.params.cc * (2.0 - self.params.cc);
 
     //     // (eq.47)
     //     let rank_one_col = state.p_c.view().into_shape((state.p_c.len(), 1)).unwrap();
@@ -184,12 +181,12 @@ impl Cmaes {
     //     }
 
     //     //
-    //     state.cov = (1.0 + self.params_valid.c1 * delta_h_sigma
-    //         - self.params_valid.c1
-    //         - self.params_valid.cmu * self.params_valid.weights.sum())
+    //     state.cov = (1.0 + self.params.c1 * delta_h_sigma
+    //         - self.params.c1
+    //         - self.params.cmu * self.params.weights.sum())
     //         * state.cov
-    //         + rank_one.mapv(|x| x * self.params_valid.c1)
-    //         + rank_mu.mapv(|x| x * self.params_valid.cmu);
+    //         + rank_one.mapv(|x| x * self.params.c1)
+    //         + rank_mu.mapv(|x| x * self.params.cmu);
 
     //     // Learning rate adaptation (enhancement)
 
