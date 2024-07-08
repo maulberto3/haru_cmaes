@@ -15,4 +15,7 @@ ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
 ndarray-rand = { version = "0.14" }
 ndarray-stats = { version = "0.5.1" }
 
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
 
