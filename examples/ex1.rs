@@ -1,44 +1,9 @@
 fn main() {
-    // Understanding reduce, fold and scan
-
-    // // reduce
-    // let v = vec![1, 2, 3, 4, 5];
-    // // Define operation function
-    // fn add(a: i32, b: i32) -> i32 {
-    //     a + b
-    // }
-    // // Use reduce with the defined function
-    // let reduce_result = v.iter().cloned().reduce(add);
-    // println!("Reduce result: {:?}", reduce_result.unwrap());
-
-    // // fold
-    // let v = vec![1, 2, 3, 4, 5];
-    // // Define operation function
-    // fn other_add(acc: i32, x: &i32) -> i32 {
-    //     acc + x
-    // }
-    // // Use fold with the defined function
-    // let fold_result = v.iter().fold(10, |acc, x| other_add(acc, x));
-    // println!("Fold result: {:?}", fold_result);
-
-    // // scan
-    // let v = vec![1, 2, 3, 4, 5];
-    // // Define operation function
-    // fn oper(a: &mut i32, b: &i32) -> Option<i32> {
-    //     *a = *a + 2 * b;
-    //     Some(*a)
-    // }
-    // // Use scan with the defined function
-    // let mut accumulator = 10;
-    // let scan_result: Vec<i32> = v
-    //     .iter()
-    //     .scan(&mut accumulator, |acc, x| oper(acc, x))
-    //     .collect();
-    // println!("Scan result: {:?}", scan_result);
-
-    // use blas_src;
+    #[allow(unused_imports)]
+    use blas_src;
     use ndarray::prelude::*;
     use ndarray::Array;
+    use ndarray_linalg::{assert_close_l2, error, random, Eig, FactorizeInto, Scalar, Solve};
 
     fn dot() {
         let a = array![[10., 20., 30., 40.,],];
@@ -54,7 +19,6 @@ fn main() {
     }
     dot();
 
-    use ndarray_linalg::*;
     // Eigen Decomposition
     let a: Array2<f64> = array![
         [1.01, 0.86, 4.60,],
@@ -62,8 +26,8 @@ fn main() {
         [3.30, 8.26, 3.89,],
     ];
     let (eigs, vecs) = a.eig().unwrap();
-    dbg!(&eigs);
-    dbg!(&vecs);
+    println!("{:+.4?}", eigs.mapv(|x| x.re));
+    println!("{:+.4?}", vecs.mapv(|x| x.re));
 
     let a = a.map(|v| v.as_c());
     for (&e, vec) in eigs.iter().zip(vecs.axis_iter(Axis(1))) {

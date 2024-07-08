@@ -1,8 +1,8 @@
 dev-size:
-	clear && du ./target/debug/cyberu_cmaes -h
+	clear && du ./target/debug/haru_cmaes -h
 
 prod-size:
-	clear && du ./target/release/cyberu_cmaes -h
+	clear && du ./target/release/haru_cmaes -h
 
 ex:
 	#  --features=openblas

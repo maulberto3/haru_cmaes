@@ -61,14 +61,14 @@ impl CmaesState {
     fn eigen_decomposition(&mut self) {
         // Ensure symmetric covariance
         self.cov = (&self.cov + &self.cov.t()) / 2.0;
-        
+
         // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
         let (eig_vals_2, eig_vecs) = self.cov.eig().unwrap();
-        
+
         // Extract real parts of eigenvalues and eigenvectors
         let eig_vals_2: Array1<f32> = eig_vals_2.mapv(|eig| eig.re);
         let eig_vecs: Array2<f32> = eig_vecs.mapv(|vec| vec.re);
-        
+
         // Convert to positive numbers (negative magnitudes dropped): TODO: why?
         // And take sqrt of them i.e. D = sqrt(max(Λ, 0))
         let mut eig_vals = eig_vals_2.clone();
@@ -79,16 +79,13 @@ impl CmaesState {
                 *elem = (*elem).sqrt()
             }
         });
-        
+
         // Reconstruct the covariance matrix: C = B * diag(Λ) * B^T
         self.cov = eig_vecs
-        .dot(
-            &Array2::from_diag(&eig_vals.mapv(|elem| elem.powi(2))
-        ))
-        .dot(&eig_vecs.t());
+            .dot(&Array2::from_diag(&eig_vals.mapv(|elem| elem.powi(2))))
+            .dot(&eig_vecs.t());
 
         self.eig_vecs = eig_vecs;
         self.eig_vals = eig_vals;
-
     }
 }
