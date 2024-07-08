@@ -64,13 +64,40 @@ jobs:
         run: echo "TERM=xterm" >> $GITHUB_ENV
 
   lint:
+    runs-on: ubuntu-latest
+    needs: install
     steps:
-    # Prepare code
-    - name: Format the code
-      run: make prep
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Format the code
+        run: make prep
 
   test:
+    runs-on: ubuntu-latest
+    needs: install
     steps:
-    # Run tests
-    - name: Run tests
-      run: cargo test
+      - uses: actions/checkout@v3
+
+      - name: Cache Cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', 'src/**/*.rs') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
+            ${{ runner.os }}-cargo-
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Run tests
+        run: cargo test
