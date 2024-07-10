@@ -198,35 +198,4 @@ impl Cmaes {
     // // pub fn after_tell(...) {
     // // }
 
-    // // TODO
-    // // Whether the draw individual is within bounds supplied
-    // // If not, re-draw given self._n_max_resampling, or
-    // // ultimately, just clip values within bounds
-    // // fn _is_feasible()
-    // // fn _repair_infeasible_params
-
-    // // TODO
-    // // As per repo example:
-    // // ```
-    // // def main():
-    // //     optimizer = CMA(mean=np.zeros(2), sigma=1.3)
-    // //     print(" g    f(x1,x2)     x1      x2  ")
-    // //     print("===  ==========  ======  ======")
-    // //     while True:
-    // //         solutions = []
-    // //         for _ in range(optimizer.population_size):
-    // //             x = optimizer.ask()
-    // //             value = quadratic(x[0], x[1])
-    // //             solutions.append((x, value))
-    // //             print(
-    // //                 f"{optimizer.generation:3d}  {value:10.5f}"
-    // //                 f"  {x[0]:6.2f}  {x[1]:6.2f}"
-    // //             )
-    // //         optimizer.tell(solutions)
-    // //         if optimizer.should_stop():
-    // //             break
-    // // ```
-    // // TODO: make one go for population, no loop
-    // // as suggested in repo example, attached above
-    // // If ask_one is independent, try to paralellize
 }

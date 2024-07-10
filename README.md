@@ -1,22 +1,22 @@
-# Installing Prerequisites
+# CMAES in Rust
 
-## Install Make Tools
+## Requirements
 
-`sudo apt install make`
+### 1) Install Build Tools (GCC)
 
-## Install Build Tools (GCC)
+The `build-essential` package includes the GCC compiler and other necessary tools for building C programs. 
 
-The `build-essential` package includes the GCC compiler and other necessary tools for building C programs.
+This is most likely a requirement for blas C bindings used by ndarray and similar.
 
 `sudo apt install build-essential`
 
-## Install pkg-config and OpenSSL Development Libraries
+### 2) Install pkg-config and OpenSSL Development Libraries
 
 If you encounter `OpenSSL` and `pkg-config` related issues during compilation:
 
 `sudo apt install pkg-config libssl-dev`
 
-## Setting Up Rust Dependencies
+### 3) Setting Up Rust Dependencies
 
 Ensure the following dependencies are specified in your `Cargo.toml`:
 
@@ -33,7 +33,7 @@ ndarray-rand = { version = "0.14" }
 ndarray-stats = { version = "0.5.1" }
 ```
 
-## Installing OpenBLAS
+### 4) Installing OpenBLAS
 
 To use `OpenBLAS system-wide` for ndarray and others, install the `libopenblas-dev` package:
 
@@ -41,7 +41,7 @@ To use `OpenBLAS system-wide` for ndarray and others, install the `libopenblas-d
 
 If you want to check where did it got installed `dpkg-query -L libopenblas-dev`
 
-## Additional Tools
+### 5) Additional Tools
 
 Install `cargo-depgraph` and `graphviz` for dependency visualization:
 
@@ -50,7 +50,7 @@ sudo apt install graphviz
 cargo install cargo-depgraph
 ```
 
-## For git
+### 6) Git
 
 Since it's a fresh ubuntu build, for git:
 
@@ -58,5 +58,3 @@ Since it's a fresh ubuntu build, for git:
 `git config --global user.email "your.email@example.com"`
 
 Then, check github key, if `ssh -T git@github.com` says `git@github.com: Permission denied (publickey)`, then, probably the key pair was lost, due to new ubuntu fresh install, so do `ls -al ~/.ssh` and see if you indeed have keys stored. If not, then `ssh-keygen -t ed25519 -C "youremail@example.com"`, `ssh-add`. Then add it to github.com `cat ~/.ssh/ided25519.pub`. Then paste that under Settings, SSH and GPG Keys and that's it.
-
-
