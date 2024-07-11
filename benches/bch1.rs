@@ -1,21 +1,48 @@
-// benches/eigen_benchmark.rs
+// main.rs
 
-use criterion::{criterion_group, criterion_main, Criterion};
-use ndarray::{array, Array2};
+use anyhow::Result;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use nalgebra::DMatrix;
+use ndarray::Array2;
 use ndarray_linalg::Eig;
+use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
-pub fn eigen_decomposition_benchmark(c: &mut Criterion) {
-    let a: Array2<f64> = array![[1.01, 0.86, 4.60], [3.98, -0.53, 7.04], [3.30, 8.26, 3.89],];
+// Define eigen decomposition using ndarray-linalg
+fn eigen_decomp_ndarray_linalg(matrix: &Array2<f64>) -> Result<()> {
+    let _res = matrix.eig().unwrap();
+    Ok(())
+}
 
-    c.bench_function("eigen_decomposition", |b| {
-        b.iter(|| {
-            let (_eigs, _vecs) = a.clone().eig().unwrap();
-            // // Ensure the calculation produces a result that is used
-            // black_box(eigs);
-            // black_box(vecs);
-        });
+// Define eigen decomposition using nalgebra
+fn eigen_decomp_nalgebra(matrix: &DMatrix<f64>) -> Result<()> {
+    let _res = matrix.symmetric_eigenvalues();
+    Ok(())
+}
+
+// Benchmark functions
+fn eigen_decomp_ndarray_linalg_benchmark(c: &mut Criterion) {
+    let matrix = Array2::<f64>::random((50, 50), StandardNormal); // Example: random 50x50 matrix
+    c.bench_function("eigen_decomp_ndarray_linalg", |b| {
+        b.iter(|| eigen_decomp_ndarray_linalg(black_box(&matrix)))
     });
 }
 
-criterion_group!(benches, eigen_decomposition_benchmark);
+fn eigen_decomp_nalgebra_benchmark(c: &mut Criterion) {
+    let matrix = DMatrix::<f64>::from_row_slice(
+        50,
+        50,
+        &Array2::<f64>::random((50, 50), StandardNormal).into_raw_vec(),
+    ); // Example: random 50x50 matrix
+    c.bench_function("eigen_decomp_nalgebra", |b| {
+        b.iter(|| eigen_decomp_nalgebra(black_box(&matrix)))
+    });
+}
+
+// Main function to run benchmarks
+criterion_group!(
+    benches,
+    eigen_decomp_ndarray_linalg_benchmark,
+    eigen_decomp_nalgebra_benchmark
+);
+
 criterion_main!(benches);
