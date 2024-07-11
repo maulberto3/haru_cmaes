@@ -1,4 +1,5 @@
 use anyhow::Result;
+use nalgebra::min;
 use ndarray::{s, Array1, Array2, Axis, Zip};
 use ndarray_linalg::Scalar;
 use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
@@ -73,6 +74,7 @@ impl Cmaes {
         // Counts
         state.g += 1;
         state.evals_count += fitness.values.nrows() as i32;
+
         let xold = state.mean.to_owned();
 
         // Sort indices of fitness and population by ascending fitness
@@ -110,17 +112,24 @@ impl Cmaes {
         // Compute new weighted mean value
         state.mean = y_mu.dot(&weights_mu).sum_axis(Axis(1));
 
-        // Update mean of distribution: m = m + cm * σ * y_w
+        // // Update mean of distribution: m = m + cm * σ * y_w
 
         // Cumulation: update evolution paths
-        let y: Array1<f32> = &state.mean - xold;
+        let y: Array1<f32> = &state.mean - &xold;
         let z: Array1<f32> = state.cov.mapv(|x| x.powf(-0.5)).dot(&y);
         let csn = (self.params.cs * (2. - self.params.cs) * self.params.mueff).sqrt() / state.sigma;
 
         // Update evolution path sigma
         state.ps = Zip::from(&state.ps)
             .and(&z)
-            .map_collect(|&ps_, &x_| (1. - self.params.cs) * ps_ + csn * x_);
+            .map_collect(|&ps_, &z_| (1. - self.params.cs) * ps_ + csn * z_);
+
+        // Update evolution path sigma in-place
+        // Zip::from(&mut state.ps)
+        // .and(&z)
+        // .for_each(|ps_, &x_| {
+        //     *ps_ = (1. - self.params.cs) * *ps_ + csn * x_;
+        // });
 
         let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
         let hsig = state.ps.mapv(|x| x.square()).sum()
@@ -132,115 +141,52 @@ impl Cmaes {
             .and(&y)
             .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
 
-        // Adjust covariance matrix
         let c1a =
             self.params.c1 * (1. - (1. - hsig.square())) * self.params.cc * (2. - self.params.cc);
-        state.cov = state.cov.mapv(|x| {
-            1. - c1a - self.params.cmu * self.params.weights.iter().sum::<f32>()
-        });
-//         let outer_product = b.to_owned().into_shape((b.len(), 1)).unwrap() // Convert to column vector
-//         .dot(&b.to_owned().into_shape((1, b.len())).unwrap()); // Convert to row vector
+        state.cov = state
+            .cov
+            .mapv(|x| x * (1. - c1a - self.params.cmu * self.params.weights.iter().sum::<f32>()));
+        // Some helpers for easy broadcast
+        let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
+        let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()) * self.params.c1;
+        // Perform the rank-one update
+        state.cov = Zip::from(&state.cov)
+            .and(&pc_outer)
+            .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
 
-// c += &outer_product.mapv(|elem| factor * elem);
+        println!("{:+.4}", &state.ps);
 
+        // // Adjust covariance matrix
+        // let xold_broadcasted: Array2<f32> = xold.insert_axis(Axis(0)).to_owned();
+        // let dx: Array2<f32> = &pop.xs - xold_broadcasted;
 
-
-
-
-
-        // state.mean = state.mean + y_w.mapv(|x| x * self.params.cm * self.params.sigma);
-
-        // // println!("");
-        // // dbg!(&pop.xs);
-        // // dbg!(&fitness.values);
-        // // println!("");
-
-        // // Normalize population: y = (x - m) / σ
-        // pop.xs.axis_iter_mut(Axis(0)).for_each(|mut row| {
-        //     row -= &state.mean;
-        //     row /= state.sigma;
-        // });
-
-        // // Step-size control
-        // // Compute the inverse square root of the covariance matrix C (using its eigendecomposition i.e. C^(-1/2) = B * D^(-1) * B^T)
-        // let c_2: Array2<f32> = state
-        //     .eig_vecs
-        //     .dot(&Array2::from_diag(&state.eig_vals.mapv(|eigv| 1.0 / eigv)))
-        //     .dot(&state.eig_vecs.t());
-
-        // // Update the evolution path for for the covariance matrix (using the inverse square root of C and the weighted sum of individuals (y_w))
-        // state.p_sigma = (1.0 - self.params.c_sigma) * state.p_sigma
-        //     + (self.params.c_sigma
-        //         * (2.0 - self.params.c_sigma)
-        //         * self.params.mu_eff)
-        //         .sqrt()
-        //         * c_2.dot(&y_w);
-
-        // // Compute the norm of the evolution path for sigma (p_sigma)
-        // let norm_p_sigma: f32 = (state.p_sigma).norm_l2();
-
-        // // Update the global step-size control parameter (sigma)
-        // state.sigma = state.sigma
-        //     * ((self.params.c_sigma / self.params.d_sigma)
-        //         * (norm_p_sigma / self.params.chi_n - 1.0))
-        //         .exp();
-
-        // // Covariance matrix adaption
-        // // Calculate the left condition for h_sigma
-        // let h_sigma_cond_left: f32 =
-        //     norm_p_sigma / (1.0 - (1.0 - self.params.c_sigma).powi(2 * (state.g + 1))).sqrt();
-        // // Calculate the right condition for h_sigma
-        // let h_sigma_cond_right: f32 =
-        //     (1.4 + 2.0 / (self.params.num_dims + 1.0)) * self.params.chi_n;
-        // // Determine h_sigma (based on comparing the left and right conditions)
-        // let h_sigma: f32 = match h_sigma_cond_left < h_sigma_cond_right {
-        //     true => 1.0,
-        //     false => 0.0,
-        // };
-
-        // // (eq.45)
-        // // Update evolution path of covariance matrix adaptation
-        // state.p_c = (1.0 - self.params.cc) * &state.p_c
-        //     + h_sigma
-        //         * (self.params.cc * (2.0 - self.params.cc) * self.params.mu_eff)
-        //             .sqrt()
-        //         * &y_w;
-
-        // // (eq.46)
-        // let w_io = &self.params.weights
-        //     * &self
-        //         .params_valid
-        //         .weights
-        //         .mapv(|w| if w >= 0.0 { 1.0 } else { 0.0 });
-
-        // let delta_h_sigma = (1.0 - h_sigma) * self.params.cc * (2.0 - self.params.cc);
-
-        // // (eq.47)
-        // let rank_one_col = state.p_c.view().into_shape((state.p_c.len(), 1)).unwrap();
-        // let rank_one_row = state.p_c.view().into_shape((1, state.p_c.len())).unwrap();
-        // let rank_one = rank_one_col.dot(&rank_one_row);
-
-        // let mut rank_mu: Array2<f32> = Array2::zeros((pop.xs.ncols(), pop.xs.ncols()));
-
-        // // Iterate over weights and population vectors
-        // for (w, y) in w_io.iter().zip(pop.xs.axis_iter(Axis(0))) {
-        //     let outer_col = y.view().into_shape((y.len(), 1)).unwrap();
-        //     let outer_row = y.view().into_shape((1, y.len())).unwrap();
-        //     let outer = outer_col.dot(&outer_row);
-        //     rank_mu = rank_mu + *w * outer;
+        // for (i, w) in self.params.weights.iter().enumerate() {
+        //     let mut w = *w;
+        //     if w < 0. {
+        //         let mahalanobis_norm_sq = self.params.sigma
+        //             / self
+        //                 .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
+        //                 .square();
+        //         w *= self.params.n * mahalanobis_norm_sq;
+        //     }
+        //     let update: Array2<f32> = dx
+        //         .clone()
+        //         .dot(&dx.t())
+        //         .mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
+        //     state.cov = state.cov + update;
         // }
 
-        // //
-        // state.cov = (1.0 + self.params.c1 * delta_h_sigma
-        //     - self.params.c1
-        //     - self.params.cmu * self.params.weights.sum())
-        //     * state.cov
-        //     + rank_one.mapv(|x| x * self.params.c1)
-        //     + rank_mu.mapv(|x| x * self.params.cmu);
-
-        // // Learning rate adaptation (enhancement)
+        // // Adapt step-size sigma
+        // let cn = self.params.cs / self.params.damps;
+        // let sum_square_ps = state.ps.mapv(|x| x.square()).sum();
+        // state.sigma = state.sigma * (f32::min(1., cn * (sum_square_ps / self.params.n - 1.) / 2.));
 
         Ok(state)
+    }
+
+    fn mahalanobis_norm(&self, state: &mut CmaesState, dx: &Array1<f32>) -> f32 {
+        // (dx^T * C^-1 * dx)**0.5
+        dx.dot(&state.cov.mapv(|x| 1. / x).dot(dx)).sqrt()
     }
 
     // TODO

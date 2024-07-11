@@ -27,7 +27,7 @@ impl CmaesState {
         // let cov: Array2<f32> = Array2::eye(params.xstart.len());
         let cov: Array2<f32> = Array2::random(
             (params.xstart.len(), params.xstart.len()),
-            Uniform::new(-1.0, 1.0),
+            Uniform::new(0. + f32::EPSILON, 1.0),
         );
         let eig_vecs: Array2<f32> = Array::eye(params.xstart.len());
         let eig_vals: Array1<f32> = Array::from_elem((params.xstart.len(),), 1.0);

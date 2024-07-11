@@ -36,16 +36,17 @@ pub fn work() -> Result<()> {
     // // println!("\n");
 
     // Step 4: Loop
-    for i in 0..2 {
+    for i in 0..100 {
         let mut pop = cmaes.ask(&mut state)?;
-        println!("\n");
-        println!("{:+.4?}", &pop);
-        let mut fitness = square_and_sum(&pop)?;
-        println!("\n");
-        println!("{:+.4?}", &fitness);
-        // state = cmaes.tell(state, &mut pop, &mut fitness)?;
-        // // println!("{:+.4?}", &state);
         // println!("\n");
+        // println!("{:+.4?}", &pop);
+        let mut fitness = square_and_sum(&pop)?;
+        // println!("\n");
+        // println!("{:+.4?}", &fitness);
+        state = cmaes.tell(state, &mut pop, &mut fitness)?;
+        // println!("\n");
+        // println!("{:+.4?}", &state);
+
         // dbg!(&state);
         // // dbg!(&fitness);
     }
