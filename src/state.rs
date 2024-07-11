@@ -15,9 +15,9 @@ pub struct CmaesState {
     pub mean: Array1<f32>,
     pub sigma: f32,
     pub g: i32,
-    pub p_sigma: Array1<f32>,
-    pub p_c: Array1<f32>,
-    // pub rng: StdRng,
+    pub evals_count: i32,
+    pub ps: Array1<f32>,
+    pub pc: Array1<f32>,
 }
 
 impl CmaesState {
@@ -33,9 +33,12 @@ impl CmaesState {
         let eig_vals: Array1<f32> = Array::from_elem((params.xstart.len(),), 1.0);
         let mean: Array1<f32> = Array1::from_vec(params.xstart.clone());
         let sigma: f32 = params.sigma;
+
         let g: i32 = 0;
-        let p_sigma: Array1<f32> = Array1::zeros(params.xstart.len());
-        let p_c: Array1<f32> = Array1::zeros(params.xstart.len());
+        let evals_count = 0;
+
+        let ps: Array1<f32> = Array1::zeros(params.xstart.len());
+        let pc: Array1<f32> = Array1::zeros(params.xstart.len());
         println!("Done.");
 
         Ok(CmaesState {
@@ -45,8 +48,9 @@ impl CmaesState {
             mean,
             sigma,
             g,
-            p_sigma,
-            p_c,
+            evals_count,
+            ps,
+            pc,
         })
     }
 

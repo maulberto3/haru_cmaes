@@ -6,6 +6,7 @@ mod fitness;
 // use fitness::square_and_sum;
 
 mod params;
+use fitness::square_and_sum;
 use params::CmaesParams;
 
 mod state;
@@ -37,10 +38,11 @@ pub fn work() -> Result<()> {
     // Step 4: Loop
     for i in 0..2 {
         let mut pop = cmaes.ask(&mut state)?;
-        // println!("\n");
-        // dbg!(&pop.xs);
-        // let mut fitness = square_and_sum(&pop)?;
-        // // dbg!(&fitness.fit);
+        println!("\n");
+        println!("{:+.4?}", &pop);
+        let mut fitness = square_and_sum(&pop)?;
+        println!("\n");
+        println!("{:+.4?}", &fitness);
         // state = cmaes.tell(state, &mut pop, &mut fitness)?;
         // // println!("{:+.4?}", &state);
         // println!("\n");

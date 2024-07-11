@@ -18,7 +18,7 @@ pub struct CmaesParamsValid {
     pub sigma: f32,
     pub n: f32,
     pub chin: f32,
-    pub mu: f32,
+    pub mu: i32,
     pub weights: Array1<f32>,
     pub mueff: f32,
     pub cc: f32,
@@ -57,12 +57,12 @@ impl CmaesParamsValid {
 
         let n = xstart.len() as f32;
         let chin = n.sqrt() * (1. - 1. / (4. * n) + 1. / (21. * n.square()));
-        let mu = (popsize / 2) as f32;
+        let mu = popsize / 2;
 
         let _iterable: Vec<f32> = (0..popsize as i32)
             .enumerate()
             .map(|(_x, i)| {
-                if i < (mu as i32) {
+                if i < mu {
                     ((popsize / 2) as f32 + 0.5).ln() - ((i + 1) as f32).ln()
                 } else {
                     0.0
@@ -70,10 +70,10 @@ impl CmaesParamsValid {
             })
             .collect();
         let _weights: Array1<f32> = Array1::from_iter(_iterable);
-        let _w_sum = _weights.slice(s![..(mu as i32)]).sum();
+        let _w_sum = _weights.slice(s![..mu]).sum();
         let weights: Array1<f32> = _weights.mapv(|x| x / _w_sum);
-        let mueff: f32 = _weights.slice(s![..(mu as i32)]).sum().square()
-            / _weights.slice(s![..(mu as i32)]).mapv(|x| x.square()).sum();
+        let mueff: f32 = _weights.slice(s![..mu]).sum().square()
+            / _weights.slice(s![..mu]).mapv(|x| x.square()).sum();
 
         // time constant for cumulation for C
         let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
