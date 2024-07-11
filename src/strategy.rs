@@ -1,7 +1,7 @@
 use anyhow::Result;
 use nalgebra::min;
 use ndarray::{s, Array1, Array2, Axis, Zip};
-use ndarray_linalg::Scalar;
+use ndarray_linalg::{Cholesky, Scalar, UPLO};
 use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
 use crate::{
@@ -123,13 +123,13 @@ impl Cmaes {
         state.ps = Zip::from(&state.ps)
             .and(&z)
             .map_collect(|&ps_, &z_| (1. - self.params.cs) * ps_ + csn * z_);
-
         // Update evolution path sigma in-place
         // Zip::from(&mut state.ps)
         // .and(&z)
         // .for_each(|ps_, &x_| {
         //     *ps_ = (1. - self.params.cs) * *ps_ + csn * x_;
         // });
+        // println!("{:+.4}", &state.ps);
 
         let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
         let hsig = state.ps.mapv(|x| x.square()).sum()
@@ -140,21 +140,24 @@ impl Cmaes {
         state.pc = Zip::from(&state.pc)
             .and(&y)
             .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
+        // println!("{:+.4}", &state.pc);
 
         let c1a =
-            self.params.c1 * (1. - (1. - hsig.square())) * self.params.cc * (2. - self.params.cc);
+            self.params.c1 * (1. - (1. - hsig.square()) * self.params.cc * (2. - self.params.cc));
         state.cov = state
             .cov
             .mapv(|x| x * (1. - c1a - self.params.cmu * self.params.weights.iter().sum::<f32>()));
-        // Some helpers for easy broadcast
-        let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
-        let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()) * self.params.c1;
-        // Perform the rank-one update
-        state.cov = Zip::from(&state.cov)
-            .and(&pc_outer)
-            .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
+        // println!("{:+.4}", &state.cov);
+        // println!("{:+.4}", &state.cov.cholesky(UPLO::Lower).is_ok());
+        // println!("");
 
-        println!("{:+.4}", &state.ps);
+        // // Some helpers for easy broadcast
+        // let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
+        // let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()) * self.params.c1;
+        // // Perform the rank-one update
+        // state.cov = Zip::from(&state.cov)
+        //     .and(&pc_outer)
+        //     .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
 
         // // Adjust covariance matrix
         // let xold_broadcasted: Array2<f32> = xold.insert_axis(Axis(0)).to_owned();
