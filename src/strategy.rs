@@ -71,6 +71,7 @@ impl Cmaes {
         pop: &mut Population,
         fitness: &mut Fitness,
     ) -> Result<CmaesState> {
+        
         // Counts
         state.g += 1;
         state.evals_count += fitness.values.nrows() as i32;
@@ -116,7 +117,7 @@ impl Cmaes {
 
         // Cumulation: update evolution paths
         let y: Array1<f32> = &state.mean - &xold;
-        let z: Array1<f32> = state.cov.mapv(|x| x.powf(-0.5)).dot(&y);
+        let z: Array1<f32> = state.cov.dot(&y);
         let csn = (self.params.cs * (2. - self.params.cs) * self.params.mueff).sqrt() / state.sigma;
 
         // Update evolution path sigma
@@ -129,55 +130,59 @@ impl Cmaes {
         // .for_each(|ps_, &x_| {
         //     *ps_ = (1. - self.params.cs) * *ps_ + csn * x_;
         // });
-        // println!("{:+.4}", &state.ps);
 
         let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
         let hsig = state.ps.mapv(|x| x.square()).sum()
             / (state.ps.len() as f32)
             / (1. - (1. - self.params.cs).powi(2 * state.evals_count / self.params.popsize));
 
-        // Update evolution path covariance
+        // // Update evolution path covariance
         state.pc = Zip::from(&state.pc)
             .and(&y)
             .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
-        // println!("{:+.4}", &state.pc);
 
         let c1a =
             self.params.c1 * (1. - (1. - hsig.square()) * self.params.cc * (2. - self.params.cc));
         state.cov = state
             .cov
             .mapv(|x| x * (1. - c1a - self.params.cmu * self.params.weights.iter().sum::<f32>()));
+
+        // Some helpers for easy broadcast
+        let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
+        let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()).mapv(|x| x * self.params.c1);
+        // Perform the rank-one update
+        state.cov = Zip::from(&state.cov)
+            .and(&pc_outer)
+            .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
+
+        // Adjust covariance matrix
+        for (i, w) in self.params.weights.iter().enumerate() {
+            let mut w = *w;
+            if w < 0. {
+                // let mahalanobis_norm_sq = self.params.sigma
+                //     / self
+                //         .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
+                //         .square();
+                w = f32::EPSILON
+            }
+            let dx: Array1<f32> = &pop.xs.slice(s![i, ..]) - &xold;
+            let dx: Array2<f32> = dx.insert_axis(Axis(1));
+            let dx: Array2<f32> = dx.dot(&dx.t()).mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
+            
+            println!("{i}, {:+.4}", &dx);
+            println!("{:+.4}", &w);
+            
+            let update: Array2<f32> = Zip::from(&state.cov)
+                .and(&dx)
+                .map_collect(|&cov_, &dx_| cov_ + dx_);
+            println!("{:+.4}", &update);
+            state.cov = state.cov + update;
+        }
+
+        // println!("{:+.4}", &state.ps);
+        // println!("{:+.4}", &self.params.weights);
+        // println!("{:+.4}", &state.pc);
         // println!("{:+.4}", &state.cov);
-        // println!("{:+.4}", &state.cov.cholesky(UPLO::Lower).is_ok());
-        // println!("");
-
-        // // Some helpers for easy broadcast
-        // let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
-        // let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()) * self.params.c1;
-        // // Perform the rank-one update
-        // state.cov = Zip::from(&state.cov)
-        //     .and(&pc_outer)
-        //     .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
-
-        // // Adjust covariance matrix
-        // let xold_broadcasted: Array2<f32> = xold.insert_axis(Axis(0)).to_owned();
-        // let dx: Array2<f32> = &pop.xs - xold_broadcasted;
-
-        // for (i, w) in self.params.weights.iter().enumerate() {
-        //     let mut w = *w;
-        //     if w < 0. {
-        //         let mahalanobis_norm_sq = self.params.sigma
-        //             / self
-        //                 .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
-        //                 .square();
-        //         w *= self.params.n * mahalanobis_norm_sq;
-        //     }
-        //     let update: Array2<f32> = dx
-        //         .clone()
-        //         .dot(&dx.t())
-        //         .mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
-        //     state.cov = state.cov + update;
-        // }
 
         // // Adapt step-size sigma
         // let cn = self.params.cs / self.params.damps;
@@ -187,10 +192,10 @@ impl Cmaes {
         Ok(state)
     }
 
-    fn mahalanobis_norm(&self, state: &mut CmaesState, dx: &Array1<f32>) -> f32 {
-        // (dx^T * C^-1 * dx)**0.5
-        dx.dot(&state.cov.mapv(|x| 1. / x).dot(dx)).sqrt()
-    }
+    // fn mahalanobis_norm(&self, state: &mut CmaesState, dx: &Array1<f32>) -> f32 {
+    //     // (dx^T * C^-1 * dx)**0.5
+    //     dx.dot(&state.cov.mapv(|x| 1. / x).dot(dx)).sqrt()
+    // }
 
     // TODO
     // Reset required variables for next pop
