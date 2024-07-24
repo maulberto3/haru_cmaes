@@ -1,19 +1,19 @@
 use anyhow::Result;
 use ndarray::{Array2, Axis};
 
-use crate::strategy::Population;
+use crate::strategy::PopulationY;
 
 #[derive(Debug, Clone)]
 pub struct Fitness {
     pub values: Array2<f32>,
 }
 
-pub fn square_and_sum(pop: &Population) -> Result<Fitness> {
+pub fn square_and_sum(pop: &PopulationY) -> Result<Fitness> {
     let values = pop
-        .xs
+        .y
         .map_axis(Axis(1), |row| row.mapv(|elem| elem.powi(2)).sum())
         .view()
-        .into_shape((pop.xs.nrows(), 1))
+        .into_shape((pop.y.nrows(), 1))
         .unwrap()
         .to_owned();
     Ok(Fitness { values })
