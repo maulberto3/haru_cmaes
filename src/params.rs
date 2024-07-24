@@ -56,39 +56,37 @@ impl CmaesParamsValid {
         let sigma = params.sigma;
 
         let n = xstart.len() as f32;
+        let k = popsize as f32;
         let chin = n.sqrt() * (1. - 1. / (4. * n) + 1. / (21. * n.square()));
         let mu = popsize / 2;
 
-        let _iterable: Vec<f32> = (0..popsize as i32)
+        let _iterable: Vec<f32> = (0..popsize)
             .enumerate()
             .map(|(_x, i)| {
                 if i < mu {
-                    ((popsize / 2) as f32 + 0.5).ln() - ((i + 1) as f32).ln()
+                    (k / 2.0 + 0.5).ln() - ((i + 1) as f32).ln()
                 } else {
                     0.0
                 }
             })
             .collect();
+
         let _weights: Array1<f32> = Array1::from_iter(_iterable);
         let _w_sum = _weights.slice(s![..mu]).sum();
         let weights: Array1<f32> = _weights.mapv(|x| x / _w_sum);
-        let mueff: f32 = _weights.slice(s![..mu]).sum().square()
-            / _weights.slice(s![..mu]).mapv(|x| x.square()).sum();
 
-        // time constant for cumulation for C
+        let mueff: f32 = weights.slice(s![..mu]).sum().square()
+            / weights.slice(s![..mu]).mapv(|x| x.square()).sum();
+
         let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
-        // time constant for cumulation for sigma control
         let cs = (mueff + 2.) / (n + mueff + 5.);
-        // learning rate for rank-one update of C
-        let c1 = 2. / (n + 1.3).square() + mueff;
-        // and for rank-mu update
-        let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / (n + 2.).square() + mueff);
-        // damping for sigma, usually close to 1
-        let damps = 2. * mueff / popsize as f32 + 0.3 + cs;
+        let c1 = 2. / ((n + 1.3).square() + mueff);
+        let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.).square() + mueff));
+        let damps = 2. * mueff / k + 0.3 + cs;
 
         // gap to postpone eigendecomposition to achieve O(N**2) per eval
         // 0.5 is chosen such that eig takes 2 times the time of tell in >=20-D
-        let lazy_gap_evals = 0.5 * n * (popsize as f32) * (c1 + cmu).powi(-1) / n.square();
+        let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / n.square();
 
         let valid_params = CmaesParamsValid {
             popsize,

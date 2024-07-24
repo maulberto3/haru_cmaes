@@ -28,19 +28,13 @@ impl CmaesState {
     pub fn init_state(params: &CmaesParams) -> Result<Self> {
         // Create initial values for the state
         print!("Creating a new state... ");
-        let z: Array2<f32> = Array2::random(
-            (params.xstart.len(), params.xstart.len()),
-            Uniform::new(-1.0, 1.0),
-        );
-        let y: Array2<f32> = Array2::random(
-            (params.xstart.len(), params.xstart.len()),
-            Uniform::new(-1.0, 1.0),
-        );
-        // let cov: Array2<f32> = Array2::eye(params.xstart.len());
-        let cov: Array2<f32> = Array2::random(
-            (params.xstart.len(), params.xstart.len()),
-            Uniform::new(0. + f32::EPSILON, 1.0),
-        );
+        let z: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
+        let y: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
+        let cov: Array2<f32> = Array2::eye(params.xstart.len());
+        // let cov: Array2<f32> = Array2::random(
+        //     (params.xstart.len(), params.xstart.len()),
+        //     Uniform::new(0. + f32::EPSILON, 1.0),
+        // );
         let inv_sqrt: Array2<f32> = Array2::eye(params.xstart.len());
         let eig_vecs: Array2<f32> = Array::eye(params.xstart.len());
         let eig_vals: Array1<f32> = Array::from_elem((params.xstart.len(),), 1.0);
@@ -89,7 +83,9 @@ impl CmaesState {
         // Ensure positive numbers
         eig_vals.map_inplace(|elem| {
             if *elem < 0.0 {
-                *elem = 1.0 // TODO: instability here with f32::EPSILON, try other values
+                *elem = 0.1 // TODO: instability here with f32::EPSILON, try other values
+            } else if *elem > 10. {
+                *elem = 10.; // Clamp to a maximum value to avoid overflow
             }
             //  else { *elem = *elem }
         });

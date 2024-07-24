@@ -80,14 +80,14 @@ impl Cmaes {
         state.evals_count += fitness.values.nrows() as i32;
         let xold = state.mean.to_owned();
 
-        // Sort by fitness
+        // Sort by fitness...
         let mut indices: Vec<usize> = (0..fitness.values.nrows()).collect();
         indices.sort_by(|&i, &j| {
             fitness.values[[i, 0]]
                 .partial_cmp(&fitness.values[[j, 0]])
                 .unwrap()
         });
-        // Both fitness and population
+        // ...both fitness and population
         let mut sorted_xs: Array2<f32> = Array2::zeros((pop.y.nrows(), pop.y.ncols()));
         let mut sorted_fit: Array2<f32> =
             Array2::zeros((fitness.values.nrows(), fitness.values.ncols()));
@@ -101,10 +101,9 @@ impl Cmaes {
         fitness.values.assign(&sorted_fit);
 
         // Selection and recombination for evolution
+
         // Select top μ individuals and their weights
-        let y_mu: Array2<f32> = pop.y
-            .slice(s![..self.params.mu, ..])
-            .to_owned();
+        let y_mu: Array2<f32> = pop.y.slice(s![..self.params.mu, ..]).to_owned();
         let weights_mu: Array2<f32> = self
             .params
             .weights
@@ -115,84 +114,69 @@ impl Cmaes {
             .to_owned();
 
         // Compute new weighted mean value
-        let y_w: Array1<f32> = y_mu.dot(&weights_mu).into_shape(y_mu.ncols()).unwrap();
+        let y_w: Array1<f32> = y_mu.dot(&weights_mu.t()).into_shape(y_mu.ncols()).unwrap();
         state.mean = y_w;
-        // // Update mean of distribution: m =              y_w ?
-        // // Update mean of distribution: m = m + cm * σ * y_w ?
+        // Update mean of distribution: m =              y_w ?
+        // Update mean of distribution: m = m + cm * σ * y_w ?
 
-        // // Update evolution path sigma
-        // let y: Array1<f32> = &state.mean - &xold;
-        // let z: Array1<f32> = state.cov.dot(&y);
-        // let csn = (self.params.cs * (2. - self.params.cs) * self.params.mueff).sqrt() / state.sigma;
-        // state.ps = Zip::from(&state.ps)
-        //     .and(&z)
-        //     .map_collect(|&ps_, &z_| (1. - self.params.cs) * ps_ + csn * z_);
+        // Update evolution path sigma
+        let new_y: Array1<f32> = &state.mean - &xold;
+        let new_z: Array1<f32> = state.inv_sqrt.dot(&new_y);
+        let csn = (self.params.cs * (2. - self.params.cs) * self.params.mueff).sqrt() / state.sigma;
+        state.ps = Zip::from(&state.ps)
+            .and(&new_z)
+            .map_collect(|&ps_, &z_| (1. - self.params.cs) * ps_ + csn * z_);
 
-        // // // Update evolution path sigma in-place
-        // // // Zip::from(&mut state.ps)
-        // // // .and(&z)
-        // // // .for_each(|ps_, &x_| {
-        // // //     *ps_ = (1. - self.params.cs) * *ps_ + csn * x_;
-        // // // });
+        // Update evolution path sigma in-place
+        // Zip::from(&mut state.ps)
+        // .and(&z)
+        // .for_each(|ps_, &x_| {
+        //     *ps_ = (1. - self.params.cs) * *ps_ + csn * x_;
+        // });
 
-        // // Update evolution path covariance
-        // let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
-        // let hsig = state.ps.mapv(|x| x.square()).sum()
-        //     / (state.ps.len() as f32)
-        //     / (1. - (1. - self.params.cs).powi(2 * state.evals_count / self.params.popsize));
-        // state.pc = Zip::from(&state.pc)
-        //     .and(&y)
-        //     .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
+        // Update evolution path covariance
+        let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
+        let hsig = state.ps.mapv(|x| x.square()).sum()
+            / (state.ps.len() as f32)
+            / (1. - (1. - self.params.cs).powi(2 * state.evals_count / self.params.popsize));
+        state.pc = Zip::from(&state.pc)
+            .and(&new_y)
+            .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
 
-        // // Adapt covariance matrix C
-        // let c1a =
-        //     self.params.c1 * (1. - (1. - hsig.square()) * self.params.cc * (2. - self.params.cc));
-        // state.cov = state
-        //     .cov
-        //     .mapv(|x| x * (1. - c1a - self.params.cmu * self.params.weights.iter().sum::<f32>()));
-        // // Some helpers for easy broadcast
-        // let pc_col: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
-        // let pc_outer: Array2<f32> = pc_col.dot(&pc_col.t()).mapv(|x| x * self.params.c1);
-        // // Perform the rank-one update
-        // state.cov = Zip::from(&state.cov)
-        //     .and(&pc_outer)
-        //     .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
-        // // Perform the rank-mu update
-        // for (i, w) in self.params.weights.iter().enumerate() {
-        //     let mut w = *w;
-        //     if w < 0. {
-        //         // let mahalanobis_norm_sq = self.params.sigma
-        //         //     / self
-        //         //         .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
-        //         //         .square();
-        //         w = 1.0  // f32::EPSILON
-        //     }
-        //     let dx: Array1<f32> = &pop.y.slice(s![i, ..]) - &xold;
-        //     let dx: Array2<f32> = dx.insert_axis(Axis(1));
-        //     let dx: Array2<f32> = dx.dot(&dx.t());
-        //     let dx: Array2<f32> = dx.mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
+        // Adapt covariance matrix C
+        let c1a =
+            self.params.c1 * (1. - (1. - hsig.square()) * self.params.cc * (2. - self.params.cc));
+        state.cov = state.cov.mapv(|x| x * (1. - c1a - self.params.cmu)); // * self.params.weights.iter().sum::<f32>() == 1.0...
+                                                                          // // Some helpers for easy broadcast
+        let pc_outer: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
+        let pc_outer: Array2<f32> = pc_outer.dot(&pc_outer.t()).mapv(|x| x * self.params.c1);
+        // Perform the rank-one update
+        state.cov = Zip::from(&state.cov)
+            .and(&pc_outer)
+            .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
 
-        //     println!("");
-        //     println!("{i}, {:+.4}", &dx);
-        //     println!("{:+.4}", &w);
-        //     println!("");
+        // Perform the rank-mu update
+        for (i, w) in self.params.weights.iter().enumerate() {
+            let mut w = *w;
+            if w < 0. {
+                // let mahalanobis_norm_sq = self.params.sigma
+                //     / self
+                //         .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
+                //         .square();
+                w = 0.001 // f32::EPSILON
+            }
+            let dx: Array1<f32> = &pop.y.slice(s![i, ..]) - &xold;
+            let dx: Array2<f32> = dx.insert_axis(Axis(1));
+            let dx: Array2<f32> = dx.dot(&dx.t());
+            let dx: Array2<f32> = dx.mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
+            state.cov = &state.cov + dx;
+        }
 
-        //     let update: Array2<f32> = Zip::from(&state.cov)
-        //         .and(&dx)
-        //         .map_collect(|&cov_, &dx_| cov_ + dx_);
-        //     println!("{:+.4}", &update);
-        //     state.cov = state.cov + update;
-        // }
-
-        // // println!("{:+.4}", &state.ps);
-        // // println!("{:+.4}", &self.params.weights);
-        // // println!("{:+.4}", &state.pc);
-        // // println!("{:+.4}", &state.cov);
-
-        // // // Adapt step-size sigma
-        // // let cn = self.params.cs / self.params.damps;
-        // // let sum_square_ps = state.ps.mapv(|x| x.square()).sum();
-        // // state.sigma = state.sigma * (f32::min(1., cn * (sum_square_ps / self.params.n - 1.) / 2.));
+        // Adapt step-size sigma
+        let cn = self.params.cs / self.params.damps;
+        let sum_square_ps = state.ps.mapv(|x| x.square()).sum();
+        let other = cn * (sum_square_ps / self.params.n - 1.) / 2.;
+        state.sigma = state.sigma * f32::min(1.0, other).exp();
 
         Ok(state)
     }
