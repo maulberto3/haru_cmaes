@@ -12,10 +12,7 @@ jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      # Use Github Actions logic
       - uses: actions/checkout@v3
-
-      # Cache installs
       - name: Cache APT packages and lists
         uses: actions/cache@v3
         with:
@@ -42,22 +39,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-rust-toolchain-
 
-      # Install system dependencies
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenblas-dev graphviz
 
-      # Set up Rust
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
 
-      # Install cargo package cargo-depgraph
       - name: Install cargo-depgraph
         run: cargo install cargo-depgraph
+
+      - name: Set library path
+        run: echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/x86_64-linux-gnu.conf && sudo ldconfig
+
+      - name: Build project
+        run: cargo build --release
         
   lint:
     runs-on: ubuntu-latest
