@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     branches:
-      - ´*´
+      - '*'
 
 jobs:
   install:
@@ -53,51 +53,8 @@ jobs:
       - name: Install cargo-depgraph
         run: cargo install cargo-depgraph
 
-      - name: Set library path
-        run: echo "/usr/lib/x86_64-linux-gnu" | sudo tee /etc/ld.so.conf.d/x86_64-linux-gnu.conf && sudo ldconfig
-
-      - name: Build project
-        run: cargo build --release
-        
-  lint:
-    runs-on: ubuntu-latest
-    needs: install
-    env:
-      TERM: xterm
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-
       - name: Format the code
         run: make prep
 
-  test:
-    runs-on: ubuntu-latest
-    needs: install
-    env:
-      TERM: xterm
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache Cargo build
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', 'src/**/*.rs') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-
-            ${{ runner.os }}-cargo-
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-
       - name: Run tests
-        run: cargo test
+        run: make test
