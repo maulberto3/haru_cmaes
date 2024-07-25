@@ -53,6 +53,9 @@ jobs:
       - name: Install cargo-depgraph
         run: cargo install cargo-depgraph
 
+      - name: Set TERM environment variable
+        run: echo "TERM=xterm" >> $GITHUB_ENV
+
       - name: Format the code
         run: make prep
 
