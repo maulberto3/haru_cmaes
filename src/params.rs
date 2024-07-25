@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Result};
 use ndarray::{s, Array1};
-use ndarray_linalg::Scalar;
 // use ndarray_stats::QuantileExt;
 
 #[derive(Debug, Clone)]
@@ -17,7 +16,7 @@ pub struct CmaesParamsValid {
     pub xstart: Vec<f32>,
     pub sigma: f32,
     pub n: f32,
-    pub chin: f32,
+    // pub chin: f32,
     pub mu: i32,
     pub weights: Array1<f32>,
     pub mueff: f32,
@@ -26,12 +25,12 @@ pub struct CmaesParamsValid {
     pub c1: f32,
     pub cmu: f32,
     pub damps: f32,
-    pub lazy_gap_evals: f32,
+    // pub lazy_gap_evals: f32,
 }
 
 impl CmaesParamsValid {
     pub fn validate(params: &CmaesParams) -> Result<CmaesParamsValid> {
-        print!("Validating initial parameters... ");
+        // print!("Validating initial parameters... ");
         let params = match CmaesParamsValid::validate_params(params) {
             Ok(params) => params,
             Err(e) => {
@@ -42,11 +41,11 @@ impl CmaesParamsValid {
                 return Err(e);
             }
         };
-        println!("Done.");
+        // println!("Done.");
 
-        print!("Computing default parameters... ");
+        // print!("Computing default parameters... ");
         let params = CmaesParamsValid::create_default_params(params)?;
-        println!("Done.");
+        // println!("Done.");
         Ok(params)
     }
 
@@ -57,7 +56,7 @@ impl CmaesParamsValid {
 
         let n = xstart.len() as f32;
         let k = popsize as f32;
-        let chin = n.sqrt() * (1. - 1. / (4. * n) + 1. / (21. * n.square()));
+        // let chin = n.sqrt() * (1. - 1. / (4. * n) + 1. / (21. * n * n));
         let mu = popsize / 2;
 
         let _iterable: Vec<f32> = (0..popsize)
@@ -75,25 +74,25 @@ impl CmaesParamsValid {
         let _w_sum = _weights.slice(s![..mu]).sum();
         let weights: Array1<f32> = _weights.mapv(|x| x / _w_sum);
 
-        let mueff: f32 = weights.slice(s![..mu]).sum().square()
-            / weights.slice(s![..mu]).mapv(|x| x.square()).sum();
+        let mueff: f32 = (weights.slice(s![..mu]).sum() * weights.slice(s![..mu]).sum())
+            / weights.slice(s![..mu]).mapv(|x| x * x).sum();
 
         let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
         let cs = (mueff + 2.) / (n + mueff + 5.);
-        let c1 = 2. / ((n + 1.3).square() + mueff);
-        let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.).square() + mueff));
+        let c1 = 2. / ((n + 1.3) * (n + 1.3) + mueff);
+        let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.) * (n + 2.) + mueff));
         let damps = 2. * mueff / k + 0.3 + cs;
 
         // gap to postpone eigendecomposition to achieve O(N**2) per eval
         // 0.5 is chosen such that eig takes 2 times the time of tell in >=20-D
-        let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / n.square();
+        // let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / (n * n);
 
         let valid_params = CmaesParamsValid {
             popsize,
             xstart,
             sigma,
             n,
-            chin,
+            // chin,
             mu,
             weights,
             mueff,
@@ -102,7 +101,7 @@ impl CmaesParamsValid {
             c1,
             cmu,
             damps,
-            lazy_gap_evals,
+            // lazy_gap_evals,
         };
         Ok(valid_params)
     }
@@ -134,8 +133,4 @@ impl CmaesParamsValid {
         }
         Ok(())
     }
-
-    // fn calculate_popsize(num_dims: &f32) -> Result<i32> {
-    //     Ok(4 + (3.0 * (*num_dims).ln()).floor() as i32)
-    // }
 }

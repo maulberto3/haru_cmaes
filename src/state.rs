@@ -1,9 +1,11 @@
+use core::f32;
+
 use anyhow::Result;
 
 use ndarray::{Array, Array1, Array2};
-use ndarray_linalg::{eig, Eig};
-use ndarray_rand::RandomExt;
-use rand::distributions::Uniform;
+use ndarray_linalg::Eig;
+// use ndarray_rand::RandomExt;
+// use rand::distributions::Uniform;
 
 use crate::params::CmaesParams;
 
@@ -11,6 +13,8 @@ use crate::params::CmaesParams;
 pub struct CmaesState {
     pub z: Array2<f32>,
     pub y: Array2<f32>,
+    pub best_y: Array1<f32>,
+    pub best_y_fit: Array1<f32>,
     pub cov: Array2<f32>,
     pub eig_vecs: Array2<f32>,
     pub eig_vals: Array1<f32>,
@@ -27,9 +31,11 @@ pub struct CmaesState {
 impl CmaesState {
     pub fn init_state(params: &CmaesParams) -> Result<Self> {
         // Create initial values for the state
-        print!("Creating a new state... ");
+        // print!("Creating a new state... ");
         let z: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
         let y: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
+        let best_y: Array1<f32> = Array1::zeros(params.xstart.len());
+        let best_y_fit: Array1<f32> = Array1::from_elem(1, f32::MAX);
         let cov: Array2<f32> = Array2::eye(params.xstart.len());
         // let cov: Array2<f32> = Array2::random(
         //     (params.xstart.len(), params.xstart.len()),
@@ -46,11 +52,13 @@ impl CmaesState {
 
         let ps: Array1<f32> = Array1::zeros(params.xstart.len());
         let pc: Array1<f32> = Array1::zeros(params.xstart.len());
-        println!("Done.");
+        // println!("Done.");
 
         Ok(CmaesState {
             z,
             y,
+            best_y,
+            best_y_fit,
             cov,
             eig_vecs,
             eig_vals,

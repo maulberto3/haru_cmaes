@@ -24,4 +24,8 @@ criterion = { version = "0.5.1", features = ["html_reports"] }
 name = "bch1"
 harness = false
 
+[[bench]]
+name = "bch2"
+harness = false
+
 

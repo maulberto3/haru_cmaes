@@ -1,7 +1,5 @@
 use anyhow::Result;
-use nalgebra::min;
 use ndarray::{s, Array1, Array2, Axis, Zip};
-use ndarray_linalg::{Cholesky, Scalar, UPLO};
 use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
 use crate::{
@@ -15,11 +13,6 @@ use crate::{
 pub struct Cmaes {
     pub params: CmaesParamsValid,
     // pub state: CmaesState,
-}
-
-#[derive(Debug, Clone)]
-pub struct Individual {
-    pub x: Array1<f32>,
 }
 
 #[derive(Debug, Clone)]
@@ -100,8 +93,13 @@ impl Cmaes {
         pop.y.assign(&sorted_xs);
         fitness.values.assign(&sorted_fit);
 
-        // Selection and recombination for evolution
+        // Best current y
+        if &fitness.values[[0, 0]] < &state.best_y_fit[0] {
+            state.best_y = pop.y.slice(s![0, ..]).to_owned();
+            state.best_y_fit = fitness.values.slice(s![0, ..]).to_owned();
+        }
 
+        // Selection and recombination for evolution
         // Select top μ individuals and their weights
         let y_mu: Array2<f32> = pop.y.slice(s![..self.params.mu, ..]).to_owned();
         let weights_mu: Array2<f32> = self
@@ -117,8 +115,6 @@ impl Cmaes {
         let y_w: Array2<f32> = y_mu.t().dot(&weights_mu.t());
         let y_w: Array1<f32> = y_w.into_shape(y_mu.ncols()).unwrap();
         state.mean = y_w;
-        // Update mean of distribution: m =              y_w ?
-        // Update mean of distribution: m = m + cm * σ * y_w ?
 
         // Update evolution path sigma
         let new_y: Array1<f32> = &state.mean - &xold;
@@ -137,7 +133,7 @@ impl Cmaes {
 
         // Update evolution path covariance
         let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
-        let hsig = state.ps.mapv(|x| x.square()).sum()
+        let hsig = state.ps.mapv(|x| x * x).sum()
             / (state.ps.len() as f32)
             / (1. - (1. - self.params.cs).powi(2 * state.evals_count / self.params.popsize));
         state.pc = Zip::from(&state.pc)
@@ -146,7 +142,7 @@ impl Cmaes {
 
         // Adapt covariance matrix C
         let c1a =
-            self.params.c1 * (1. - (1. - hsig.square()) * self.params.cc * (2. - self.params.cc));
+            self.params.c1 * (1. - (1. - hsig * hsig) * self.params.cc * (2. - self.params.cc));
         state.cov = state.cov.mapv(|x| x * (1. - c1a - self.params.cmu)); // * self.params.weights.iter().sum::<f32>() == 1.0...
                                                                           // // Some helpers for easy broadcast
         let pc_outer: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
@@ -160,35 +156,22 @@ impl Cmaes {
         for (i, w) in self.params.weights.iter().enumerate() {
             let mut w = *w;
             if w < 0. {
-                // let mahalanobis_norm_sq = self.params.sigma
-                //     / self
-                //         .mahalanobis_norm(&mut state, &dx.slice(s![i, ..]).to_owned())
-                //         .square();
-                w = 0.001 // f32::EPSILON
+                w = 0.001
             }
             let dx: Array1<f32> = &pop.y.slice(s![i, ..]) - &xold;
             let dx: Array2<f32> = dx.insert_axis(Axis(1));
             let dx: Array2<f32> = dx.dot(&dx.t());
-            let dx: Array2<f32> = dx.mapv(|x| x * w * self.params.cmu / self.params.sigma.square());
+            let dx: Array2<f32> =
+                dx.mapv(|x| x * w * self.params.cmu / (self.params.sigma * self.params.sigma));
             state.cov = &state.cov + dx;
         }
 
         // Adapt step-size sigma
         let cn = self.params.cs / self.params.damps;
-        let sum_square_ps = state.ps.mapv(|x| x.square()).sum();
+        let sum_square_ps = state.ps.mapv(|x| x * x).sum();
         let other = cn * (sum_square_ps / self.params.n - 1.) / 2.;
         state.sigma = state.sigma * f32::min(1.0, other).exp();
 
         Ok(state)
     }
-
-    // fn mahalanobis_norm(&self, state: &mut CmaesState, dx: &Array1<f32>) -> f32 {
-    //     // (dx^T * C^-1 * dx)**0.5
-    //     dx.dot(&state.cov.mapv(|x| 1. / x).dot(dx)).sqrt()
-    // }
-
-    // TODO
-    // Reset required variables for next pop
-    // pub fn after_tell(...) {
-    // }
 }
