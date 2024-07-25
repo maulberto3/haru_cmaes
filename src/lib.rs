@@ -20,9 +20,9 @@ pub fn work() -> Result<()> {
 
     // Step 1: Choose initial parameters
     let params = CmaesParams {
-        popsize: 6,
-        xstart: vec![0.0, 1.0, -1.0],
-        // xstart: vec![0.0; 6],
+        popsize: 150,
+        // xstart: vec![0.0, 1.0, -1.0],
+        xstart: vec![0.0; 200],
         sigma: 1.0,
     };
     // dbg!(&params);
@@ -37,16 +37,16 @@ pub fn work() -> Result<()> {
     println!("{:+.4?}", &state);
 
     // Step 4: Loop
-    for i in 0..50 {
+    for i in 0..500 {
         let mut pop = cmaes.ask(&mut state)?;
-        println!("\n");
-        println!("{:+.4?}", &pop);
+        // println!("\n");
+        // println!("{:+.4?}", &pop);
         let mut fitness = square_and_sum(&pop)?;
         println!("\n");
         println!("{:+.4?}", &fitness);
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
-        println!("\n");
-        println!("{:+.4?}", &state);
+        // println!("\n");
+        // println!("{:+.4?}", &state);
     }
 
     // dbg!(&state);

@@ -114,7 +114,8 @@ impl Cmaes {
             .to_owned();
 
         // Compute new weighted mean value
-        let y_w: Array1<f32> = y_mu.dot(&weights_mu.t()).into_shape(y_mu.ncols()).unwrap();
+        let y_w: Array2<f32> = y_mu.t().dot(&weights_mu.t());
+        let y_w: Array1<f32> = y_w.into_shape(y_mu.ncols()).unwrap();
         state.mean = y_w;
         // Update mean of distribution: m =              y_w ?
         // Update mean of distribution: m = m + cm * σ * y_w ?
