@@ -1,11 +1,24 @@
 [package]
 name = "haru_cmaes"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
-description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma"
+description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/maulberto3/haru_cmaes"
+exclude = [
+    ".cargo/**",
+    ".devcontainer/**",
+    ".github/**",
+    "*.orig",
+    "Makefile",
+    "assets/**",
+    "dependencies_graph_of_current_cargo_toml.png",
+    "examples/**",
+    "tests/**",
+    "benches/**"
+]
+
 
 [dependencies]
 anyhow = { version = "1.0.86" }
