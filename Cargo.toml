@@ -11,7 +11,7 @@ exclude = [
     ".devcontainer/**",
     ".github/**",
     "assets/**",
-    "benches/**"
+    "benches/**",
     "*.orig",
     "Makefile",
     "dependencies_graph_of_current_cargo_toml.png",
