@@ -1,21 +1,13 @@
 // use anyhow::Result;
 
 #[allow(unused_imports)]
+#[allow(clippy::single_component_path_imports)]
 use blas_src;
 pub mod fitness;
-// use fitness::square_and_sum;
-
 pub mod params;
-// use fitness::square_and_sum;
-// use params::CmaesParams;
-
-pub mod state;
-// use state::CmaesState;
-
-pub mod strategy;
-// use strategy::Cmaes;
-
 pub mod simple_use;
+pub mod state;
+pub mod strategy;
 
 #[cfg(test)]
 mod tests {
@@ -23,6 +15,7 @@ mod tests {
 
     #[test]
     fn end_to_end_test() {
-        _ = simple_use::example();
+        // Assuming simple_use::example() returns a Result
+        assert!(simple_use::example().is_ok());
     }
 }

@@ -1,13 +1,21 @@
 use anyhow::Result;
 use ndarray::{Array2, Axis};
-
 use crate::strategy::PopulationY;
 
+/// Structure to hold fitness values of a population.
 #[derive(Debug, Clone)]
 pub struct Fitness {
+    /// Fitness values for each individual in the population.
     pub values: Array2<f32>,
 }
 
+/// Computes the square and sum of each row in the population matrix.
+///
+/// # Parameters
+/// - `pop`: The `PopulationY` containing the matrix of candidate solutions.
+///
+/// # Returns
+/// A `Result` containing a `Fitness` structure with the computed values, or an error if the computation fails.
 pub fn square_and_sum(pop: &PopulationY) -> Result<Fitness> {
     let values = pop
         .y
@@ -19,6 +27,13 @@ pub fn square_and_sum(pop: &PopulationY) -> Result<Fitness> {
     Ok(Fitness { values })
 }
 
+/// Computes the standard deviation of each row in the population matrix.
+///
+/// # Parameters
+/// - `pop`: The `PopulationY` containing the matrix of candidate solutions.
+///
+/// # Returns
+/// A `Result` containing a `Fitness` structure with the computed values, or an error if the computation fails.
 pub fn simple_std(pop: &PopulationY) -> Result<Fitness> {
     let values = pop
         .y
@@ -29,8 +44,6 @@ pub fn simple_std(pop: &PopulationY) -> Result<Fitness> {
         .to_owned();
     Ok(Fitness { values })
 }
+
 // TODO:
-// Implement other objective functions
-// simple std
-// DEA would be great
-// Rastrigin and others
+// Implement additional objective functions such as DEA, Rastrigin, etc.
