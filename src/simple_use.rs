@@ -1,7 +1,8 @@
 use crate::{fitness::square_and_sum, params::CmaesParams, state::CmaesState, strategy::Cmaes};
 use anyhow::Result;
 
-#[allow(dead_code)]
+#[allow(unused_imports)]
+use blas_src;
 pub fn example() -> Result<()> {
     // Simple Illustrative Algorithm Usage
     let params = CmaesParams {
