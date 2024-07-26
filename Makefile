@@ -34,3 +34,10 @@ run:
 	
 rel:
 	clear && cargo run --release
+
+doc:
+	clear && cargo doc
+
+pub:
+	# cargo login mytoken
+	clear && cargo publish
