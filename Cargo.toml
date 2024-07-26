@@ -18,8 +18,10 @@ ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
 ndarray-rand = { version = "0.14" }
 ndarray-stats = { version = "0.5.1" }
 nalgebra = "0.33.0"
+cmaes = {version = "0.2.1", features = ["openblas"] }
 
 [dev-dependencies]
+pprof = { version = "0.13", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]
@@ -28,6 +30,10 @@ harness = false
 
 [[bench]]
 name = "eig"
+harness = false
+
+[[bench]]
+name = "pengowen"
 harness = false
 
 [profile.release]

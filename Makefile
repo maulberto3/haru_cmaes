@@ -5,7 +5,7 @@ prod-size:
 	clear && du ./target/release/haru_cmaes -h
 
 ex:
-	clear && cargo run example --release --example ex2
+	clear && cargo run --release --example simple_use
 
 clean:
 	clear && cargo cache --autoclean && cargo clean
@@ -24,7 +24,10 @@ prep:
 	clear && cargo fmt && cargo clippy && cargo build
 
 bch:
-	clear && cargo bench --bench bch2
+	clear && cargo bench --bench cmaes
+
+prof:
+	clear && cargo run --release --example profile
 
 test:
 	clear && cargo test --lib
