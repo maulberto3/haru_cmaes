@@ -10,13 +10,11 @@ exclude = [
     ".cargo/**",
     ".devcontainer/**",
     ".github/**",
+    "assets/**",
+    "benches/**"
     "*.orig",
     "Makefile",
-    "assets/**",
     "dependencies_graph_of_current_cargo_toml.png",
-    "examples/**",
-    "tests/**",
-    "benches/**"
 ]
 
 
