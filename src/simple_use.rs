@@ -5,14 +5,14 @@ use anyhow::Result;
 pub fn example() -> Result<()> {
     // Simple Illustrative Algorithm Usage
     let params = CmaesParams {
-        popsize: 20,
-        xstart: vec![0.0; 20],
-        sigma: 1.0,
+        popsize: 50,
+        xstart: vec![0.0; 50],
+        sigma: 0.75,
     };
 
     let cmaes = Cmaes::new(&params)?;
     let mut state = CmaesState::init_state(&params)?;
-    for _i in 0..100 {
+    for _i in 0..150 {
         let mut pop = cmaes.ask(&mut state)?;
         let mut fitness = square_and_sum(&pop)?;
         // println!(

@@ -5,8 +5,7 @@ prod-size:
 	clear && du ./target/release/haru_cmaes -h
 
 ex:
-	#  --features=openblas
-	clear && cargo run --example ex1 
+	clear && cargo run example --release --example ex2
 
 clean:
 	clear && cargo cache --autoclean && cargo clean
@@ -25,7 +24,7 @@ prep:
 	clear && cargo fmt && cargo clippy && cargo build
 
 bch:
-	clear && cargo bench --bench bch1
+	clear && cargo bench --bench bch2
 
 test:
 	clear && cargo test --lib
