@@ -36,6 +36,10 @@ harness = false
 name = "pengowen"
 harness = false
 
+[[bench]]
+name = "hansen"
+harness = false
+
 [profile.release]
 lto = true
 codegen-units = 1
