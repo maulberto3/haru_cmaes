@@ -49,7 +49,34 @@
 
 
 ### Also from official Rust
+# Use the official Rust image as a base
 FROM rust:latest
 
-RUN rustup component add rustfmt
-RUN rustup component add clippy
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    libopenblas-dev \
+    graphviz \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install cargo-depgraph
+RUN cargo install cargo-depgraph
+
+# Set TERM environment variable
+ENV TERM xterm
+
+# Create a new user to avoid running as root
+RUN useradd -m rustuser
+USER rustuser
+
+# Set the working directory
+WORKDIR /home/rustuser/app
+
+# Copy the current directory contents into the container at /home/rustuser/app
+COPY . .
+
+# Run the formatting and testing commands
+CMD ["make", "prep"] && ["make", "test"]
+

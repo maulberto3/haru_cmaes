@@ -3,7 +3,7 @@
 {
 	"name": "Rust",
 	"build": {
-		"dockerfile": "Dockerfile",
+		"dockerfile": "Dockerfile"
 		// "args": {
 		// 	// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
 		// 	// Use bullseye when on local on arm64/Apple Silicon.
@@ -43,9 +43,8 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// This for cargo-olambda
-	//  "postCreateCommand": "NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\" && (echo; echo 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"') >> /root/.bashrc && eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && echo \"eval \"$($(brew --prefix)/bin/brew shellenv)\"\" >> ~/.bashrc && brew tap cargo-lambda/cargo-lambda && brew install cargo-lambda ",
+	"postCreateCommand": "cargo build",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+	"remoteUser": "vscode"
 }
