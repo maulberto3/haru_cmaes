@@ -5,5 +5,7 @@
 /// algorithm implementation.
 fn main() {
     println!("CMA-ES Algorithm Implementation");
-    println!("For detailed usage and examples, please refer to `lib.rs` and the examples directory.");
+    println!(
+        "For detailed usage and examples, please refer to `lib.rs` and the examples directory."
+    );
 }

@@ -31,12 +31,32 @@ pub struct CmaesParamsValid {
     // pub lazy_gap_evals: f32,
 }
 
-impl CmaesParamsValid {
+/// Trait defining validation methods for CMA-ES parameters.
+pub trait CmaesParamsValidator {
+    /// Validates the provided parameters and returns a validated parameter set.
+    ///
+    /// # Arguments
+    ///
+    /// * `params` - A reference to the initial CMA-ES parameters.
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(CmaesParamsValid)` if all parameters are valid.
+    /// * `Err` if any parameter does not meet its constraints.
+    fn validate(params: &CmaesParams) -> Result<CmaesParamsValid>;
+    fn validate_params(params: &CmaesParams) -> Result<CmaesParams>;
+    fn check_xstart(params: &CmaesParams) -> Result<()>;
+    fn check_popsize(params: &CmaesParams) -> Result<()>;
+    fn check_sigma(params: &CmaesParams) -> Result<()>;
+    fn create_default_params(params: CmaesParams) -> Result<CmaesParamsValid>;
+}
+
+impl CmaesParamsValidator for CmaesParamsValid {
     /// Validates the provided parameters and returns a validated parameter set.
     ///
     /// # Errors
     /// Returns an error if any of the initial parameters do not meet their constraints.
-    pub fn validate(params: &CmaesParams) -> Result<CmaesParamsValid> {
+    fn validate(params: &CmaesParams) -> Result<CmaesParamsValid> {
         // print!("Validating initial parameters... ");
         let params = match CmaesParamsValid::validate_params(params) {
             Ok(params) => params,
@@ -111,10 +131,10 @@ impl CmaesParamsValid {
         Ok(valid_params)
     }
 
-    /// Validates the provided parameters to ensure they meet the constraints.
-    ///
-    /// # Errors
-    /// Returns an error if any parameter does not meet its constraint.
+    // /// Validates the provided parameters to ensure they meet the constraints.
+    // ///
+    // /// # Errors
+    // /// Returns an error if any parameter does not meet its constraint.
     fn validate_params(params: &CmaesParams) -> Result<CmaesParams> {
         CmaesParamsValid::check_popsize(params)?;
         CmaesParamsValid::check_xstart(params)?;

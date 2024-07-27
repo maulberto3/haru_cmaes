@@ -1,4 +1,9 @@
-use crate::{fitness::square_and_sum, params::CmaesParams, state::CmaesState, strategy::Cmaes};
+use crate::{
+    fitness::{FitnessFunction, SquareAndSum},
+    params::CmaesParams,
+    state::CmaesState,
+    strategy::Cmaes,
+};
 use anyhow::Result;
 
 #[allow(unused_imports)]
@@ -23,18 +28,18 @@ pub fn example() -> Result<()> {
 
     // Create a new CMA-ES instance
     let cmaes = Cmaes::new(&params)?;
-    
+
     // Initialize the CMA-ES state
     let mut state = CmaesState::init_state(&params)?;
-    
+
     // Run the CMA-ES algorithm for 150 iterations
     for _i in 0..150 {
         // Generate a new population
         let mut pop = cmaes.ask(&mut state)?;
-        
+
         // Evaluate the fitness of the population
-        let mut fitness = square_and_sum(&pop)?;
-        
+        let mut fitness = SquareAndSum.evaluate(&pop)?;
+
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
     }

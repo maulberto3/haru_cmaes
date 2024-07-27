@@ -23,7 +23,10 @@ fn run_python_script(script_path: &str, env: &str) -> std::io::Result<String> {
     if output.status.success() {
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
     } else {
-        Err(std::io::Error::new(std::io::ErrorKind::Other, "Python script failed"))
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Python script failed",
+        ))
     }
 }
 
@@ -38,7 +41,8 @@ fn python_script_benchmark(c: &mut Criterion) {
 
     c.bench_function("CMA-ES Hansen", |b| {
         b.iter(|| {
-            let _ = run_python_script(python_script, python_env).expect("Failed to run Python script");
+            let _ =
+                run_python_script(python_script, python_env).expect("Failed to run Python script");
         })
     });
 }

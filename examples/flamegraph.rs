@@ -1,7 +1,7 @@
+use anyhow::Result;
 use haru_cmaes::simple_use;
 use pprof::ProfilerGuard;
 use std::fs::File;
-use anyhow::Result;
 
 fn main() -> Result<()> {
     // Start the profiler

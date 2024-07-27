@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use haru_cmaes::simple_use;

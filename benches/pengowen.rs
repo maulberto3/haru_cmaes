@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use haru_cmaes::simple_pengowen;
+include!("../assets/simple_pengowen.rs");
 
 /// Benchmark function for the `cmaes` example.
 ///
@@ -9,14 +9,11 @@ use haru_cmaes::simple_pengowen;
 ///
 /// * `c` - A mutable reference to a `Criterion` object for benchmarking.
 fn cmaes_benchmark(c: &mut Criterion) {
-    c.bench_function("CMA-ES Pengowen", |b| {
-        b.iter(|| simple_pengowen::example())
-    });
+    c.bench_function("CMA-ES Pengowen", |b| b.iter(|| example()));
 }
 
 criterion_group!(benches, cmaes_benchmark);
 criterion_main!(benches);
-
 
 // fn benchmarks(c: &mut Criterion) {
 //     let mut group = c.benchmark_group("My Group");
