@@ -21,7 +21,7 @@ deps:
 	clear && make tree && make graph-dep
 
 prep:
-	clear && cargo fmt && cargo clippy && cargo build
+	clear && cargo clippy && cargo build && cargo fmt
 
 bch:
 	clear && cargo bench --bench cmaes

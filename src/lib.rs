@@ -7,3 +7,8 @@ pub mod strategy;
 // Optional
 pub mod fitness;
 pub mod simple_use;
+
+// TODO:
+// initialize vectors with capacity
+// use arrays where possible
+// ise nalgebra for better eig

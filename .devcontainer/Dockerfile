@@ -58,6 +58,8 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     libopenblas-dev \
+    # liblapack-dev \
+    # libblas-dev \
     graphviz \
     && rm -rf /var/lib/apt/lists/*
 
