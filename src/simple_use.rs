@@ -1,7 +1,7 @@
 use crate::{
     fitness::{FitnessFunction, SquareAndSum},
     params::CmaesParams,
-    state::CmaesState,
+    state::{CmaesState, CmaesStateLogic},
     strategy::Cmaes,
 };
 use anyhow::Result;
@@ -33,7 +33,7 @@ pub fn example() -> Result<()> {
     let mut state = CmaesState::init_state(&params)?;
 
     // Run the CMA-ES algorithm for 150 iterations
-    for _i in 0..3 {
+    for _i in 0..150 {
         // Generate a new population
         let mut pop = cmaes.ask(&mut state)?;
 

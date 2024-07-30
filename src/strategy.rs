@@ -1,7 +1,7 @@
 use crate::{
     fitness::Fitness,
     params::{CmaesParams, CmaesParamsValid, CmaesParamsValidator},
-    state::CmaesState,
+    state::{CmaesState, CmaesStateLogic},
 };
 use anyhow::Result;
 use ndarray::{s, Array1, Array2, Axis, Zip};

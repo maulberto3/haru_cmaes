@@ -4,12 +4,9 @@ use ndarray::{s, Array1};
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
-    /// Population size.
-    pub popsize: i32,
-    /// Initial solution vector.
-    pub xstart: Vec<f32>,
-    /// Step-size (standard deviation).
-    pub sigma: f32,
+    pub popsize: i32,       // Population size.
+    pub xstart: Vec<f32>,   // Initial solution vector.
+    pub sigma: f32,         // Step-size (standard deviation).
 }
 
 /// Validated parameters for CMA-ES.
@@ -33,30 +30,26 @@ pub struct CmaesParamsValid {
 
 /// Trait defining validation methods for CMA-ES parameters.
 pub trait CmaesParamsValidator {
-    /// Validates the provided parameters and returns a validated parameter set.
-    ///
-    /// # Arguments
-    ///
-    /// * `params` - A reference to the initial CMA-ES parameters.
-    ///
-    /// # Returns
-    ///
-    /// * `Ok(CmaesParamsValid)` if all parameters are valid.
-    /// * `Err` if any parameter does not meet its constraints.
-    fn validate(params: &CmaesParams) -> Result<CmaesParamsValid>;
+    /// Type for the validated parameters.
+    type ValidatedParams;
+
+    fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams>;
     fn validate_params(params: &CmaesParams) -> Result<CmaesParams>;
     fn check_xstart(params: &CmaesParams) -> Result<()>;
     fn check_popsize(params: &CmaesParams) -> Result<()>;
     fn check_sigma(params: &CmaesParams) -> Result<()>;
-    fn create_default_params(params: CmaesParams) -> Result<CmaesParamsValid>;
+    fn create_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
 }
 
 impl CmaesParamsValidator for CmaesParamsValid {
+    /// Type for the validated parameters.
+    type ValidatedParams = CmaesParamsValid;
+
     /// Validates the provided parameters and returns a validated parameter set.
     ///
     /// # Errors
     /// Returns an error if any of the initial parameters do not meet their constraints.
-    fn validate(params: &CmaesParams) -> Result<CmaesParamsValid> {
+    fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams> {
         // print!("Validating initial parameters... ");
         let params = match CmaesParamsValid::validate_params(params) {
             Ok(params) => params,
@@ -75,7 +68,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
-    fn create_default_params(params: CmaesParams) -> Result<CmaesParamsValid> {
+    fn create_default_params(params: CmaesParams) -> Result<Self::ValidatedParams> {
         let popsize = params.popsize;
         let xstart = params.xstart;
         let sigma = params.sigma;
