@@ -4,6 +4,7 @@ use blas_src;
 pub mod params;
 pub mod state;
 pub mod strategy;
+pub mod utils;
 // Optional
 pub mod fitness;
 pub mod simple_use;

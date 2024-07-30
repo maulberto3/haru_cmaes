@@ -9,7 +9,8 @@ use haru_cmaes::simple_use;
 ///
 /// * `c` - A mutable reference to a `Criterion` object for benchmarking.
 fn cmaes_benchmark(c: &mut Criterion) {
-    c.bench_function("CMA-ES Mine", |b| b.iter(|| simple_use::example().unwrap()));
+    c.bench_function("CMA-ES Mine", |b| 
+        b.iter(|| simple_use::example().unwrap()));
 }
 
 criterion_group!(benches, cmaes_benchmark);

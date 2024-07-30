@@ -1,13 +1,10 @@
-use core::f32;
-
 use anyhow::Result;
-
 use ndarray::{Array, Array1, Array2};
 use ndarray_linalg::Eig;
 // use ndarray_rand::RandomExt;
 // use rand::distributions::Uniform;
-
 use crate::params::CmaesParams;
+use crate::utils::into_f_major;
 
 /// State for the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.
 #[derive(Debug, Clone)]
@@ -107,6 +104,10 @@ impl CmaesState {
     fn eigen_decomposition(&mut self) {
         // Ensure symmetric covariance
         self.cov = (&self.cov + &self.cov.t()) / 2.0;
+        
+        // Leverage column major strides right before eig
+        self.cov = into_f_major(&self.cov).unwrap();
+        // println!("{:?}", &self.cov);
 
         // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
         let (eig_vals, eig_vecs) = self.cov.eig().unwrap();

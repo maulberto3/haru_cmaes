@@ -14,6 +14,7 @@ use ndarray_linalg::Eig;
 /// A `Result` indicating success or failure.
 fn eigen_ndarray(matrix: &Array2<f32>) -> Result<()> {
     let _ = matrix.clone().eig().unwrap();
+    // let _ = matrix.clone().dot(matrix);
     Ok(())
 }
 
@@ -28,7 +29,7 @@ fn eigen_ndarray(matrix: &Array2<f32>) -> Result<()> {
 /// A tuple containing the row-major and column-major matrices.
 fn create_matrices(size: usize) -> (Array2<f32>, Array2<f32>) {
     let row_major = Array2::<f32>::zeros((size, size));
-    
+
     // Convert row-major to column-major
     let column_major = row_major.t().to_owned();
 
@@ -51,16 +52,16 @@ fn benchmarks(c: &mut Criterion) {
         b.iter(|| eigen_ndarray(&matrix_row_major))
     });
 
-    group.bench_function("Eigen Decomposition with column-major ndarray-linalg", |b| {
-        b.iter(|| eigen_ndarray(&matrix_column_major))
-    });
+    group.bench_function(
+        "Eigen Decomposition with column-major ndarray-linalg",
+        |b| b.iter(|| eigen_ndarray(&matrix_column_major)),
+    );
 
     group.finish();
 }
 
 criterion_group!(benches, benchmarks);
 criterion_main!(benches);
-
 
 // use criterion::{criterion_group, criterion_main, Criterion};
 // use ndarray::{Array2, ArrayView2};
