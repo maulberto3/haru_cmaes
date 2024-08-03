@@ -4,24 +4,31 @@
 
 This is my own implementation of the CMA-ES optimization algorithm based in Hansen's purecma python implementation.
 
-This is version 0.1.0 so expect more enhancements and changes along the way.
+This is version 0.3.0 so expect more enhancements and changes along the way.
 
 ## Roadmap
 
-Although functional at this point, the roadmap is to convert this crate to use ngalgebra as evidenced in the benchmark: eigen decomposition is faster, nice!. So,expect changes in the short term.
+Although functional at this point, the roadmap is to convert this crate to use `ngalgebra` as evidenced in the benchmark: eigen decomposition is faster, nice!. So, expect changes in the short term.
 
-Other improvements will follow as well. Stay tuned.
+Other improvements will follow as well.
+
+Stay tuned.
 
 ## Simple usage example
 
 ```
-use crate::{fitness::square_and_sum, params::CmaesParams, state::CmaesState, strategy::Cmaes};
+use crate::{
+    params::CmaesParams, 
+    state::CmaesState, 
+    strategy::Cmaes
+    fitness::square_and_sum, 
+    };
 use anyhow::Result;
 
 fn example() -> Result<()> {
     let params = CmaesParams {
-        popsize: 50,
-        xstart: vec![0.0; 50],
+        popsize: 10,
+        xstart: vec![0.0; 10],
         sigma: 0.75,
     };
 
@@ -44,17 +51,13 @@ fn main() {
 }
 ```
 
-## Requirements for (ndarray and friends) BLAS algebra
+## Requirements for (ndarray and friends): BLAS algebra
 
-I assume you have a clean brand new linux environment.
-
-You can also refer to the working Github actions.
+I assume you have a clean brand new linux environment, so follow the following instructions. You can also refer to the working Github actions, if that helps you better.
 
 ### 1) Install Build Tools (GCC)
 
-The `build-essential` package includes the GCC compiler and other necessary tools for building C programs. 
-
-This is most likely a requirement for BLAS C bindings used by ndarray and friends.
+The `build-essential` package includes the GCC compiler and other necessary tools for building C programs whic are needed for low-level C algebra utilities wrapped by rust crates. This is most likely a requirement for BLAS C bindings used by ndarray and friends.
 
 `sudo apt install build-essential`
 
@@ -77,7 +80,6 @@ blas-src = { version = "0.10", features = ["openblas"] }
 openblas-src = { version = "0.10", features = ["cblas", "system"] }
 ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
 ndarray-rand = { version = "0.14" }
-ndarray-stats = { version = "0.5.1" }
 ```
 
 ### 4) Installing OpenBLAS

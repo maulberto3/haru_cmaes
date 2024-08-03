@@ -16,23 +16,15 @@ exclude = [
     "dependencies_graph_of_current_cargo_toml.png",
 ]
 
-
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }
 rayon = { version = "1.10.0" }
-
 ndarray = { version = "0.15", features = ["blas", "rayon"] }
 blas-src = { version = "0.10", features = ["openblas"] }
 openblas-src = { version = "0.10", features = ["cblas", "system"] }
 ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
-cmaes = {version = "0.2.1", features = ["openblas"] }
-
 ndarray-rand = { version = "0.14" }
-ndarray-stats = { version = "0.5.1" }
-
-nalgebra = "0.33.0"
-criterion = "0.5.1"
 
 [dev-dependencies]
 pprof = { version = "0.13", features = ["flamegraph"] }

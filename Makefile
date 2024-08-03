@@ -12,7 +12,6 @@ clean:
 	clear && cargo cache --autoclean && cargo clean
 doct:
 	clear && cargo doc
-
 prep:
 	clear && cargo clippy && cargo fmt && cargo build --jobs 2
 benc:
