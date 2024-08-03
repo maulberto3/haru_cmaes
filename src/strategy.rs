@@ -7,42 +7,42 @@ use anyhow::Result;
 use ndarray::{s, Array1, Array2, Axis, Zip};
 use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
+/// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
 pub struct Cmaes {
     pub params: CmaesParamsValid,
 }
 
+/// Struct to hold the population as normal data points
 #[derive(Debug, Clone)]
 pub struct PopulationZ {
     pub z: Array2<f32>,
 }
 
+/// Struct to hold the population as (eigen-)rotated data points
 #[derive(Debug, Clone)]
 pub struct PopulationY {
     pub y: Array2<f32>,
 }
 
+pub trait CmaesOptimizer {
+    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY>;
+    fn tell(
+        &self,
+        state: CmaesState,
+        pop: &mut PopulationY,
+        fitness: &mut Fitness,
+    ) -> Result<CmaesState>;
+}
+
 impl Cmaes {
     /// Creates a new CMA-ES instance with validated parameters.
-    ///
-    /// # Parameters
-    /// - `params`: CMA-ES parameters.
-    ///
-    /// # Returns
-    /// - `Result<Cmaes>`: Returns a new `Cmaes` instance if successful, or an error if validation fails.
     pub fn new(params: &CmaesParams) -> Result<Cmaes> {
         let params = CmaesParamsValid::validate(params)?;
         Ok(Cmaes { params })
     }
 
     /// Generates a matrix of standard normal random variables.
-    ///
-    /// # Parameters
-    /// - `params`: Validated CMA-ES parameters.
-    /// - `state`: CMA-ES state, which will be updated with the generated matrix.
-    ///
-    /// # Returns
-    /// - `Result<PopulationZ>`: Returns a `PopulationZ` with the generated matrix.
     fn ask_z(&self, params: &CmaesParamsValid, state: &mut CmaesState) -> Result<PopulationZ> {
         let z: Array2<f32> = Array2::random(
             (params.popsize as usize, params.xstart.len()),
@@ -51,15 +51,11 @@ impl Cmaes {
         state.z = z.to_owned();
         Ok(PopulationZ { z })
     }
+}
 
+impl CmaesOptimizer for Cmaes {
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
-    ///
-    /// # Parameters
-    /// - `state`: CMA-ES state, which will be updated with the new population.
-    ///
-    /// # Returns
-    /// - `Result<PopulationY>`: Returns a `PopulationY` with the transformed population.
-    pub fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
+    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
         state.prepare_ask()?;
 
         let z: Array2<f32> = self.ask_z(&self.params, state)?.z;
@@ -77,15 +73,7 @@ impl Cmaes {
     }
 
     /// Updates the CMA-ES state based on the new population and fitness values.
-    ///
-    /// # Parameters
-    /// - `state`: CMA-ES state to be updated.
-    /// - `pop`: New population.
-    /// - `fitness`: Fitness values of the new population.
-    ///
-    /// # Returns
-    /// - `Result<CmaesState>`: Returns the updated `CmaesState`.
-    pub fn tell(
+    fn tell(
         &self,
         mut state: CmaesState,
         pop: &mut PopulationY,

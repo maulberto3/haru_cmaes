@@ -4,33 +4,32 @@ use ndarray::{s, Array1};
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
-    pub popsize: i32,       // Population size.
-    pub xstart: Vec<f32>,   // Initial solution vector.
-    pub sigma: f32,         // Step-size (standard deviation).
+    pub popsize: i32,     // Population size.
+    pub xstart: Vec<f32>, // Initial solution vector.
+    pub sigma: f32,       // Step-size (standard deviation).
 }
 
 /// Validated parameters for CMA-ES.
 #[derive(Debug, Clone)]
 pub struct CmaesParamsValid {
-    pub popsize: i32,
-    pub xstart: Vec<f32>,
-    pub sigma: f32,
-    pub n: f32,
-    // pub chin: f32,
-    pub mu: i32,
-    pub weights: Array1<f32>,
-    pub mueff: f32,
-    pub cc: f32,
-    pub cs: f32,
-    pub c1: f32,
-    pub cmu: f32,
-    pub damps: f32,
-    // pub lazy_gap_evals: f32,
+    pub popsize: i32,         // Population size
+    pub xstart: Vec<f32>,     // Initial guess (mean vector)
+    pub sigma: f32,           // Step-size (standard deviation)
+    pub n: f32,               // Dimension of the problem space (xstart size)
+    pub mu: i32,              // Number of parents (best individuals)
+    pub weights: Array1<f32>, // Weights for recombination
+    pub mueff: f32,           // Effective number of parents
+    pub cc: f32,              // Cumulation constant for the rank-one update
+    pub cs: f32,              // Cumulation constant for the rank-mu update
+    pub c1: f32,              // Learning rate for the rank-one update
+    pub cmu: f32,             // Learning rate for the rank-mu update
+    pub damps: f32,           // Damping for step-size adaptation
+                              // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
 }
 
 /// Trait defining validation methods for CMA-ES parameters.
 pub trait CmaesParamsValidator {
-    /// Type for the validated parameters.
+    // Type for the validated parameters.
     type ValidatedParams;
 
     fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams>;
@@ -41,14 +40,12 @@ pub trait CmaesParamsValidator {
     fn create_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
 }
 
+/// Trait for Validated Cmaes Params
 impl CmaesParamsValidator for CmaesParamsValid {
     /// Type for the validated parameters.
     type ValidatedParams = CmaesParamsValid;
 
     /// Validates the provided parameters and returns a validated parameter set.
-    ///
-    /// # Errors
-    /// Returns an error if any of the initial parameters do not meet their constraints.
     fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams> {
         // print!("Validating initial parameters... ");
         let params = match CmaesParamsValid::validate_params(params) {
@@ -124,10 +121,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
         Ok(valid_params)
     }
 
-    // /// Validates the provided parameters to ensure they meet the constraints.
-    // ///
-    // /// # Errors
-    // /// Returns an error if any parameter does not meet its constraint.
+    /// Validates the provided parameters to ensure they meet the constraints.
     fn validate_params(params: &CmaesParams) -> Result<CmaesParams> {
         CmaesParamsValid::check_popsize(params)?;
         CmaesParamsValid::check_xstart(params)?;
@@ -136,9 +130,6 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Checks if the `xstart` parameter meets its constraints.
-    ///
-    /// # Errors
-    /// Returns an error if the number of dimensions is not greater than 1.
     fn check_xstart(params: &CmaesParams) -> Result<()> {
         if params.xstart.len() <= 1 {
             return Err(anyhow!("==> number of dimensions must be > 1."));
@@ -147,9 +138,6 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Checks if the `popsize` parameter meets its constraints.
-    ///
-    /// # Errors
-    /// Returns an error if the population size is not greater than 5.
     fn check_popsize(params: &CmaesParams) -> Result<()> {
         if params.popsize <= 5 {
             return Err(anyhow!("==> popsize must be > 5."));
@@ -158,9 +146,6 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Checks if the `sigma` parameter meets its constraints.
-    ///
-    /// # Errors
-    /// Returns an error if the step-size is not greater than 0.
     fn check_sigma(params: &CmaesParams) -> Result<()> {
         if params.sigma <= 0.0 {
             return Err(anyhow!("==> sigma must be greater than 0.0."));

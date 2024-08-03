@@ -5,28 +5,18 @@ use ndarray::{Array2, Axis};
 /// Structure to hold fitness values of a population.
 #[derive(Debug, Clone)]
 pub struct Fitness {
-    /// Fitness values for each individual in the population.
-    pub values: Array2<f32>,
+    pub values: Array2<f32>, // Fitness values for each individual in the population.
 }
 
 /// Trait defining the evaluation method for fitness functions.
-pub trait FitnessFunction {
-    /// Evaluates the fitness of the given population.
-    ///
-    /// # Arguments
-    ///
-    /// * `pop` - A reference to the population for which the fitness is evaluated.
-    ///
-    /// # Returns
-    ///
-    /// * `Result<Fitness>` containing the evaluated fitness values.
+pub trait FitnessEvaluator {
     fn evaluate(&self, pop: &PopulationY) -> Result<Fitness>;
 }
 
-/// Implementation of the square and sum fitness function.
+/// Implementation of the square and sum as simple fitness function.
 pub struct SquareAndSum;
 
-impl FitnessFunction for SquareAndSum {
+impl FitnessEvaluator for SquareAndSum {
     fn evaluate(&self, pop: &PopulationY) -> Result<Fitness> {
         let values = pop
             .y
@@ -42,7 +32,7 @@ impl FitnessFunction for SquareAndSum {
 /// Implementation of the square and sum fitness function.
 pub struct SimpleStd;
 
-impl FitnessFunction for SimpleStd {
+impl FitnessEvaluator for SimpleStd {
     fn evaluate(&self, pop: &PopulationY) -> Result<Fitness> {
         let values = pop
             .y

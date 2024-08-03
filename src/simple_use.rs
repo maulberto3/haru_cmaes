@@ -1,8 +1,8 @@
 use crate::{
-    fitness::{FitnessFunction, SquareAndSum},
+    fitness::{FitnessEvaluator, SquareAndSum},
     params::CmaesParams,
     state::{CmaesState, CmaesStateLogic},
-    strategy::Cmaes,
+    strategy::{Cmaes, CmaesOptimizer},
 };
 use anyhow::Result;
 
@@ -11,13 +11,15 @@ use blas_src;
 
 /// Example usage of the CMA-ES algorithm.
 ///
-/// This function demonstrates a basic workflow of the CMA-ES optimization algorithm using
-/// predefined parameters and fitness function. It initializes the CMA-ES algorithm, iterates
-/// through a fixed number of generations, and prints the average fitness of the best solutions.
+/// This function demonstrates a basic workflow of the CMA-ES
+/// optimization algorithm using predefined parameters and fitness
+/// function.
 ///
-/// # Returns
-/// - `Result<()>`: Returns `Ok(())` if the function completes successfully, or an error if any
-///   operation fails.
+/// It initializes the CMA-ES algorithm, iterates
+/// through a fixed number of generations, and prints the
+/// average fitness of the best solutions.
+///
+/// Final solution is under state.best_y and state.best_y_fit
 pub fn example() -> Result<()> {
     // Initialize CMA-ES parameters
     let params = CmaesParams {

@@ -32,6 +32,7 @@ ndarray-rand = { version = "0.14" }
 ndarray-stats = { version = "0.5.1" }
 
 nalgebra = "0.33.0"
+criterion = "0.5.1"
 
 [dev-dependencies]
 pprof = { version = "0.13", features = ["flamegraph"] }
@@ -56,10 +57,3 @@ harness = false
 [[bench]]
 name = "f_major"
 harness = false
-
-[profile.release]
-lto = true
-codegen-units = 1
-panic = "abort"
-
-

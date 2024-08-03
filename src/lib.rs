@@ -1,11 +1,10 @@
 #[allow(unused_imports)]
 #[allow(clippy::single_component_path_imports)]
-use blas_src;
+use blas_src;  // necessary for eig
 pub mod params;
 pub mod state;
 pub mod strategy;
 pub mod utils;
-// Optional
 pub mod fitness;
 pub mod simple_use;
 

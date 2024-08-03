@@ -10,11 +10,7 @@ fn main() {
     println!("");
     println!("Original data (row-major)\n{:+.4?}", mat);
 
-    let vt: Vec<f32> = Vec::from_iter(mat
-        .t()
-        .iter()
-        .copied()
-    );
+    let vt: Vec<f32> = Vec::from_iter(mat.t().iter().copied());
     println!("");
     println!("Raw tansposed vec...\n{:+.4?}", &vt);
 
