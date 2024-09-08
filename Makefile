@@ -29,5 +29,4 @@ rele:
 # cargo login mytoken
 publ:
 	clear && cargo publish
-
 	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
