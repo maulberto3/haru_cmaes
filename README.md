@@ -17,7 +17,7 @@ Stay tuned.
 ## Simple usage example
 
 ```
-use crate::{
+use haru_cmaes::{
     params::CmaesParams, 
     state::CmaesState, 
     strategy::Cmaes
@@ -115,3 +115,10 @@ Then, check github key, if `ssh -T git@github.com` says `git@github.com: Permiss
 ### 7) Run simple example
 
 cargo test --lib
+
+## Requirements for Benchmarks 
+
+### 1) Cmake
+
+Install cmake by downloading the tar file `https://cmake.org/download/`, extracting it, cd into it, do ./bootstrap, then do `gmake`, then `sudo gmake install`, lastly verify with `cmake --version`
+

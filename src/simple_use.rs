@@ -6,8 +6,8 @@ use crate::{
 };
 use anyhow::Result;
 
-#[allow(unused_imports)]
-use blas_src;
+// #[allow(unused_imports)]
+// use blas_src;
 
 /// Example usage of the CMA-ES algorithm.
 ///

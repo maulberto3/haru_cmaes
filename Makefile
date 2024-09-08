@@ -15,7 +15,7 @@ doct:
 prep:
 	clear && cargo clippy && cargo fmt && cargo build --jobs 2
 benc:
-	clear && cargo bench --bench cmaes --jobs 2
+	clear && cargo bench --bench mine --jobs 2
 prof:
 	clear && cargo run --release --example flamegraph --jobs 2
 exam:
@@ -29,3 +29,5 @@ rele:
 # cargo login mytoken
 publ:
 	clear && cargo publish
+
+	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
