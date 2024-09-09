@@ -11,4 +11,4 @@ pub mod utils;
 // TODO:
 // initialize vectors with capacity
 // use arrays where possible
-// ise nalgebra for better eig
+// use nalgebra for better eig
