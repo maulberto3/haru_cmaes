@@ -5,7 +5,8 @@ use crate::{
 };
 use anyhow::Result;
 use ndarray::{s, Array1, Array2, Axis, Zip};
-use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
+use ndarray_rand::rand_distr::StandardNormal;
+use ndarray_rand::RandomExt;
 
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
@@ -115,13 +116,17 @@ impl CmaesOptimizer for Cmaes {
             .params
             .weights
             .slice(s![..self.params.mu])
-            .view()
+            // .view()
             .into_shape((1, self.params.mu as usize))
             .unwrap()
             .to_owned();
 
         let y_w: Array2<f32> = y_mu.t().dot(&weights_mu.t());
-        let y_w: Array1<f32> = y_w.into_shape(y_mu.ncols()).unwrap();
+        let y_w: Array1<f32> = y_w
+            .into_shape(y_mu.ncols())
+            .unwrap()
+            // .to_owned()
+            ;
         state.mean = y_w;
 
         // Update evolution path ps

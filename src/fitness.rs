@@ -21,10 +21,11 @@ impl FitnessEvaluator for SquareAndSum {
         let values = pop
             .y
             .map_axis(Axis(1), |row| row.mapv(|elem| elem.powi(2)).sum())
-            .view()
+            // .view()
             .into_shape((pop.y.nrows(), 1))
             .unwrap()
-            .to_owned();
+            // .to_owned()
+            ;
         Ok(Fitness { values })
     }
 }
@@ -37,10 +38,11 @@ impl FitnessEvaluator for SimpleStd {
         let values = pop
             .y
             .map_axis(Axis(1), |row| row.std(1.0))
-            .view()
+            // .view()
             .into_shape((pop.y.nrows(), 1))
             .unwrap()
-            .to_owned();
+            // .to_owned()
+            ;
         Ok(Fitness { values })
     }
 }
