@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-include!("../assets/simple_pengowen.rs");
+include!("../assets/pengowen.rs");
 
 /// Benchmark function for the `cmaes` example.
 ///

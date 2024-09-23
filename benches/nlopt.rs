@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-include!("../assets/simple_nlopt.rs"); // Include the `simple_nlopt.rs` file
+include!("../assets/nlopt.rs"); // Include the `simple_nlopt.rs` file
 
 /// Benchmark function for the `nlopt` example.
 ///

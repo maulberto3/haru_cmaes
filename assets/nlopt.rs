@@ -16,7 +16,6 @@ pub fn example() -> Result<()> {
         x.iter().map(|xi| xi.powi(2)).sum()
     }
     
-
     // Set dimension and parameters
     let dim = 50;
     let max_iterations = 150; // Maximum number of iterations
