@@ -31,9 +31,11 @@ pprof = { version = "0.13", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 cmaes = "0.2.1"
 nlopt = "0.7.0"
+argmin = { version = "0.10" }
+argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }
 
 [[bench]]
-name = "mine"
+name = "argmin"
 harness = false
 
 [[bench]]
@@ -41,7 +43,15 @@ name = "eig_vs"
 harness = false
 
 [[bench]]
-name = "pengowen"
+name = "f_major"
+harness = false
+
+[[bench]]
+name = "hansen"
+harness = false
+
+[[bench]]
+name = "mine"
 harness = false
 
 [[bench]]
@@ -49,9 +59,5 @@ name = "nlopt"
 harness = false
 
 [[bench]]
-name = "hansen_py"
-harness = false
-
-[[bench]]
-name = "f_major"
+name = "pengowen"
 harness = false
