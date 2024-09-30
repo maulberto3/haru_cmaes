@@ -41,7 +41,7 @@ pub trait CmaesParamsValidator {
     fn check_xstart(params: &CmaesParams) -> Result<()>;
     fn check_popsize(params: &CmaesParams) -> Result<()>;
     fn check_sigma(params: &CmaesParams) -> Result<()>;
-    fn create_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
+    fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
 }
 
 /// Trait for Validated Cmaes Params
@@ -64,12 +64,12 @@ impl CmaesParamsValidator for CmaesParamsValid {
         };
 
         // print!("Computing default parameters... ");
-        let params = CmaesParamsValid::create_default_params(params)?;
+        let params = CmaesParamsValid::add_default_params(params)?;
         Ok(params)
     }
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
-    fn create_default_params(params: CmaesParams) -> Result<Self::ValidatedParams> {
+    fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams> {
         let popsize = params.popsize;
         let xstart = params.xstart;
         let sigma = params.sigma;
