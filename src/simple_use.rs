@@ -26,6 +26,8 @@ pub fn example() -> Result<()> {
         popsize: 50,
         xstart: vec![0.0; 50],
         sigma: 0.75,
+        tol: Some(0.0001),
+        obj_value: Some(0.0),
     };
 
     // Create a new CMA-ES instance
@@ -34,8 +36,9 @@ pub fn example() -> Result<()> {
     // Initialize the CMA-ES state
     let mut state = CmaesState::init_state(&params)?;
 
-    // Run the CMA-ES algorithm for 150 iterations
-    for _i in 0..150 {
+    // Run the CMA-ES algorithm until close to objective value
+    let mut step = 0;
+    loop {
         // Generate a new population
         let mut pop = cmaes.ask(&mut state)?;
 
@@ -44,10 +47,20 @@ pub fn example() -> Result<()> {
 
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
+        
+        // Manual check
+        if let Some(obj_value) = cmaes.params.obj_value {
+            if let Some(tol) = cmaes.params.tol {
+                let curr = state.best_y.first().unwrap();
+                if (curr - obj_value).abs() < tol {
+                    break
+                }
+            }
+        }
+        step += 1
     }
-
     // Print the average fitness of the best solutions
-    println!("Fitness (mean): {:+.4?}", &state.best_y_fit.mean());
+    println!("Step {} | Fitness: {:+.4?}", step, &state.best_y.first().unwrap());
 
     Ok(())
 }

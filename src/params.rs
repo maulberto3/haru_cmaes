@@ -4,9 +4,11 @@ use ndarray::{s, Array1};
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
-    pub popsize: i32,     // Population size.
-    pub xstart: Vec<f32>, // Initial solution vector.
-    pub sigma: f32,       // Step-size (standard deviation).
+    pub popsize: i32,           // Population size.
+    pub xstart: Vec<f32>,       // Initial solution vector.
+    pub sigma: f32,             // Step-size (standard deviation).
+    pub tol: Option<f32>,       // Tolerance for convergence, optional
+    pub obj_value: Option<f32>, // Known objective value, optional
 }
 
 /// Validated parameters for CMA-ES.
@@ -15,6 +17,8 @@ pub struct CmaesParamsValid {
     pub popsize: i32,         // Population size
     pub xstart: Vec<f32>,     // Initial guess (mean vector)
     pub sigma: f32,           // Step-size (standard deviation)
+    pub tol: Option<f32>,     // Tolerance for convergence, optional
+    pub obj_value: Option<f32>, // Known objective value, optional
     pub n: f32,               // Dimension of the problem space (xstart size)
     pub mu: i32,              // Number of parents (best individuals)
     pub weights: Array1<f32>, // Weights for recombination
@@ -69,6 +73,8 @@ impl CmaesParamsValidator for CmaesParamsValid {
         let popsize = params.popsize;
         let xstart = params.xstart;
         let sigma = params.sigma;
+        let tol = params.tol;
+        let obj_value = params.obj_value;
 
         let n = xstart.len() as f32;
         let k = popsize as f32;
@@ -106,6 +112,8 @@ impl CmaesParamsValidator for CmaesParamsValid {
             popsize,
             xstart,
             sigma,
+            tol,
+            obj_value,
             n,
             // chin,
             mu,
