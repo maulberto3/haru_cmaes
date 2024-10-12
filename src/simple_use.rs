@@ -1,8 +1,8 @@
 use crate::{
-    fitness::{FitnessEvaluator, SquareAndSum},
-    params::CmaesParams,
-    state::{CmaesState, CmaesStateLogic},
-    strategy::{Cmaes, CmaesOptimizer},
+    CmaesParams, 
+    state::{CmaesState, CmaesStateLogic}, 
+    strategy::{CmaesAlgo, CmaesOptimizer}, 
+    fitness::{FitnessEvaluator, SquareAndSum}, 
 };
 use anyhow::Result;
 
@@ -18,6 +18,9 @@ use anyhow::Result;
 /// It initializes the CMA-ES algorithm, iterates
 /// through a fixed number of generations, and prints the
 /// average fitness of the best solutions.
+/// 
+/// Notice you have to create your own Objective function
+/// here it is SquareAndSum that implements FitnessEvaluator trait
 ///
 /// Final solution is under state.best_y and state.best_y_fit
 pub fn example() -> Result<()> {
@@ -31,7 +34,7 @@ pub fn example() -> Result<()> {
     };
 
     // Create a new CMA-ES instance
-    let cmaes = Cmaes::new(params)?;
+    let cmaes = CmaesAlgo::new(params)?;
 
     // Initialize the CMA-ES state
     let mut state = CmaesState::init_state(&cmaes.validated_params)?;

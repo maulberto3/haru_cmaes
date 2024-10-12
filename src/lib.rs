@@ -8,12 +8,18 @@
 #[allow(unused_imports)]
 #[allow(clippy::single_component_path_imports)]
 use blas_src; // necessary for eig
-pub mod fitness;
+
 pub mod params;
-pub mod simple_use;
+pub use crate::params::CmaesParams;
+
 pub mod state;
+
 pub mod strategy;
+
 pub mod utils;
+pub mod fitness;
+pub mod simple_use;
+
 
 // TODO:
 // Check code and refactor more to mutable, mostly state

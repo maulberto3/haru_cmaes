@@ -10,7 +10,7 @@ use ndarray_rand::RandomExt;
 
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
-pub struct Cmaes {
+pub struct CmaesAlgo {
     pub validated_params: CmaesParamsValid,
 }
 
@@ -36,11 +36,11 @@ pub trait CmaesOptimizer {
     ) -> Result<CmaesState>;
 }
 
-impl Cmaes {
+impl CmaesAlgo {
     /// Creates a new CMA-ES instance with validated parameters.
-    pub fn new(params: CmaesParams) -> Result<Cmaes> {
+    pub fn new(params: CmaesParams) -> Result<CmaesAlgo> {
         let validated_params = CmaesParamsValid::validate(params)?;
-        Ok(Cmaes { validated_params })
+        Ok(CmaesAlgo { validated_params })
     }
 
     /// Generates a matrix of standard normal random variables.
@@ -54,7 +54,7 @@ impl Cmaes {
     }
 }
 
-impl CmaesOptimizer for Cmaes {
+impl CmaesOptimizer for CmaesAlgo {
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
     fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
         state.prepare_ask()?;
