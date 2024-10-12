@@ -36,11 +36,11 @@ pub trait CmaesParamsValidator {
     // Type for the validated parameters.
     type ValidatedParams;
 
-    fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams>;
-    fn validate_params(params: &CmaesParams) -> Result<CmaesParams>;
-    fn check_xstart(params: &CmaesParams) -> Result<()>;
-    fn check_popsize(params: &CmaesParams) -> Result<()>;
-    fn check_sigma(params: &CmaesParams) -> Result<()>;
+    fn validate(params: CmaesParams) -> Result<Self::ValidatedParams>;
+    fn validate_params(params: CmaesParams) -> Result<CmaesParams>;
+    fn check_xstart(params: CmaesParams) -> Result<()>;
+    fn check_popsize(params: CmaesParams) -> Result<()>;
+    fn check_sigma(params: CmaesParams) -> Result<()>;
     fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
 }
 
@@ -50,7 +50,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
     type ValidatedParams = CmaesParamsValid;
 
     /// Validates the provided parameters and returns a validated parameter set.
-    fn validate(params: &CmaesParams) -> Result<Self::ValidatedParams> {
+    fn validate(params: CmaesParams) -> Result<Self::ValidatedParams> {
         // print!("Validating initial parameters... ");
         let params = match CmaesParamsValid::validate_params(params) {
             Ok(params) => params,
@@ -130,15 +130,15 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Validates the provided parameters to ensure they meet the constraints.
-    fn validate_params(params: &CmaesParams) -> Result<CmaesParams> {
-        CmaesParamsValid::check_popsize(params)?;
-        CmaesParamsValid::check_xstart(params)?;
-        CmaesParamsValid::check_sigma(params)?;
-        Ok(params.clone())
+    fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
+        CmaesParamsValid::check_popsize(params.clone())?;
+        CmaesParamsValid::check_xstart(params.clone())?;
+        CmaesParamsValid::check_sigma(params.clone())?;
+        Ok(params)
     }
 
     /// Checks if the `xstart` parameter meets its constraints.
-    fn check_xstart(params: &CmaesParams) -> Result<()> {
+    fn check_xstart(params: CmaesParams) -> Result<()> {
         if params.xstart.len() <= 1 {
             return Err(anyhow!("==> number of dimensions must be > 1."));
         }
@@ -146,7 +146,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Checks if the `popsize` parameter meets its constraints.
-    fn check_popsize(params: &CmaesParams) -> Result<()> {
+    fn check_popsize(params: CmaesParams) -> Result<()> {
         if params.popsize <= 5 {
             return Err(anyhow!("==> popsize must be > 5."));
         }
@@ -154,7 +154,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Checks if the `sigma` parameter meets its constraints.
-    fn check_sigma(params: &CmaesParams) -> Result<()> {
+    fn check_sigma(params: CmaesParams) -> Result<()> {
         if params.sigma <= 0.0 {
             return Err(anyhow!("==> sigma must be greater than 0.0."));
         }

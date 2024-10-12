@@ -31,10 +31,10 @@ pub fn example() -> Result<()> {
     };
 
     // Create a new CMA-ES instance
-    let cmaes = Cmaes::new(&params)?;
+    let cmaes = Cmaes::new(params)?;
 
     // Initialize the CMA-ES state
-    let mut state = CmaesState::init_state(&params)?;
+    let mut state = CmaesState::init_state(&cmaes.validated_params)?;
 
     // Run the CMA-ES algorithm until close to objective value
     let mut step = 0;
@@ -49,8 +49,8 @@ pub fn example() -> Result<()> {
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
         
         // Manual check
-        if let Some(obj_value) = cmaes.params.obj_value {
-            if let Some(tol) = cmaes.params.tol {
+        if let Some(obj_value) = cmaes.validated_params.obj_value {
+            if let Some(tol) = cmaes.validated_params.tol {
                 let curr = state.best_y.first().unwrap();
                 if (curr - obj_value).abs() < tol {
                     break

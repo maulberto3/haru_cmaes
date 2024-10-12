@@ -3,7 +3,7 @@ use ndarray::{Array, Array1, Array2};
 use ndarray_linalg::Eig;
 // use ndarray_rand::RandomExt;
 // use rand::distributions::Uniform;
-use crate::params::CmaesParams;
+use crate::params::CmaesParamsValid;
 use crate::utils::into_f_major;
 
 /// State for the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.
@@ -27,7 +27,7 @@ pub struct CmaesState {
 
 /// Trait for Cmaes State
 pub trait CmaesStateLogic {
-    fn init_state(params: &CmaesParams) -> Result<CmaesState>;
+    fn init_state(params: &CmaesParamsValid) -> Result<CmaesState>;
     fn prepare_ask(&mut self) -> Result<()>;
     fn eigen_decomposition(&mut self) -> Result<()>;
 }
@@ -40,7 +40,7 @@ impl CmaesStateLogic for CmaesState {
     ///
     /// # Returns
     /// A `Result` containing the initialized `CmaesState` or an error if initialization fails.
-    fn init_state(params: &CmaesParams) -> Result<Self> {
+    fn init_state(params: &CmaesParamsValid) -> Result<Self> {
         // Create initial values for the state
         // print!("Creating a new state... ");
         let z: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
