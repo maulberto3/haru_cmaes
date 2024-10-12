@@ -49,10 +49,10 @@ pub fn example() -> Result<()> {
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
         
         // Manual check
-        if let Some(obj_value) = cmaes.validated_params.obj_value {
-            if let Some(tol) = cmaes.validated_params.tol {
+        if let Some(obj_value) = cmaes.validated_params.obj_value.as_ref() {
+            if let Some(tol) = cmaes.validated_params.tol.as_ref() {
                 let curr = state.best_y.first().unwrap();
-                if (curr - obj_value).abs() < tol {
+                if (curr - obj_value).abs() < *tol {
                     break
                 }
             }
