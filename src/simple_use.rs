@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::{
     CmaesParams, 
     state::{CmaesState, CmaesStateLogic}, 
@@ -24,13 +26,15 @@ use anyhow::Result;
 ///
 /// Final solution is under state.best_y and state.best_y_fit
 pub fn example() -> Result<()> {
+    // Take start time
+    let start = Instant::now();
     // Initialize CMA-ES parameters
     let params = CmaesParams {
         popsize: 50,
         xstart: vec![0.0; 50],
         sigma: 0.75,
         tol: Some(0.0001),
-        obj_value: Some(0.0),
+        obj_value: Some(0.0),  // This has to make sense for your objective function
     };
 
     // Create a new CMA-ES instance
@@ -63,7 +67,8 @@ pub fn example() -> Result<()> {
         step += 1
     }
     // Print the average fitness of the best solutions
-    println!("Step {} | Fitness: {:+.4?}", step, &state.best_y.first().unwrap());
+    println!("Step {} | Fitness: {:+.4?} | Duration: {:.2} secs", 
+        step, &state.best_y.first().unwrap(), (start.elapsed().as_millis() as f32) / 1000.0);
 
     Ok(())
 }
