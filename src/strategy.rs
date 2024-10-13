@@ -38,9 +38,9 @@ pub trait CmaesOptimizer {
 
 impl CmaesAlgo {
     /// Creates a new CMA-ES instance with validated parameters.
-    pub fn new(params: CmaesParams) -> Result<CmaesAlgo> {
+    pub fn new(params: CmaesParams) -> Result<Self> {
         let validated_params = CmaesParamsValid::validate(params)?;
-        Ok(CmaesAlgo { validated_params })
+        Ok(Self { validated_params })
     }
 
     /// Generates a matrix of standard normal random variables.
@@ -55,6 +55,7 @@ impl CmaesAlgo {
 }
 
 impl CmaesOptimizer for CmaesAlgo {
+    /// ASK
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
     fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
         state.prepare_ask()?;
@@ -73,6 +74,7 @@ impl CmaesOptimizer for CmaesAlgo {
         Ok(PopulationY { y })
     }
 
+    /// TELL
     /// Updates the CMA-ES state based on the new population and fitness values.
     fn tell(
         &self,
