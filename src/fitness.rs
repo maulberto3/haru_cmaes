@@ -49,5 +49,8 @@ impl FitnessEvaluator for SimpleStd {
     }
 }
 
-// TODO:
-// Implement additional objective functions such as DEA, Rastrigin, etc.
+/// Check that objective function implements the FitnessEvaluator trait
+#[allow(dead_code)]
+pub fn allow_objective_func<E: FitnessEvaluator>(evaluator: E) -> Result<E> {
+    Ok(evaluator)
+}

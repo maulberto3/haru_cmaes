@@ -134,27 +134,42 @@ impl CmaesOptimizer for CmaesAlgo {
         // Update evolution path ps
         let new_y: Array1<f32> = &state.mean - &xold;
         let new_z: Array1<f32> = state.inv_sqrt.dot(&new_y);
-        let csn = (self.validated_params.cs * (2. - self.validated_params.cs) * self.validated_params.mueff).sqrt() / state.sigma;
+        let csn = (self.validated_params.cs
+            * (2. - self.validated_params.cs)
+            * self.validated_params.mueff)
+            .sqrt()
+            / state.sigma;
         state.ps = Zip::from(&state.ps)
             .and(&new_z)
             .map_collect(|&ps_, &z_| (1. - self.validated_params.cs) * ps_ + csn * z_);
 
         // Update evolution path covariance
-        let ccn = (self.validated_params.cc * (2. - self.validated_params.cc) * self.validated_params.mueff).sqrt() / state.sigma;
+        let ccn = (self.validated_params.cc
+            * (2. - self.validated_params.cc)
+            * self.validated_params.mueff)
+            .sqrt()
+            / state.sigma;
         let hsig = state.ps.mapv(|x| x * x).sum()
             / (state.ps.len() as f32)
-            / (1. - (1. - self.validated_params.cs).powi(2 * state.evals_count / self.validated_params.popsize));
+            / (1.
+                - (1. - self.validated_params.cs)
+                    .powi(2 * state.evals_count / self.validated_params.popsize));
         state.pc = Zip::from(&state.pc)
             .and(&new_y)
             .map_collect(|&pc_, &y_| (1. - self.validated_params.cs) * pc_ + ccn * hsig * y_);
 
         // Adapt covariance matrix C
-        let c1a =
-            self.validated_params.c1 * (1. - (1. - hsig * hsig) * self.validated_params.cc * (2. - self.validated_params.cc));
-        state.cov = state.cov.mapv(|x| x * (1. - c1a - self.validated_params.cmu));
+        let c1a = self.validated_params.c1
+            * (1.
+                - (1. - hsig * hsig) * self.validated_params.cc * (2. - self.validated_params.cc));
+        state.cov = state
+            .cov
+            .mapv(|x| x * (1. - c1a - self.validated_params.cmu));
 
         let pc_outer: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
-        let pc_outer: Array2<f32> = pc_outer.dot(&pc_outer.t()).mapv(|x| x * self.validated_params.c1);
+        let pc_outer: Array2<f32> = pc_outer
+            .dot(&pc_outer.t())
+            .mapv(|x| x * self.validated_params.c1);
         state.cov = Zip::from(&state.cov)
             .and(&pc_outer)
             .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
@@ -168,8 +183,10 @@ impl CmaesOptimizer for CmaesAlgo {
             let dx: Array1<f32> = &pop.y.slice(s![i, ..]) - &xold;
             let dx: Array2<f32> = dx.insert_axis(Axis(1));
             let dx: Array2<f32> = dx.dot(&dx.t());
-            let dx: Array2<f32> =
-                dx.mapv(|x| x * w * self.validated_params.cmu / (self.validated_params.sigma * self.validated_params.sigma));
+            let dx: Array2<f32> = dx.mapv(|x| {
+                x * w * self.validated_params.cmu
+                    / (self.validated_params.sigma * self.validated_params.sigma)
+            });
             state.cov = &state.cov + dx;
         }
 
