@@ -29,7 +29,6 @@ ndarray-rand = { version = "0.14" }
 pprof = { version = "0.13", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 cmaes = "0.2.1"
-nlopt = "0.7.0"
 argmin = { version = "0.10" }
 argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }
 
@@ -51,10 +50,6 @@ harness = false
 
 [[bench]]
 name = "mine"
-harness = false
-
-[[bench]]
-name = "nlopt"
 harness = false
 
 [[bench]]
