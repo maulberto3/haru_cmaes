@@ -567,10 +567,8 @@ dependencies = [
  "ndarray-linalg",
  "ndarray-rand",
  "nlopt",
- "openblas-src",
  "pprof",
  "rand",
- "rayon",
 ]
 
 [[package]]

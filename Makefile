@@ -13,7 +13,7 @@ clean:
 doct:
 	clear && cargo doc
 prep:
-	clear && cargo clippy && cargo fmt && cargo build --jobs 2
+	clear && cargo clippy && cargo fmt && cargo machete && cargo build --jobs 2
 benc:
 	clear && cargo bench --bench mine --jobs 2
 prof:
