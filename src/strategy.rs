@@ -82,6 +82,7 @@ impl CmaesOptimizer for CmaesAlgo {
         pop: &mut PopulationY,
         fitness: &mut Fitness,
     ) -> Result<CmaesState> {
+        // Init data
         state.g += 1;
         state.evals_count += fitness.values.nrows() as i32;
         let xold = state.mean.to_owned();
@@ -93,7 +94,6 @@ impl CmaesOptimizer for CmaesAlgo {
                 .partial_cmp(&fitness.values[[j, 0]])
                 .unwrap()
         });
-
         let mut sorted_xs: Array2<f32> = Array2::zeros((pop.y.nrows(), pop.y.ncols()));
         let mut sorted_fit: Array2<f32> =
             Array2::zeros((fitness.values.nrows(), fitness.values.ncols()));
@@ -106,7 +106,7 @@ impl CmaesOptimizer for CmaesAlgo {
         pop.y.assign(&sorted_xs);
         fitness.values.assign(&sorted_fit);
 
-        // Update best solution
+        // Update best solution, assumes minimization
         if fitness.values[[0, 0]] < state.best_y_fit[0] {
             state.best_y = pop.y.slice(s![0, ..]).to_owned();
             state.best_y_fit = fitness.values.slice(s![0, ..]).to_owned();
