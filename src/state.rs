@@ -4,7 +4,7 @@ use ndarray_linalg::Eig;
 // use ndarray_rand::RandomExt;
 // use rand::distributions::Uniform;
 use crate::params::CmaesParamsValid;
-use crate::utils::into_f_major;
+// use crate::utils::into_f_major;
 
 /// State for the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.
 #[derive(Debug, Clone)]
@@ -96,7 +96,7 @@ impl CmaesStateLogic for CmaesState {
         self.cov = (&self.cov + &self.cov.t()) / 2.0;
 
         // Leverage column major strides right before eig
-        self.cov = into_f_major(&self.cov).unwrap();
+        // self.cov = into_f_major(&self.cov).unwrap();
         // println!("{:?}", &self.cov);
 
         // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
@@ -117,7 +117,7 @@ impl CmaesStateLogic for CmaesState {
         });
 
         // Short-hand for inverse square root of C
-        self.inv_sqrt = Array2::from_diag(&eig_vals.mapv(|elem| elem.powf(-0.5)));
+        self.inv_sqrt = Array2::from_diag(&eig_vals.map(|elem| elem.powf(-0.5)));
         self.inv_sqrt = eig_vecs.dot(&self.inv_sqrt).dot(&eig_vecs.t());
 
         self.eig_vecs = eig_vecs;
