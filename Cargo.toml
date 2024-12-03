@@ -1,6 +1,6 @@
 [package]
 name = "haru_cmaes"
-version = "0.5.1"
+version = "0.6.1"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
@@ -19,16 +19,15 @@ exclude = [
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }
-ndarray = { version = "0.15", features = ["blas", "rayon"] }
-blas-src = { version = "0.10", features = ["openblas"] }
-# openblas-src = { version = "0.10", features = ["cblas", "system"] }
+ndarray = { version = "0.15", features = ["blas"] }
+blas-src = { version = "0.10.0", features = ["openblas"] }
+# openblas-src = { version = "0.10.9", features = ["cblas", "system"] }
 ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
 ndarray-rand = { version = "0.14" }
 
 [dev-dependencies]
 pprof = { version = "0.13", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
-cmaes = "0.2.1"
 argmin = { version = "0.10" }
 argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }
 
@@ -56,8 +55,15 @@ harness = false
 name = "pengowen"
 harness = false
 
+[profile.dev]
+opt-level = 0
+debug = 0
+lto = false
+codegen-units = 256
+incremental = true
+
 [profile.release]
-opt-level = 'z'
+opt-level = 3
 lto = true
 codegen-units = 1
 panic = 'abort'
