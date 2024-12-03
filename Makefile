@@ -22,7 +22,7 @@ prep:
 doct:
 	cargo doc
 exam:
-	clear && cargo run --release --example simple_use
+	cargo run --release --example simple_use
 build:
 	clear && make clean && make lint && make test && make cove && make deps && make prep && make doct && make exam
 
@@ -33,6 +33,7 @@ prof:
 
 clif:
 	git cliff -o CHANGELOG.md
+
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 publ:
 	# must have done commits before running the following command
