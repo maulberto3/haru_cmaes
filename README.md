@@ -96,11 +96,13 @@ If you want to check where did it got installed `dpkg-query -L libopenblas-dev`
 
 ### 5) Additional Tools
 
-Install `cargo-depgraph` and `graphviz` for dependency visualization:
+Install `cargo-depgraph`, `graphviz`, `git cliff`, `cargo machete` for dependency visualization:
 
 ```
 sudo apt install graphviz
 cargo install cargo-depgraph
+cargo install git-cliff
+cargo install cargo-machete
 ```
 
 ### 6) Git (if needed)
