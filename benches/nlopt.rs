@@ -1,3 +1,5 @@
+// decided to remove as heavlily depends on C
+
 // use criterion::{criterion_group, criterion_main, Criterion};
 // include!("../assets/nlopt.rs"); // Include the `simple_nlopt.rs` file
 
