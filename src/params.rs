@@ -14,21 +14,21 @@ pub struct CmaesParams {
 /// Validated parameters for CMA-ES.
 #[derive(Debug, Clone)]
 pub struct CmaesParamsValid {
-    pub popsize: i32,         // Population size
-    pub xstart: Vec<f32>,     // Initial guess (mean vector)
-    pub sigma: f32,           // Step-size (standard deviation)
-    pub tol: Option<f32>,     // Tolerance for convergence, optional
+    pub popsize: i32,           // Population size
+    pub xstart: Vec<f32>,       // Initial guess (mean vector)
+    pub sigma: f32,             // Step-size (standard deviation)
+    pub tol: Option<f32>,       // Tolerance for convergence, optional
     pub obj_value: Option<f32>, // Known objective value, optional
-    pub n: f32,               // Dimension of the problem space (xstart size)
-    pub mu: i32,              // Number of parents (best individuals)
-    pub weights: Array1<f32>, // Weights for recombination
-    pub mueff: f32,           // Effective number of parents
-    pub cc: f32,              // Cumulation constant for the rank-one update
-    pub cs: f32,              // Cumulation constant for the rank-mu update
-    pub c1: f32,              // Learning rate for the rank-one update
-    pub cmu: f32,             // Learning rate for the rank-mu update
-    pub damps: f32,           // Damping for step-size adaptation
-                              // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
+    pub n: f32,                 // Dimension of the problem space (xstart size)
+    pub mu: i32,                // Number of parents (best individuals)
+    pub weights: Array1<f32>,   // Weights for recombination
+    pub mueff: f32,             // Effective number of parents
+    pub cc: f32,                // Cumulation constant for the rank-one update
+    pub cs: f32,                // Cumulation constant for the rank-mu update
+    pub c1: f32,                // Learning rate for the rank-one update
+    pub cmu: f32,               // Learning rate for the rank-mu update
+    pub damps: f32,             // Damping for step-size adaptation
+                                // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
 }
 
 /// Trait defining validation methods for CMA-ES parameters.
