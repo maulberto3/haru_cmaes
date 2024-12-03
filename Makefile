@@ -2,31 +2,40 @@ dev-size:
 	clear && du ./target/debug/haru_cmaes -h
 prod-size:
 	clear && du ./target/release/haru_cmaes -h
-tree:
-	clear && cargo tree
-graph-dep:
-	clear && cargo depgraph --all-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
-deps:
-	clear && make tree && make graph-dep
+
 clean:
-	clear && cargo cache --autoclean && cargo clean
-doct:
-	clear && cargo doc
-prep:
-	clear && cargo clippy && cargo fmt && cargo machete && cargo build --jobs 2
-benc:
-	clear && cargo bench --bench mine --jobs 2
-prof:
-	clear && cargo run --release --example flamegraph --jobs 2
-exam:
-	clear && cargo run --release --example simple_use --jobs 2
+	cargo cache --autoclean && cargo clean
+lint:
+	cargo fmt --check && cargo clippy -- -D warnings
 test:
-	clear && cargo test --tests --jobs 2
-run :
-	clear && cargo run --jobs 2
-rele:
-	clear && cargo run --release --jobs 2
-# cargo login mytoken
+	cargo test --tests
+cove:
+	cargo tarpaulin --out Html
+tree:
+	cargo tree
+graph-dep:
+	cargo depgraph --all-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
+deps:
+	make tree && make graph-dep
+prep:
+	cargo machete && cargo build
+doct:
+	cargo doc
+exam:
+	clear && cargo run --release --example simple_use
+build:
+	clear && make clean && make lint && make test && make cove && make deps && make prep && make doct && make exam
+
+benc:
+	clear && cargo bench --bench mine
+prof:
+	clear && cargo run --release --example flamegraph
+
+clif:
+	git cliff -o CHANGELOG.md
+VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 publ:
-	clear && cargo publish
+	# must have done commits before running the following command
+	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
+	clear && cargo publish && make clif && git push origin master && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags
 	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
