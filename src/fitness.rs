@@ -2,6 +2,9 @@ use crate::strategy::PopulationY;
 use anyhow::Result;
 use ndarray::{Array2, Axis};
 
+// TODO
+// Allow for min or max in obj func
+
 /// Structure to hold fitness values of a population.
 #[derive(Debug, Clone)]
 pub struct Fitness {
