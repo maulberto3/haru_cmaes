@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use crate::{
-    fitness::{FitnessEvaluator, SquareAndSum, allow_objective_func},
+    fitness::{allow_objective_func, FitnessEvaluator, SquareAndSum},
     state::{CmaesState, CmaesStateLogic},
     strategy::{CmaesAlgo, CmaesOptimizer},
     CmaesParams,
@@ -12,7 +12,7 @@ use anyhow::Result;
 // use blas_src;
 
 // Example usage of the CMA-ES algorithm.
-// 
+//
 // First, it checks that the objective function is allowed
 //
 // This function demonstrates a basic workflow of the CMA-ES
@@ -28,14 +28,13 @@ use anyhow::Result;
 //
 // Final solution is under state.best_y and state.best_y_fit
 
-
 pub fn example() -> Result<()> {
     // Take start time
     let start = Instant::now();
 
     // Check allowed objective function
     let obj = allow_objective_func(SquareAndSum)?;
-    
+
     // Initialize CMA-ES parameters
     let params = CmaesParams {
         popsize: 50,
