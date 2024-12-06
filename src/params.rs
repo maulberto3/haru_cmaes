@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Result};
 use ndarray::{s, Array1};
 
+// TODO: try and use builder pattern 
+
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
