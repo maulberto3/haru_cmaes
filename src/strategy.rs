@@ -45,6 +45,8 @@ pub struct PopulationY {
 }
 
 pub trait CmaesOptimizer {
+    type NewState;
+
     fn ask(&self, state: &mut CmaesState) -> Result<PopulationY>;
     fn tell(
         &self,
@@ -55,6 +57,8 @@ pub trait CmaesOptimizer {
 }
 
 impl CmaesOptimizer for CmaesAlgo {
+    type NewState = CmaesState;
+
     /// ASK
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
     fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
@@ -81,7 +85,7 @@ impl CmaesOptimizer for CmaesAlgo {
         mut state: CmaesState,
         pop: &mut PopulationY,
         fitness: &mut Fitness,
-    ) -> Result<CmaesState> {
+    ) -> Result<Self::NewState> {
         // Init data
         state.g += 1;
         state.evals_count += fitness.values.nrows() as i32;
