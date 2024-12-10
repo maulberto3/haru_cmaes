@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 📚 Documentation
+
+- Bump version
+
+## [0.6.2] - 2024-12-10
+
 ### 🚜 Refactor
 
 - Use match instead of if statements
