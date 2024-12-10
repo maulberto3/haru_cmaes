@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use ndarray::{s, Array1};
 
-// TODO: try and use builder pattern 
+// TODO: try and use builder pattern
 
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
@@ -43,6 +43,7 @@ pub trait CmaesParamsValidator {
     fn check_xstart(params: CmaesParams) -> Result<()>;
     fn check_popsize(params: CmaesParams) -> Result<()>;
     fn check_sigma(params: CmaesParams) -> Result<()>;
+
     fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
 }
 
@@ -68,6 +69,38 @@ impl CmaesParamsValidator for CmaesParamsValid {
         // print!("Computing default parameters... ");
         let params = CmaesParamsValid::add_default_params(params)?;
         Ok(params)
+    }
+    
+    /// Validates the provided parameters to ensure they meet the constraints.
+    fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
+        CmaesParamsValid::check_popsize(params.clone())?;
+        CmaesParamsValid::check_xstart(params.clone())?;
+        CmaesParamsValid::check_sigma(params.clone())?;
+        Ok(params)
+    }
+
+    /// Checks if the `xstart` parameter meets its constraints.
+    fn check_xstart(params: CmaesParams) -> Result<()> {
+        if params.xstart.len() <= 1 {
+            return Err(anyhow!("==> number of dimensions must be > 1."));
+        }
+        Ok(())
+    }
+
+    /// Checks if the `popsize` parameter meets its constraints.
+    fn check_popsize(params: CmaesParams) -> Result<()> {
+        if params.popsize <= 5 {
+            return Err(anyhow!("==> popsize must be > 5."));
+        }
+        Ok(())
+    }
+
+    /// Checks if the `sigma` parameter meets its constraints.
+    fn check_sigma(params: CmaesParams) -> Result<()> {
+        if params.sigma <= 0.0 {
+            return Err(anyhow!("==> sigma must be greater than 0.0."));
+        }
+        Ok(())
     }
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
@@ -129,37 +162,5 @@ impl CmaesParamsValidator for CmaesParamsValid {
             // lazy_gap_evals,
         };
         Ok(valid_params)
-    }
-
-    /// Validates the provided parameters to ensure they meet the constraints.
-    fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
-        CmaesParamsValid::check_popsize(params.clone())?;
-        CmaesParamsValid::check_xstart(params.clone())?;
-        CmaesParamsValid::check_sigma(params.clone())?;
-        Ok(params)
-    }
-
-    /// Checks if the `xstart` parameter meets its constraints.
-    fn check_xstart(params: CmaesParams) -> Result<()> {
-        if params.xstart.len() <= 1 {
-            return Err(anyhow!("==> number of dimensions must be > 1."));
-        }
-        Ok(())
-    }
-
-    /// Checks if the `popsize` parameter meets its constraints.
-    fn check_popsize(params: CmaesParams) -> Result<()> {
-        if params.popsize <= 5 {
-            return Err(anyhow!("==> popsize must be > 5."));
-        }
-        Ok(())
-    }
-
-    /// Checks if the `sigma` parameter meets its constraints.
-    fn check_sigma(params: CmaesParams) -> Result<()> {
-        if params.sigma <= 0.0 {
-            return Err(anyhow!("==> sigma must be greater than 0.0."));
-        }
-        Ok(())
     }
 }
