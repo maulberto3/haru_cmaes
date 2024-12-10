@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Make use of associate type in trait
 - Better git cliff use
 - Makefile with git cliff
+- Makefile
 
 ### 📚 Documentation
 
