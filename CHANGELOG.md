@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Better git cliff use
 - Makefile with git cliff
 - Makefile
+- Makefile
 
 ### 📚 Documentation
 
