@@ -37,9 +37,11 @@ pub fn example() -> Result<()> {
 
     // Initialize CMA-ES parameters
     let params = CmaesParams {
+        // Required
         popsize: 50,
         xstart: vec![0.0; 50],
         sigma: 0.75,
+        // Optional
         tol: Some(0.0001),
         obj_value: Some(0.0), // This has to make sense for your objective function
     };
@@ -62,16 +64,21 @@ pub fn example() -> Result<()> {
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
 
-        // Manual check
-        if let Some(obj_value) = cmaes.validated_params.obj_value.as_ref() {
-            if let Some(tol) = cmaes.validated_params.tol.as_ref() {
+        // Are we there yet?
+        let obj_value = cmaes.validated_params.obj_value.as_ref();
+        let tol = cmaes.validated_params.tol.as_ref();
+        match (obj_value, tol) {
+            (Some(obj_value), Some(tol)) => {
                 let curr = state.best_y.first().unwrap();
                 if (curr - obj_value).abs() < *tol {
+                    // If we are close to obj_value less than tol, we are there (break)
                     break;
                 }
             }
+            _ => (),
         }
-        step += 1
+        step += 1;
+
     }
     // Print the average fitness of the best solutions
     println!(
