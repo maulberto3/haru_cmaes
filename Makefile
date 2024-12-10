@@ -31,12 +31,18 @@ benc:
 prof:
 	clear && cargo run --release --example flamegraph
 
-clif:
-	git cliff -o CHANGELOG.md && git push origin master
-
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
+clif:
+	# Generate the changelog and commit it in the same step
+	git cliff -o CHANGELOG.md
+	git add CHANGELOG.md
+	git commit -m "Update changelog for v$(VERSION)"
+	git push origin master
+
 publ:
-	# must have done commits before running the following command
+	# Check for uncommitted changes
 	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
+	# Perform the publish and then update changelog
 	clear && cargo publish && make clif && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags
+	# Optional: Clean cache after publishing (commented out)
 	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
