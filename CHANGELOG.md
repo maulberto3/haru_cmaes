@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Better readability for params
 - Make use of associate type in trait
 - Better git cliff use
+- Makefile with git cliff
 
 ### 📚 Documentation
 
