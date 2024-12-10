@@ -8,32 +8,16 @@ use ndarray::{s, Array1, Array2, Axis, Zip};
 use ndarray_rand::rand_distr::StandardNormal;
 use ndarray_rand::RandomExt;
 
-/// Struct to hold the algorithm's data and ask and tell methods
-#[derive(Debug)]
-pub struct CmaesAlgo {
-    pub validated_params: CmaesParamsValid,
-}
-
 /// Struct to hold the population as normal data points
 #[derive(Debug, Clone)]
 pub struct PopulationZ {
     pub z: Array2<f32>,
 }
 
-/// Struct to hold the population as (eigen-)rotated data points
-#[derive(Debug, Clone)]
-pub struct PopulationY {
-    pub y: Array2<f32>,
-}
-
-pub trait CmaesOptimizer {
-    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY>;
-    fn tell(
-        &self,
-        state: CmaesState,
-        pop: &mut PopulationY,
-        fitness: &mut Fitness,
-    ) -> Result<CmaesState>;
+/// Struct to hold the algorithm's data and ask and tell methods
+#[derive(Debug)]
+pub struct CmaesAlgo {
+    pub validated_params: CmaesParamsValid,
 }
 
 impl CmaesAlgo {
@@ -52,6 +36,22 @@ impl CmaesAlgo {
         state.z = z.to_owned();
         Ok(PopulationZ { z })
     }
+}
+
+/// Struct to hold the population as (eigen-)rotated data points
+#[derive(Debug, Clone)]
+pub struct PopulationY {
+    pub y: Array2<f32>,
+}
+
+pub trait CmaesOptimizer {
+    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY>;
+    fn tell(
+        &self,
+        state: CmaesState,
+        pop: &mut PopulationY,
+        fitness: &mut Fitness,
+    ) -> Result<CmaesState>;
 }
 
 impl CmaesOptimizer for CmaesAlgo {
