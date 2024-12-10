@@ -32,11 +32,11 @@ prof:
 	clear && cargo run --release --example flamegraph
 
 clif:
-	git push origin master && git cliff -o CHANGELOG.md
+	git cliff -o CHANGELOG.md && git push origin master
 
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 publ:
 	# must have done commits before running the following command
 	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
-	clear && cargo publish && make clif && git push origin master && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags
+	clear && cargo publish && make clif && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags
 	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"

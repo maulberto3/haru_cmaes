@@ -10,10 +10,16 @@ All notable changes to this project will be documented in this file.
 - Better readability for CmaesAlgo
 - Better readability for params
 - Make use of associate type in trait
+- Better git cliff use
 
 ### 📚 Documentation
 
 - New todo builder pattern
+- Changelog
+
+### Build
+
+- Minor artifacts from build
 
 ## [0.6.1] - 2024-12-03
 
