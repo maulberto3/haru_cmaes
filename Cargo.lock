@@ -511,7 +511,7 @@ dependencies = [
 
 [[package]]
 name = "haru_cmaes"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "anyhow",
  "argmin",
