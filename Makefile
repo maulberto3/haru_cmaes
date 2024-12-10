@@ -32,7 +32,7 @@ prof:
 	clear && cargo run --release --example flamegraph
 
 clif:
-	git cliff -o CHANGELOG.md
+	git push origin master && git cliff -o CHANGELOG.md
 
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 publ:
