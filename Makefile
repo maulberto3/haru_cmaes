@@ -36,7 +36,7 @@ VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Car
 clif:
 	# Generate the changelog and commit it in the same step
 	git cliff -o CHANGELOG.md
-	git add .
+	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
 	git push origin master
 
