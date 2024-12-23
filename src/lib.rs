@@ -12,12 +12,16 @@ pub mod params;
 pub use crate::params::CmaesParams;
 
 pub mod state;
+pub use crate::state::{CmaesState, CmaesStateLogic};
 
 pub mod strategy;
+pub use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
 
 pub mod fitness;
-pub mod simple_use;
+
 pub mod utils;
+
+pub mod simple_use;
 
 // TODO:
 // Check code and refactor more to mutable, mostly state
