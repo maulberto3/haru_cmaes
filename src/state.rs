@@ -92,7 +92,7 @@ impl CmaesStateLogic for CmaesState {
         // Enforce sparsity for matrix eigen efficiency
         if let Some(zs) = params.zs {
             self.cov.map_inplace(|x| {
-                if x.abs() > zs {
+                if x.abs() < zs {
                     *x = 0.0
                 }
             });
