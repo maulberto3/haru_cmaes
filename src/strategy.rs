@@ -44,25 +44,27 @@ pub struct PopulationY {
     pub y: Array2<f32>,
 }
 
-pub trait CmaesOptimizer {
+pub trait CmaesAlgoOptimizer {
+    type NewPopulation;
     type NewState;
 
-    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY>;
+    fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation>;
     fn tell(
         &self,
         state: CmaesState,
         pop: &mut PopulationY,
         fitness: &mut Fitness,
-    ) -> Result<CmaesState>;
+    ) -> Result<Self::NewState>;
 }
 
-impl CmaesOptimizer for CmaesAlgo {
+impl CmaesAlgoOptimizer for CmaesAlgo {
+    type NewPopulation = PopulationY;
     type NewState = CmaesState;
 
     /// ASK
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
-    fn ask(&self, state: &mut CmaesState) -> Result<PopulationY> {
-        state.prepare_ask()?;
+    fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
+        state.prepare_ask(&self.validated_params)?;
 
         let z: Array2<f32> = self.ask_z(&self.validated_params, state)?.z;
 
