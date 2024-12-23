@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- *(CmaesState)* Performance enhancement due to sparse covariance efforts
+- Allow covariance sparsity as parameter
+- Re-exports for easy use
+- *(fitness)* Use of associated types in traits
+
+### 🚜 Refactor
+
+- *(CmaesAlgoOptimizer)* Better trait redability and use of associated type
+
+## [0.6.3] - 2024-12-10
+
 ### 📚 Documentation
 
 - Bump version
