@@ -2,9 +2,7 @@ use std::time::Instant;
 
 use crate::{
     fitness::{allow_objective_func, FitnessEvaluator, SquareAndSum},
-    state::{CmaesState, CmaesStateLogic},
-    strategy::{CmaesAlgo, CmaesOptimizer},
-    CmaesParams,
+    CmaesAlgo, CmaesAlgoOptimizer, CmaesParams, CmaesState, CmaesStateLogic,
 };
 use anyhow::Result;
 
@@ -41,9 +39,11 @@ pub fn example() -> Result<()> {
         popsize: 50,
         xstart: vec![0.0; 50],
         sigma: 0.75,
-        // Optional
+        // Optional (Objective)
         tol: Some(0.0001),
         obj_value: Some(0.0), // This has to make sense for your objective function
+        // Optional (Computational)
+        zs: Some(0.01),
     };
 
     // Create a new CMA-ES instance
@@ -67,18 +67,15 @@ pub fn example() -> Result<()> {
         // Are we there yet?
         let obj_value = cmaes.validated_params.obj_value.as_ref();
         let tol = cmaes.validated_params.tol.as_ref();
-        match (obj_value, tol) {
-            (Some(obj_value), Some(tol)) => {
-                let curr = state.best_y.first().unwrap();
-                if (curr - obj_value).abs() < *tol {
-                    // If we are close to obj_value less than tol, we are there (break)
-                    break;
-                }
+
+        if let (Some(obj_value), Some(tol)) = (obj_value, tol) {
+            let curr = state.best_y.first().unwrap();
+            if (curr - obj_value).abs() < *tol {
+                // If we are close to obj_value less than tol, we are there (break)
+                break;
             }
-            _ => (),
         }
         step += 1;
-
     }
     // Print the average fitness of the best solutions
     println!(

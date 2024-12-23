@@ -11,6 +11,7 @@ pub struct CmaesParams {
     pub sigma: f32,             // Step-size (standard deviation).
     pub tol: Option<f32>,       // Tolerance for convergence, optional
     pub obj_value: Option<f32>, // Known objective value, optional
+    pub zs: Option<f32>,        // Enforce zero sparsity for quicker computational results, optional
 }
 
 /// Validated parameters for CMA-ES.
@@ -21,6 +22,7 @@ pub struct CmaesParamsValid {
     pub sigma: f32,             // Step-size (standard deviation)
     pub tol: Option<f32>,       // Tolerance for convergence, optional
     pub obj_value: Option<f32>, // Known objective value, optional
+    pub zs: Option<f32>,        // Enforce zero sparsity for quicker computational results, optional
     pub n: f32,                 // Dimension of the problem space (xstart size)
     pub mu: i32,                // Number of parents (best individuals)
     pub weights: Array1<f32>,   // Weights for recombination
@@ -70,7 +72,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
         let params = CmaesParamsValid::add_default_params(params)?;
         Ok(params)
     }
-    
+
     /// Validates the provided parameters to ensure they meet the constraints.
     fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
         CmaesParamsValid::check_popsize(params.clone())?;
@@ -108,8 +110,11 @@ impl CmaesParamsValidator for CmaesParamsValid {
         let popsize = params.popsize;
         let xstart = params.xstart;
         let sigma = params.sigma;
+
         let tol = params.tol;
         let obj_value = params.obj_value;
+
+        let zs = params.zs;
 
         let n = xstart.len() as f32;
         let k = popsize as f32;
@@ -144,11 +149,16 @@ impl CmaesParamsValidator for CmaesParamsValid {
         // let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / (n * n);
 
         let valid_params = CmaesParamsValid {
+            // Required
             popsize,
             xstart,
             sigma,
+            // Objective's
             tol,
             obj_value,
+            // Computational's
+            zs,
+            // Others
             n,
             // chin,
             mu,
