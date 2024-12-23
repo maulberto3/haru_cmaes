@@ -13,7 +13,9 @@ pub struct Fitness {
 
 /// Trait defining the evaluation method for fitness functions.
 pub trait FitnessEvaluator {
-    fn evaluate(&self, pop: &PopulationY) -> Result<Fitness>;
+    type IndividualsEvaluated;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated>;
 }
 
 /// Example of a fitness function
@@ -21,7 +23,9 @@ pub trait FitnessEvaluator {
 pub struct SquareAndSum;
 
 impl FitnessEvaluator for SquareAndSum {
-    fn evaluate(&self, pop: &PopulationY) -> Result<Fitness> {
+    type IndividualsEvaluated = Fitness;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
         let values = pop
             .y
             .map_axis(Axis(1), |row| row.map(|elem| elem.powi(2)).sum())
@@ -39,7 +43,9 @@ impl FitnessEvaluator for SquareAndSum {
 pub struct SimpleStd;
 
 impl FitnessEvaluator for SimpleStd {
-    fn evaluate(&self, pop: &PopulationY) -> Result<Fitness> {
+    type IndividualsEvaluated = Fitness;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
         let values = pop
             .y
             .map_axis(Axis(1), |row| row.std(1.0))
