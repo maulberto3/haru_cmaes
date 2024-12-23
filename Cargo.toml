@@ -1,19 +1,13 @@
 [package]
 name = "haru_cmaes"
-version = "0.6.3"
+version = "0.6.4"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/maulberto3/haru_cmaes"
 exclude = [
-    ".cargo/**",
-    ".devcontainer/**",
-    ".github/**",
-    "assets/**",
-    "*.orig",
-    "Makefile",
-    "dependencies_graph_of_current_cargo_toml.png",
+    "src/simple_use.rs",
 ]
 
 [dependencies]
@@ -30,6 +24,8 @@ pprof = { version = "0.13", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 argmin = { version = "0.10" }
 argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }
+nalgebra = "0.33.2"
+cmaes = "0.2.2"
 
 [[bench]]
 name = "argmin"
@@ -37,10 +33,6 @@ harness = false
 
 [[bench]]
 name = "eig_vs"
-harness = false
-
-[[bench]]
-name = "f_major"
 harness = false
 
 [[bench]]

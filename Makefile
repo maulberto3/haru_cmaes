@@ -1,8 +1,9 @@
+###
 dev-size:
-	clear && du ./target/debug/haru_cmaes -h
+	clear && du ./target/debug/libharu_cmaes.rlib -h
 prod-size:
-	clear && du ./target/release/haru_cmaes -h
-
+	clear && du ./target/release/libharu_cmaes.rlib -h
+###
 clean:
 	cargo cache --autoclean && cargo clean
 lint:
@@ -25,17 +26,17 @@ exam:
 	cargo run --release --example simple_use
 build:
 	clear && make clean && make lint && make test && make cove && make deps && make prep && make doct && make exam
-
+###
 benc:
 	clear && cargo bench --bench mine
 prof:
 	clear && cargo run --release --example flamegraph
-
+###
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:
 	# Generate the changelog and commit it in the same step
 	git cliff -o CHANGELOG.md
-	git add CHANGELOG.md
+	git add .
 	git commit -m "Update changelog for v$(VERSION)"
 	git push origin master
 
