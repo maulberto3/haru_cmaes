@@ -74,6 +74,24 @@ impl CmaesParamsValidator for CmaesParamsValid {
     }
 
     /// Validates the provided parameters to ensure they meet the constraints.
+    ///
+    /// Example
+    ///
+    /// ```rust
+    /// use haru_cmaes::CmaesParams;
+    /// use haru_cmaes::params::{CmaesParamsValid, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams {
+    ///     popsize: 50,
+    ///     xstart: vec![0.0; 50],
+    ///     sigma: 0.75,
+    ///     tol: Some(0.0001),
+    ///     obj_value: Some(0.0), // This has to make sense for your objective function
+    ///     zs: Some(0.01),
+    /// };
+    ///
+    /// assert!(CmaesParamsValid::validate_params(params).is_ok());
+    /// ```
     fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
         CmaesParamsValid::check_popsize(params.clone())?;
         CmaesParamsValid::check_xstart(params.clone())?;
