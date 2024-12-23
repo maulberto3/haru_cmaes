@@ -44,6 +44,6 @@ publ:
 	# Check for uncommitted changes
 	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
 	# Perform the publish and then update changelog
-	clear && make clif && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags && cargo publish
+	clear && make clif && git tag -a v$(VERSION)b -m "Release v$(VERSION)" && git push --tags && cargo publish
 	# Optional: Clean cache after publishing (commented out)
 	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
