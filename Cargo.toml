@@ -6,9 +6,9 @@ authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/maulberto3/haru_cmaes"
-exclude = [
-    "src/simple_use.rs",
-]
+# exclude = [
+#     "src/simple_use.rs",
+# ]
 
 [dependencies]
 anyhow = { version = "1.0.86" }
