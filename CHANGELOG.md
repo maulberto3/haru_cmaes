@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Since it is a mod, it needs it through Cargo.toml
+
+## [0.6.4] - 2024-12-23
+
 ### 🚀 Features
 
 - *(CmaesState)* Performance enhancement due to sparse covariance efforts
