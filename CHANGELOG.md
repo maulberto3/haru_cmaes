@@ -11,9 +11,22 @@ All notable changes to this project will be documented in this file.
 - Re-exports for easy use
 - *(fitness)* Use of associated types in traits
 
+### 🐛 Bug Fixes
+
+- Inequality typo
+
 ### 🚜 Refactor
 
 - *(CmaesAlgoOptimizer)* Better trait redability and use of associated type
+
+### 📚 Documentation
+
+- Started doing doc tests with params
+- Updated README
+
+### ⚙️ Miscellaneous Tasks
+
+- Some build artifacts
 
 ## [0.6.3] - 2024-12-10
 
