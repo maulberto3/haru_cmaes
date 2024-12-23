@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Since it is a mod, it needs it through Cargo.toml
+- Git tag workaround
 
 ## [0.6.4] - 2024-12-23
 
