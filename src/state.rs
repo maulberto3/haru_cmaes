@@ -28,18 +28,12 @@ pub struct CmaesState {
 /// Trait for Cmaes State
 pub trait CmaesStateLogic {
     fn init_state(params: &CmaesParamsValid) -> Result<CmaesState>;
-    fn prepare_ask(&mut self) -> Result<()>;
-    fn eigen_decomposition(&mut self) -> Result<()>;
+    fn prepare_ask(&mut self, params: &CmaesParamsValid) -> Result<()>;
+    fn eigen_decomposition(&mut self, params: &CmaesParamsValid) -> Result<()>;
 }
 
 impl CmaesStateLogic for CmaesState {
     /// Initializes the state for the CMA-ES algorithm.
-    ///
-    /// # Parameters
-    /// - `params`: The CMA-ES parameters to initialize the state.
-    ///
-    /// # Returns
-    /// A `Result` containing the initialized `CmaesState` or an error if initialization fails.
     fn init_state(params: &CmaesParamsValid) -> Result<Self> {
         // Create initial values for the state
         // print!("Creating a new state... ");
@@ -78,11 +72,8 @@ impl CmaesStateLogic for CmaesState {
     }
 
     /// Prepares the state by performing eigen decomposition on the covariance matrix.
-    ///
-    /// # Returns
-    /// A `Result` indicating success or failure.
-    fn prepare_ask(&mut self) -> Result<()> {
-        let _ = self.eigen_decomposition();
+    fn prepare_ask(&mut self, params: &CmaesParamsValid) -> Result<()> {
+        let _ = self.eigen_decomposition(params);
         Ok(())
     }
 
@@ -91,9 +82,21 @@ impl CmaesStateLogic for CmaesState {
     /// This method computes the eigenvalues and eigenvectors of the covariance matrix,
     /// adjusts the eigenvalues to ensure numerical stability, and reconstructs the matrix
     /// for use in the CMA-ES algorithm.
-    fn eigen_decomposition(&mut self) -> Result<()> {
+    fn eigen_decomposition(&mut self, params: &CmaesParamsValid) -> Result<()> {
         // Ensure symmetric covariance
-        self.cov = (&self.cov + &self.cov.t()) / 2.0;
+        // self.cov = (&self.cov + &self.cov.t()) / 2.0;
+        self.cov.zip_mut_with(&self.cov.t().to_owned(), |x, &t| {
+            *x = (*x + t) / 2.0;
+        });
+
+        // Enforce sparsity for matrix eigen efficiency
+        if let Some(zs) = params.zs {
+            self.cov.map_inplace(|x| {
+                if x.abs() > zs {
+                    *x = 0.0
+                }
+            });
+        }
 
         // Leverage column major strides right before eig
         // self.cov = into_f_major(&self.cov).unwrap();
