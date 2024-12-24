@@ -3,7 +3,7 @@ use ndarray::{Array, Array1, Array2};
 use ndarray_linalg::Eig;
 // use ndarray_rand::RandomExt;
 // use rand::distributions::Uniform;
-use crate::params::CmaesParamsValid;
+use crate::params::CmaesParams;
 // use crate::utils::into_f_major;
 
 /// State for the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.
@@ -27,14 +27,14 @@ pub struct CmaesState {
 
 /// Trait for Cmaes State
 pub trait CmaesStateLogic {
-    fn init_state(params: &CmaesParamsValid) -> Result<CmaesState>;
-    fn prepare_ask(&mut self, params: &CmaesParamsValid) -> Result<()>;
-    fn eigen_decomposition(&mut self, params: &CmaesParamsValid) -> Result<()>;
+    fn init_state(params: &CmaesParams) -> Result<CmaesState>;
+    fn prepare_ask(&mut self, params: &CmaesParams) -> Result<()>;
+    fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()>;
 }
 
 impl CmaesStateLogic for CmaesState {
     /// Initializes the state for the CMA-ES algorithm.
-    fn init_state(params: &CmaesParamsValid) -> Result<Self> {
+    fn init_state(params: &CmaesParams) -> Result<Self> {
         // Create initial values for the state
         // print!("Creating a new state... ");
         let z: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
@@ -72,7 +72,7 @@ impl CmaesStateLogic for CmaesState {
     }
 
     /// Prepares the state by performing eigen decomposition on the covariance matrix.
-    fn prepare_ask(&mut self, params: &CmaesParamsValid) -> Result<()> {
+    fn prepare_ask(&mut self, params: &CmaesParams) -> Result<()> {
         let _ = self.eigen_decomposition(params);
         Ok(())
     }
@@ -82,7 +82,7 @@ impl CmaesStateLogic for CmaesState {
     /// This method computes the eigenvalues and eigenvectors of the covariance matrix,
     /// adjusts the eigenvalues to ensure numerical stability, and reconstructs the matrix
     /// for use in the CMA-ES algorithm.
-    fn eigen_decomposition(&mut self, params: &CmaesParamsValid) -> Result<()> {
+    fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()> {
         // Ensure symmetric covariance
         // self.cov = (&self.cov + &self.cov.t()) / 2.0;
         self.cov.zip_mut_with(&self.cov.t().to_owned(), |x, &t| {
@@ -90,13 +90,11 @@ impl CmaesStateLogic for CmaesState {
         });
 
         // Enforce sparsity for matrix eigen efficiency
-        if let Some(zs) = params.zs {
-            self.cov.map_inplace(|x| {
-                if x.abs() < zs {
-                    *x = 0.0
-                }
-            });
-        }
+        self.cov.map_inplace(|x| {
+            if x.abs() < params.zs {
+                *x = 0.0
+            }
+        });
 
         // Leverage column major strides right before eig
         // self.cov = into_f_major(&self.cov).unwrap();

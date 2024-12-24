@@ -9,7 +9,7 @@
 use blas_src; // necessary for eig
 
 pub mod params;
-pub use crate::params::CmaesParams;
+pub use crate::params::{CmaesParams, CmaesParamsValidator};
 
 pub mod state;
 pub use crate::state::{CmaesState, CmaesStateLogic};

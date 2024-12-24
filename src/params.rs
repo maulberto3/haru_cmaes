@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use ndarray::{s, Array1};
 
 // TODO: try and use builder pattern
@@ -6,133 +6,44 @@ use ndarray::{s, Array1};
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
-    pub popsize: i32,           // Population size.
-    pub xstart: Vec<f32>,       // Initial solution vector.
-    pub sigma: f32,             // Step-size (standard deviation).
-    pub tol: Option<f32>,       // Tolerance for convergence, optional
-    pub obj_value: Option<f32>, // Known objective value, optional
-    pub zs: Option<f32>,        // Enforce zero sparsity for quicker computational results, optional
-}
-
-/// Validated parameters for CMA-ES.
-#[derive(Debug, Clone)]
-pub struct CmaesParamsValid {
-    pub popsize: i32,           // Population size
-    pub xstart: Vec<f32>,       // Initial guess (mean vector)
-    pub sigma: f32,             // Step-size (standard deviation)
-    pub tol: Option<f32>,       // Tolerance for convergence, optional
-    pub obj_value: Option<f32>, // Known objective value, optional
-    pub zs: Option<f32>,        // Enforce zero sparsity for quicker computational results, optional
-    pub n: f32,                 // Dimension of the problem space (xstart size)
-    pub mu: i32,                // Number of parents (best individuals)
-    pub weights: Array1<f32>,   // Weights for recombination
-    pub mueff: f32,             // Effective number of parents
-    pub cc: f32,                // Cumulation constant for the rank-one update
-    pub cs: f32,                // Cumulation constant for the rank-mu update
-    pub c1: f32,                // Learning rate for the rank-one update
-    pub cmu: f32,               // Learning rate for the rank-mu update
-    pub damps: f32,             // Damping for step-size adaptation
-                                // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
+    pub popsize: i32,         // Population size
+    pub xstart: Vec<f32>,     // Initial guess (mean vector)
+    pub sigma: f32,           // Step-size (standard deviation)
+    pub tol: f32,             // Tolerance for convergence, optional
+    pub obj_value: f32,       // Known objective value, optional
+    pub zs: f32,              // Enforce zero sparsity for quicker computational results, optional
+    pub n: f32,               // Dimension of the problem space (xstart size)
+    pub mu: i32,              // Number of parents (best individuals)
+    pub weights: Array1<f32>, // Weights for recombination
+    pub mueff: f32,           // Effective number of parents
+    pub cc: f32,              // Cumulation constant for the rank-one update
+    pub cs: f32,              // Cumulation constant for the rank-mu update
+    pub c1: f32,              // Learning rate for the rank-one update
+    pub cmu: f32,             // Learning rate for the rank-mu update
+    pub damps: f32,           // Damping for step-size adaptation
+                              // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
 }
 
 /// Trait defining validation methods for CMA-ES parameters.
 pub trait CmaesParamsValidator {
-    // Type for the validated parameters.
-    type ValidatedParams;
-
-    fn validate(params: CmaesParams) -> Result<Self::ValidatedParams>;
-    fn validate_params(params: CmaesParams) -> Result<CmaesParams>;
-    fn check_xstart(params: CmaesParams) -> Result<()>;
-    fn check_popsize(params: CmaesParams) -> Result<()>;
-    fn check_sigma(params: CmaesParams) -> Result<()>;
-
-    fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams>;
+    type Output;
+    fn new() -> Result<Self::Output>;
 }
 
 /// Trait for Validated Cmaes Params
-impl CmaesParamsValidator for CmaesParamsValid {
-    /// Type for the validated parameters.
-    type ValidatedParams = CmaesParamsValid;
-
-    /// Validates the provided parameters and returns a validated parameter set.
-    fn validate(params: CmaesParams) -> Result<Self::ValidatedParams> {
-        // print!("Validating initial parameters... ");
-        let params = match CmaesParamsValid::validate_params(params) {
-            Ok(params) => params,
-            Err(e) => {
-                eprintln!(
-                    "An initial Cmaes parameter is not following its constraint: {}",
-                    e
-                );
-                return Err(e);
-            }
-        };
-
-        // print!("Computing default parameters... ");
-        let params = CmaesParamsValid::add_default_params(params)?;
-        Ok(params)
-    }
-
-    /// Validates the provided parameters to ensure they meet the constraints.
-    ///
-    /// Example
-    ///
-    /// ```rust
-    /// use haru_cmaes::CmaesParams;
-    /// use haru_cmaes::params::{CmaesParamsValid, CmaesParamsValidator};
-    ///
-    /// let params = CmaesParams {
-    ///     popsize: 50,
-    ///     xstart: vec![0.0; 50],
-    ///     sigma: 0.75,
-    ///     tol: Some(0.0001),
-    ///     obj_value: Some(0.0), // This has to make sense for your objective function
-    ///     zs: Some(0.01),
-    /// };
-    ///
-    /// assert!(CmaesParamsValid::validate_params(params).is_ok());
-    /// ```
-    fn validate_params(params: CmaesParams) -> Result<CmaesParams> {
-        CmaesParamsValid::check_popsize(params.clone())?;
-        CmaesParamsValid::check_xstart(params.clone())?;
-        CmaesParamsValid::check_sigma(params.clone())?;
-        Ok(params)
-    }
-
-    /// Checks if the `xstart` parameter meets its constraints.
-    fn check_xstart(params: CmaesParams) -> Result<()> {
-        if params.xstart.len() <= 1 {
-            return Err(anyhow!("==> number of dimensions must be > 1."));
-        }
-        Ok(())
-    }
-
-    /// Checks if the `popsize` parameter meets its constraints.
-    fn check_popsize(params: CmaesParams) -> Result<()> {
-        if params.popsize <= 5 {
-            return Err(anyhow!("==> popsize must be > 5."));
-        }
-        Ok(())
-    }
-
-    /// Checks if the `sigma` parameter meets its constraints.
-    fn check_sigma(params: CmaesParams) -> Result<()> {
-        if params.sigma <= 0.0 {
-            return Err(anyhow!("==> sigma must be greater than 0.0."));
-        }
-        Ok(())
-    }
+impl CmaesParamsValidator for CmaesParams {
+    type Output = CmaesParams;
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
-    fn add_default_params(params: CmaesParams) -> Result<Self::ValidatedParams> {
-        let popsize = params.popsize;
-        let xstart = params.xstart;
-        let sigma = params.sigma;
+    fn new() -> Result<Self::Output> {
+        let popsize = 50;
+        let xstart = vec![0.0; 50];
+        let sigma = 0.75;
 
-        let tol = params.tol;
-        let obj_value = params.obj_value;
+        let tol = 0.0001;
+        let obj_value = 0.0;
 
-        let zs = params.zs;
+        let zs = 0.05;
 
         let n = xstart.len() as f32;
         let k = popsize as f32;
@@ -166,7 +77,7 @@ impl CmaesParamsValidator for CmaesParamsValid {
         // 0.5 is chosen such that eig takes 2 times the time of tell in >=20-D
         // let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / (n * n);
 
-        let valid_params = CmaesParamsValid {
+        let params = CmaesParams {
             // Required
             popsize,
             xstart,
@@ -189,6 +100,6 @@ impl CmaesParamsValidator for CmaesParamsValid {
             damps,
             // lazy_gap_evals,
         };
-        Ok(valid_params)
+        Ok(params)
     }
 }

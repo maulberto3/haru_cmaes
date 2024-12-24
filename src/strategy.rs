@@ -1,6 +1,6 @@
 use crate::{
     fitness::Fitness,
-    params::{CmaesParams, CmaesParamsValid, CmaesParamsValidator},
+    params::CmaesParams,
     state::{CmaesState, CmaesStateLogic},
 };
 use anyhow::Result;
@@ -17,18 +17,18 @@ pub struct PopulationZ {
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
 pub struct CmaesAlgo {
-    pub validated_params: CmaesParamsValid,
+    pub params: CmaesParams,
 }
 
 impl CmaesAlgo {
     /// Creates a new CMA-ES instance with validated parameters.
     pub fn new(params: CmaesParams) -> Result<Self> {
-        let validated_params = CmaesParamsValid::validate(params)?;
-        Ok(Self { validated_params })
+        // let params = CmaesParams::validate(params)?;
+        Ok(Self { params })
     }
 
     /// Generates a matrix of standard normal random variables.
-    fn ask_z(&self, params: &CmaesParamsValid, state: &mut CmaesState) -> Result<PopulationZ> {
+    fn ask_z(&self, params: &CmaesParams, state: &mut CmaesState) -> Result<PopulationZ> {
         let z: Array2<f32> = Array2::random(
             (params.popsize as usize, params.xstart.len()),
             StandardNormal,
@@ -64,9 +64,9 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// ASK
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
-        state.prepare_ask(&self.validated_params)?;
+        state.prepare_ask(&self.params)?;
 
-        let z: Array2<f32> = self.ask_z(&self.validated_params, state)?.z;
+        let z: Array2<f32> = self.ask_z(&self.params, state)?.z;
 
         let eig_vals_sqrt: Array2<f32> = Array2::from_diag(&state.eig_vals.mapv(f32::sqrt));
         let eigenvectors: Array2<f32> = state.eig_vecs.to_owned();
@@ -119,13 +119,13 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         }
 
         // Update mean and covariance matrix
-        let y_mu: Array2<f32> = pop.y.slice(s![..self.validated_params.mu, ..]).to_owned();
+        let y_mu: Array2<f32> = pop.y.slice(s![..self.params.mu, ..]).to_owned();
         let weights_mu: Array2<f32> = self
-            .validated_params
+            .params
             .weights
-            .slice(s![..self.validated_params.mu])
+            .slice(s![..self.params.mu])
             // .view()
-            .into_shape((1, self.validated_params.mu as usize))
+            .into_shape((1, self.params.mu as usize))
             .unwrap()
             .to_owned();
 
@@ -140,48 +140,33 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         // Update evolution path ps
         let new_y: Array1<f32> = &state.mean - &xold;
         let new_z: Array1<f32> = state.inv_sqrt.dot(&new_y);
-        let csn = (self.validated_params.cs
-            * (2. - self.validated_params.cs)
-            * self.validated_params.mueff)
-            .sqrt()
-            / state.sigma;
+        let csn = (self.params.cs * (2. - self.params.cs) * self.params.mueff).sqrt() / state.sigma;
         state.ps = Zip::from(&state.ps)
             .and(&new_z)
-            .map_collect(|&ps_, &z_| (1. - self.validated_params.cs) * ps_ + csn * z_);
+            .map_collect(|&ps_, &z_| (1. - self.params.cs) * ps_ + csn * z_);
 
         // Update evolution path covariance
-        let ccn = (self.validated_params.cc
-            * (2. - self.validated_params.cc)
-            * self.validated_params.mueff)
-            .sqrt()
-            / state.sigma;
+        let ccn = (self.params.cc * (2. - self.params.cc) * self.params.mueff).sqrt() / state.sigma;
         let hsig = state.ps.mapv(|x| x * x).sum()
             / (state.ps.len() as f32)
-            / (1.
-                - (1. - self.validated_params.cs)
-                    .powi(2 * state.evals_count / self.validated_params.popsize));
+            / (1. - (1. - self.params.cs).powi(2 * state.evals_count / self.params.popsize));
         state.pc = Zip::from(&state.pc)
             .and(&new_y)
-            .map_collect(|&pc_, &y_| (1. - self.validated_params.cs) * pc_ + ccn * hsig * y_);
+            .map_collect(|&pc_, &y_| (1. - self.params.cs) * pc_ + ccn * hsig * y_);
 
         // Adapt covariance matrix C
-        let c1a = self.validated_params.c1
-            * (1.
-                - (1. - hsig * hsig) * self.validated_params.cc * (2. - self.validated_params.cc));
-        state.cov = state
-            .cov
-            .mapv(|x| x * (1. - c1a - self.validated_params.cmu));
+        let c1a =
+            self.params.c1 * (1. - (1. - hsig * hsig) * self.params.cc * (2. - self.params.cc));
+        state.cov = state.cov.mapv(|x| x * (1. - c1a - self.params.cmu));
 
         let pc_outer: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
-        let pc_outer: Array2<f32> = pc_outer
-            .dot(&pc_outer.t())
-            .mapv(|x| x * self.validated_params.c1);
+        let pc_outer: Array2<f32> = pc_outer.dot(&pc_outer.t()).mapv(|x| x * self.params.c1);
         state.cov = Zip::from(&state.cov)
             .and(&pc_outer)
             .map_collect(|&cov_, &pc_outer_| cov_ + pc_outer_);
 
         // Perform the rank-mu update
-        for (i, w) in self.validated_params.weights.iter().enumerate() {
+        for (i, w) in self.params.weights.iter().enumerate() {
             let mut w = *w;
             if w < 0. {
                 w = 0.001
@@ -189,17 +174,15 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             let dx: Array1<f32> = &pop.y.slice(s![i, ..]) - &xold;
             let dx: Array2<f32> = dx.insert_axis(Axis(1));
             let dx: Array2<f32> = dx.dot(&dx.t());
-            let dx: Array2<f32> = dx.mapv(|x| {
-                x * w * self.validated_params.cmu
-                    / (self.validated_params.sigma * self.validated_params.sigma)
-            });
+            let dx: Array2<f32> =
+                dx.mapv(|x| x * w * self.params.cmu / (self.params.sigma * self.params.sigma));
             state.cov = &state.cov + dx;
         }
 
         // Adapt step-size sigma
-        let cn = self.validated_params.cs / self.validated_params.damps;
+        let cn = self.params.cs / self.params.damps;
         let sum_square_ps = state.ps.mapv(|x| x * x).sum();
-        let other = cn * (sum_square_ps / self.validated_params.n - 1.) / 2.;
+        let other = cn * (sum_square_ps / self.params.n - 1.) / 2.;
         state.sigma *= f32::min(1.0, other).exp();
 
         Ok(state)
