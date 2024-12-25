@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚜 Refactor
+
+- Easier allow users to provide cost function
+
+### 🧪 Testing
+
+- New coverage
+
+## [0.6.6] - 2024-12-25
+
 ### 🚀 Features
 
 - Setters for fundamental cmaes parameters
