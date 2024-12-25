@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚜 Refactor
+
+- Refactoring params for builder pattern
+
+## [0.6.4b] - 2024-12-23
+
 ### 🐛 Bug Fixes
 
 - Since it is a mod, it needs it through Cargo.toml
