@@ -3,6 +3,12 @@ dev-size:
 	clear && du ./target/debug/libharu_cmaes.rlib -h
 prod-size:
 	clear && du ./target/release/libharu_cmaes.rlib -h
+tree:
+	cargo tree
+graph-dep:
+	cargo depgraph --all-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
+deps:
+	make tree && make graph-dep
 ###
 clean:
 	cargo cache --autoclean && cargo clean
@@ -12,12 +18,6 @@ test:
 	cargo test --tests
 cove:
 	cargo tarpaulin --out Html
-tree:
-	cargo tree
-graph-dep:
-	cargo depgraph --all-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
-deps:
-	make tree && make graph-dep
 prep:
 	cargo machete && cargo build
 doct:
@@ -25,7 +25,7 @@ doct:
 exam:
 	cargo run --release --example simple_use
 build:
-	clear && make clean && make lint && make test && make cove && make deps && make prep && make doct && make exam
+	clear && make clean && make lint && make test && make cove && make prep && make doct && make exam
 ###
 benc:
 	clear && cargo bench --bench mine
