@@ -1,8 +1,6 @@
 use anyhow::Result;
 use ndarray::{s, Array1};
 
-// TODO: try and use builder pattern
-
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
@@ -28,6 +26,10 @@ pub struct CmaesParams {
 pub trait CmaesParamsValidator {
     type Output;
     fn new() -> Result<Self::Output>;
+    // Fundamental
+    fn set_popsize(self, popsize: i32) -> Result<Self::Output>;
+    fn set_xstart(self, xstart: Vec<f32>) -> Result<Self::Output>;
+    fn set_sigma(self, sigma: f32) -> Result<Self::Output>;
 }
 
 /// Trait for Validated Cmaes Params
@@ -78,7 +80,7 @@ impl CmaesParamsValidator for CmaesParams {
         // let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / (n * n);
 
         let params = CmaesParams {
-            // Required
+            // Fundamental
             popsize,
             xstart,
             sigma,
@@ -89,7 +91,6 @@ impl CmaesParamsValidator for CmaesParams {
             zs,
             // Others
             n,
-            // chin,
             mu,
             weights,
             mueff,
@@ -98,8 +99,22 @@ impl CmaesParamsValidator for CmaesParams {
             c1,
             cmu,
             damps,
-            // lazy_gap_evals,
         };
         Ok(params)
+    }
+
+    fn set_popsize(mut self, popsize: i32) -> Result<Self> {
+        self.popsize = popsize;
+        Ok(self)
+    }
+
+    fn set_xstart(mut self, xstart: Vec<f32>) -> Result<Self::Output> {
+        self.xstart = xstart;
+        Ok(self)
+    }
+
+    fn set_sigma(mut self, sigma: f32) -> Result<Self::Output> {
+        self.sigma = sigma;
+        Ok(self)
     }
 }

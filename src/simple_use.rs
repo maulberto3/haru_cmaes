@@ -34,7 +34,10 @@ pub fn example() -> Result<()> {
     let obj = allow_objective_func(SquareAndSum)?;
 
     // Initialize CMA-ES parameters
-    let params = CmaesParams::new()?;
+    let params = CmaesParams::new()?
+        .set_popsize(50)?
+        .set_xstart(vec![0.0; 60])?
+        .set_sigma(0.75)?;
 
     // Create a new CMA-ES instance
     let cmaes = CmaesAlgo::new(params)?;
