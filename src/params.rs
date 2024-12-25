@@ -37,6 +37,16 @@ impl CmaesParamsValidator for CmaesParams {
     type Output = CmaesParams;
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
+    /// 
+    /// Example
+    /// 
+    /// ```rust
+    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new();
+    ///
+    /// assert!(params.is_ok());
+    /// ```
     fn new() -> Result<Self::Output> {
         let popsize = 50;
         let xstart = vec![0.0; 50];
@@ -102,17 +112,51 @@ impl CmaesParamsValidator for CmaesParams {
         };
         Ok(params)
     }
-
+    /// Sets population size
+    /// 
+    /// Example
+    /// 
+    /// ```rust
+    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_popsize(75));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
     fn set_popsize(mut self, popsize: i32) -> Result<Self> {
         self.popsize = popsize;
         Ok(self)
     }
-
+    /// Sets origin of search
+    /// 
+    /// Example
+    /// 
+    /// ```rust
+    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_xstart(vec![0.0; 60]));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
     fn set_xstart(mut self, xstart: Vec<f32>) -> Result<Self::Output> {
         self.xstart = xstart;
         Ok(self)
     }
 
+    /// Sets step size (sigma)
+    /// 
+    /// Example
+    /// 
+    /// ```rust
+    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_sigma(0.85));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
     fn set_sigma(mut self, sigma: f32) -> Result<Self::Output> {
         self.sigma = sigma;
         Ok(self)
