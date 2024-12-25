@@ -30,13 +30,16 @@ pub fn example() -> Result<()> {
     // Take start time
     let start = Instant::now();
 
+    // Create cost function, i.e. see fitness.rs for an example
+    let objective_function = SquareAndSum { cost_dim: 45 };
+
     // Check allowed objective function
-    let obj = allow_objective_func(SquareAndSum)?;
+    let (obj, obj_dim) = allow_objective_func(objective_function)?;
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()?
         .set_popsize(50)?
-        .set_xstart(vec![0.0; 60])?
+        .set_xstart(vec![0.0; obj_dim])?
         .set_sigma(0.75)?;
 
     // Create a new CMA-ES instance
