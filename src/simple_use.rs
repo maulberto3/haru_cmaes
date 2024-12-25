@@ -55,9 +55,6 @@ pub fn example() -> Result<()> {
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
 
         // // Are we there yet?
-        // let obj_value = cmaes.params.obj_value.as_ref();
-        // let tol = cmaes.params.tol.as_ref();
-
         let curr = state.best_y.first().unwrap();
         if (curr - cmaes.params.obj_value).abs() < cmaes.params.tol {
             // If we are close to obj_value less than tol, we are there (break)
