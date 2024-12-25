@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Use blas_src already at lib.rs
+
+### 🧪 Testing
+
+- *(fitness)* Test of example square and sum
+- New coverage
+- *(fitness)* Test of example square and sum
+- New coverage
+
+## [0.6.7] - 2024-12-25
+
 ### 🚜 Refactor
 
 - Easier allow users to provide cost function
