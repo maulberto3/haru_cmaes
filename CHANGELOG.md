@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- Setters for fundamental cmaes parameters
+
+### 🐛 Bug Fixes
+
+- Remove git push in make publ, it is already in make clif
+- Remove make tree from make
+
+### 🎨 Styling
+
+- Fix spaces by cargo fmt
+
+### 🧪 Testing
+
+- *(params)* Doctests
+- New coverage html
+
+## [0.6.5] - 2024-12-25
+
 ### 🚜 Refactor
 
 - Refactoring params for builder pattern
