@@ -37,9 +37,9 @@ impl CmaesParamsValidator for CmaesParams {
     type Output = CmaesParams;
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
-    /// 
+    ///
     /// Example
-    /// 
+    ///
     /// ```rust
     /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
     ///
@@ -113,9 +113,9 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(params)
     }
     /// Sets population size
-    /// 
+    ///
     /// Example
-    /// 
+    ///
     /// ```rust
     /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
     ///
@@ -129,9 +129,9 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(self)
     }
     /// Sets origin of search
-    /// 
+    ///
     /// Example
-    /// 
+    ///
     /// ```rust
     /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
     ///
@@ -146,9 +146,9 @@ impl CmaesParamsValidator for CmaesParams {
     }
 
     /// Sets step size (sigma)
-    /// 
+    ///
     /// Example
-    /// 
+    ///
     /// ```rust
     /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
     ///
