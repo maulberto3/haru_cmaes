@@ -57,9 +57,11 @@ pub fn allow_objective_func<E: FitnessEvaluator>(
 /// use rand::distributions::Uniform;
 /// use haru_cmaes::fitness::SquareAndSum;
 /// use haru_cmaes::strategy::PopulationY;;
+/// 
 /// let individuals = 10;
 /// let objective_function = SquareAndSum { cost_dim: 15 };
 /// let shape = (individuals, objective_function.cost_dim);
+/// // random population
 /// let y = Array2::random(shape, Uniform::new(-1., 1.));
 /// let pop = PopulationY { y };
 /// let fitness = objective_function.cost(&pop);
