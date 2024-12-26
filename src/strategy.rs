@@ -118,23 +118,17 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             state.best_y_fit = fitness.values.slice(s![0, ..]).to_owned();
         }
 
-        // Update mean and covariance matrix
+        // Update mean
         let y_mu: Array2<f32> = pop.y.slice(s![..self.params.mu, ..]).to_owned();
         let weights_mu: Array2<f32> = self
             .params
             .weights
             .slice(s![..self.params.mu])
-            // .view()
-            .into_shape((1, self.params.mu as usize))
-            .unwrap()
-            .to_owned();
-
+            .to_owned().insert_axis(Axis(0));
         let y_w: Array2<f32> = y_mu.t().dot(&weights_mu.t());
         let y_w: Array1<f32> = y_w
             .into_shape(y_mu.ncols())
-            .unwrap()
-            // .to_owned()
-            ;
+            .unwrap();
         state.mean = y_w;
 
         // Update evolution path ps
