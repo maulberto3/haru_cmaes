@@ -12,27 +12,30 @@ use ndarray::Array1;
 
 // Example usage of the CMA-ES algorithm.
 //
-// First, it checks that the objective function is allowed
+// First, it defines and checks that your objective
+// function is allowed
 //
-// This function demonstrates a basic workflow of the CMA-ES
-// optimization algorithm using predefined parameters and fitness
-// function.
+// Then, create default Cmaes parameters, after which
+// can be adjusted to specific values
 //
-// It initializes the CMA-ES algorithm, iterates
-// through a fixed number of generations, and prints the
-// average fitness of the best solutions.
+// Then, we pass those params to Cmaes algorithm and start
+// the ask-tell loop
 //
-// Notice you have to create your own Objective function
-// here it is SquareAndSum that implements FitnessEvaluator trait
+// Here, it is shown that if the mean of last 50 best
+// optimization values is close to current best,
+// the lops breaks
 //
-// Final solution is under state.best_y and state.best_y_fit
+// Finally, the solution is under state.best_y and state.best_y_fit
 
 pub fn example() -> Result<()> {
+    // Define verbose or not
+    let verbose = true;
+
     // Take start time
     let start = Instant::now();
 
     // Create cost function, i.e. see fitness.rs for an example
-    let objective_function = SquareAndSum { obj_dim: 40 };
+    let objective_function = SquareAndSum { obj_dim: 50 };
     // let objective_function = StdAndSum { obj_dim: 45 };
 
     // Check allowed objective function
@@ -40,7 +43,7 @@ pub fn example() -> Result<()> {
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()?
-        .set_popsize(20)?
+        .set_popsize(50)?
         .set_xstart(vec![0.0; obj_dim])?
         .set_sigma(0.75)?;
 
@@ -62,7 +65,7 @@ pub fn example() -> Result<()> {
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
 
-        // Save current best 
+        // Save current best
         best_y.push(*state.best_y_fit.first().unwrap());
 
         // Stopping criteria 1: Check if we are there yet?
@@ -75,22 +78,28 @@ pub fn example() -> Result<()> {
         ////////////////
         // TODO
         // Allow flag for verbose state
-        print!("{:+.4?}  ", &best_y_avg);
+        if verbose {
+            print!("{:+.4?}  ", &best_y_avg)
+        }
         ////////////////
         if (state.best_y_fit.first().unwrap() - best_y_avg).abs() < cmaes.params.tol {
-            println!("Search stopped due to closeness to target");
+            if verbose {
+                println!("Search stopped due to closeness to target")
+            }
             break;
-        }    
+        }
 
         step += 1;
     }
     // Print the average fitness of the best solutions
-    println!(
-        "Step {} | Fitness: {:+.4?} | Duration p/step: {:.4} secs",
-        step,
-        &state.best_y_fit.first().unwrap(),
-        (start.elapsed().as_micros() as f32) / 1000000.0 / (step as f32)
-    );
+    if verbose {
+        println!(
+            "Step {} | Fitness: {:+.4?} | Duration p/step: {:.4} secs",
+            step,
+            &state.best_y_fit.first().unwrap(),
+            (start.elapsed().as_micros() as f32) / 1000000.0 / (step as f32)
+        )
+    }
 
     Ok(())
 }
