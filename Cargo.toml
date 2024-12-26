@@ -13,7 +13,7 @@ repository = "https://github.com/maulberto3/haru_cmaes"
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }
-ndarray = { version = "0.15", features = ["blas"] }
+ndarray = { version = "0.15.6", features = ["blas"] }
 blas-src = { version = "0.10.0", features = ["openblas"] }
 # openblas-src = { version = "0.10.9", features = ["cblas", "system"] }
 ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
