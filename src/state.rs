@@ -96,9 +96,13 @@ impl CmaesStateLogic for CmaesState {
             }
         });
 
-        // Leverage column major strides right before eig
-        // self.cov = into_f_major(&self.cov).unwrap();
-        // println!("{:?}", &self.cov);
+        ////////////////
+        // TODO
+        // Allow flag for verbose state
+        ////////////////
+        // println!("{:?}", &self);
+        // dbg!(&self);
+        // println!("");
 
         // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
         let (eig_vals, eig_vecs) = self.cov.eig().unwrap();
@@ -114,13 +118,13 @@ impl CmaesStateLogic for CmaesState {
             } else if *elem > 10. {
                 *elem = 10.; // Clamp to a maximum value to avoid overflow
             }
-            //  else { *elem = *elem }
         });
 
         // Short-hand for inverse square root of C
         self.inv_sqrt = Array2::from_diag(&eig_vals.map(|elem| elem.powf(-0.5)));
         self.inv_sqrt = eig_vecs.dot(&self.inv_sqrt).dot(&eig_vecs.t());
 
+        // Store
         self.eig_vecs = eig_vecs;
         self.eig_vals = eig_vals;
 
