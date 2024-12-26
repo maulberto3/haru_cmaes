@@ -8,7 +8,6 @@ pub struct CmaesParams {
     pub xstart: Vec<f32>,     // Initial guess (mean vector)
     pub sigma: f32,           // Step-size (standard deviation)
     pub tol: f32,             // Tolerance for convergence, optional
-    pub obj_value: f32,       // Known objective value, optional
     pub zs: f32,              // Enforce zero sparsity for quicker computational results, optional
     pub n: f32,               // Dimension of the problem space (xstart size)
     pub mu: i32,              // Number of parents (best individuals)
@@ -30,6 +29,8 @@ pub trait CmaesParamsValidator {
     fn set_popsize(self, popsize: i32) -> Result<Self::Output>;
     fn set_xstart(self, xstart: Vec<f32>) -> Result<Self::Output>;
     fn set_sigma(self, sigma: f32) -> Result<Self::Output>;
+    // Helper
+    fn update_dependent_params(&mut self);
 }
 
 /// Trait for Validated Cmaes Params
@@ -48,46 +49,34 @@ impl CmaesParamsValidator for CmaesParams {
     /// assert!(params.is_ok());
     /// ```
     fn new() -> Result<Self::Output> {
-        let popsize = 50;
-        let xstart = vec![0.0; 50];
+        let popsize = 10;
+        let xstart = vec![0.0; 6];
         let sigma = 0.75;
-
-        let tol = 0.0001;
-        let obj_value = 0.0;
-
-        let zs = 0.05;
-
+        let tol = 0.01;
+        let zs = 0.01;
+        // Update these after setters
         let n = xstart.len() as f32;
-        let k = popsize as f32;
-        // let chin = n.sqrt() * (1. - 1. / (4. * n) + 1. / (21. * n * n));
         let mu = popsize / 2;
-
-        let _iterable: Vec<f32> = (0..popsize)
-            .map(|_x| {
-                if _x < mu {
-                    (k / 2.0 + 0.5).ln() - ((_x + 1) as f32).ln()
+        let k = popsize as f32;
+        let iterable: Vec<f32> = (0..popsize)
+            .map(|x| {
+                if x < mu {
+                    (k / 2.0 + 0.5).ln() - ((x + 1) as f32).ln()
                 } else {
                     0.0
                 }
             })
             .collect();
-
-        let _weights: Array1<f32> = Array1::from_iter(_iterable);
-        let _w_sum = _weights.slice(s![..mu]).sum();
-        let weights: Array1<f32> = _weights.mapv(|x| x / _w_sum);
-
+        let weights: Array1<f32> = Array1::from_iter(iterable);
+        let w_sum = weights.slice(s![..mu]).sum();
+        let weights: Array1<f32> = weights.mapv(|x| x / w_sum);
         let mueff: f32 = (weights.slice(s![..mu]).sum() * weights.slice(s![..mu]).sum())
             / weights.slice(s![..mu]).mapv(|x| x * x).sum();
-
         let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
         let cs = (mueff + 2.) / (n + mueff + 5.);
         let c1 = 2. / ((n + 1.3) * (n + 1.3) + mueff);
         let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.) * (n + 2.) + mueff));
         let damps = 2. * mueff / k + 0.3 + cs;
-
-        // gap to postpone eigendecomposition to achieve O(N**2) per eval
-        // 0.5 is chosen such that eig takes 2 times the time of tell in >=20-D
-        // let lazy_gap_evals = 0.5 * n * (k) * (c1 + cmu).powi(-1) / (n * n);
 
         let params = CmaesParams {
             // Fundamental
@@ -96,7 +85,6 @@ impl CmaesParamsValidator for CmaesParams {
             sigma,
             // Objective's
             tol,
-            obj_value,
             // Computational's
             zs,
             // Others
@@ -112,6 +100,34 @@ impl CmaesParamsValidator for CmaesParams {
         };
         Ok(params)
     }
+
+    /// Updates all parameters that depend on other fields.
+    fn update_dependent_params(&mut self) {
+        self.n = self.xstart.len() as f32;
+        self.mu = self.popsize / 2;
+        let k = self.popsize as f32;
+        let iterable: Vec<f32> = (0..self.popsize)
+            .map(|x| {
+                if x < self.mu as i32 {
+                    (k / 2.0 + 0.5).ln() - ((x + 1) as f32).ln()
+                } else {
+                    0.0
+                }
+            })
+            .collect();
+        let weights: Array1<f32> = Array1::from_iter(iterable);
+        let w_sum = weights.slice(s![..self.mu]).sum();
+        self.weights = weights.mapv(|x| x / w_sum);
+        self.mueff = (self.weights.slice(s![..self.mu]).sum().powi(2))
+            / self.weights.slice(s![..self.mu]).mapv(|x| x * x).sum();
+        self.cc = (4. + self.mueff / self.n) / (self.n + 4. + 2. * self.mueff / self.n);
+        self.cs = (self.mueff + 2.) / (self.n + self.mueff + 5.);
+        self.c1 = 2. / ((self.n + 1.3).powi(2) + self.mueff);
+        self.cmu = (1. - self.c1)
+            .min(2. * (self.mueff - 2. + 1. / self.mueff) / ((self.n + 2.).powi(2) + self.mueff));
+        self.damps = 2. * self.mueff / k + 0.3 + self.cs;
+    }
+
     /// Sets population size
     ///
     /// Example
@@ -120,12 +136,13 @@ impl CmaesParamsValidator for CmaesParams {
     /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new()
-    ///     .and_then(|p| p.set_popsize(75));
+    ///     .and_then(|p| p.set_popsize(15));
     ///
     /// assert!(params.is_ok());
     /// ```
     fn set_popsize(mut self, popsize: i32) -> Result<Self> {
         self.popsize = popsize;
+        self.update_dependent_params();
         Ok(self)
     }
     /// Sets origin of search
@@ -142,6 +159,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// ```
     fn set_xstart(mut self, xstart: Vec<f32>) -> Result<Self::Output> {
         self.xstart = xstart;
+        self.update_dependent_params();
         Ok(self)
     }
 
@@ -159,6 +177,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// ```
     fn set_sigma(mut self, sigma: f32) -> Result<Self::Output> {
         self.sigma = sigma;
+        self.update_dependent_params();
         Ok(self)
     }
 }
