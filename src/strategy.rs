@@ -69,13 +69,13 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         let z: Array2<f32> = self.ask_z(&self.params, state)?.z;
 
         let eig_vals_sqrt: Array2<f32> = Array2::from_diag(&state.eig_vals.mapv(f32::sqrt));
-        let eigenvectors: Array2<f32> = state.eig_vecs.to_owned();
+        // let eigenvectors: Array2<f32> = state.eig_vecs.to_owned();
 
         let scaled_z: Array2<f32> = (z * state.sigma).dot(&eig_vals_sqrt);
-        let rotated_z: Array2<f32> = scaled_z.dot(&eigenvectors.t());
+        let rotated_z: Array2<f32> = scaled_z.dot(&state.eig_vecs.t());
 
         let y: Array2<f32> = &rotated_z + &state.mean.broadcast(rotated_z.raw_dim()).unwrap();
-        state.y = y.to_owned();
+        state.y = y.clone();
 
         Ok(PopulationY { y })
     }
@@ -124,11 +124,10 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             .params
             .weights
             .slice(s![..self.params.mu])
-            .to_owned().insert_axis(Axis(0));
+            .to_owned()
+            .insert_axis(Axis(0));
         let y_w: Array2<f32> = y_mu.t().dot(&weights_mu.t());
-        let y_w: Array1<f32> = y_w
-            .into_shape(y_mu.ncols())
-            .unwrap();
+        let y_w: Array1<f32> = y_w.into_shape(y_mu.ncols()).unwrap();
         state.mean = y_w;
 
         // Update evolution path ps
@@ -152,7 +151,6 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         let c1a =
             self.params.c1 * (1. - (1. - hsig * hsig) * self.params.cc * (2. - self.params.cc));
         state.cov = state.cov.mapv(|x| x * (1. - c1a - self.params.cmu));
-
         let pc_outer: Array2<f32> = state.pc.clone().insert_axis(Axis(1));
         let pc_outer: Array2<f32> = pc_outer.dot(&pc_outer.t()).mapv(|x| x * self.params.c1);
         state.cov = Zip::from(&state.cov)
@@ -173,7 +171,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             state.cov = &state.cov + dx;
         }
 
-        // Adapt step-size sigma
+        // Perform step-size sigma update
         let cn = self.params.cs / self.params.damps;
         let sum_square_ps = state.ps.mapv(|x| x * x).sum();
         let other = cn * (sum_square_ps / self.params.n - 1.) / 2.;
