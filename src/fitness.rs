@@ -22,21 +22,6 @@ pub trait FitnessEvaluator {
     fn evaluator_dim(&self) -> Result<Self::ObjectiveDim>;
 }
 
-impl FitnessEvaluator for SquareAndSum {
-    type IndividualsEvaluated = Fitness;
-    type ObjectiveDim = usize;
-
-    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
-        let values = self.cost(pop);
-        let fitness = Fitness { values };
-        Ok(fitness)
-    }
-
-    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
-        Ok(self.cost_dim())
-    }
-}
-
 /// Function to allow only for complying objective functions
 pub fn allow_objective_func<E: FitnessEvaluator>(
     objective_function: E,
@@ -59,8 +44,8 @@ pub fn allow_objective_func<E: FitnessEvaluator>(
 /// use haru_cmaes::strategy::PopulationY;;
 ///
 /// let individuals = 10;
-/// let objective_function = SquareAndSum { cost_dim: 15 };
-/// let shape = (individuals, objective_function.cost_dim);
+/// let objective_function = SquareAndSum { obj_dim: 15 };
+/// let shape = (individuals, objective_function.obj_dim);
 /// // random population
 /// let y = Array2::random(shape, Uniform::new(-1., 1.));
 /// let pop = PopulationY { y };
@@ -69,9 +54,8 @@ pub fn allow_objective_func<E: FitnessEvaluator>(
 /// // We should have one fitness value per individual
 /// assert!(fitness.shape() == &[individuals, 1]);
 /// ```
-#[derive(Debug, Clone)]
 pub struct SquareAndSum {
-    pub cost_dim: usize,
+    pub obj_dim: usize,
 }
 
 impl SquareAndSum {
@@ -85,6 +69,82 @@ impl SquareAndSum {
 
     // Required method
     pub fn cost_dim(&self) -> usize {
-        self.cost_dim
+        self.obj_dim
     }
 }
+
+impl FitnessEvaluator for SquareAndSum {
+    type IndividualsEvaluated = Fitness;
+    type ObjectiveDim = usize;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
+        let values = self.cost(pop);
+        let fitness = Fitness { values };
+        Ok(fitness)
+    }
+
+    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
+        Ok(self.cost_dim())
+    }
+}
+
+/// Implementation of the standard deviation and sum as simple fitness function.
+///
+/// Example of a fitness function
+///
+/// Example
+///
+/// ```rust
+/// use ndarray_rand::RandomExt;
+/// use ndarray::Array2;
+/// use rand::distributions::Uniform;
+/// use haru_cmaes::fitness::StdAndSum;
+/// use haru_cmaes::strategy::PopulationY;;
+///
+/// let individuals = 10;
+/// let objective_function = StdAndSum { obj_dim: 15 };
+/// let shape = (individuals, objective_function.obj_dim);
+/// // random population
+/// let y = Array2::random(shape, Uniform::new(-1., 1.));
+/// let pop = PopulationY { y };
+/// let fitness = objective_function.cost(&pop);
+///
+/// // We should have one fitness value per individual
+/// assert!(fitness.shape() == &[individuals, 1]);
+/// ```
+pub struct StdAndSum {
+    pub obj_dim: usize,
+}
+
+impl StdAndSum {
+    // Required method
+    pub fn cost(&self, pop: &PopulationY) -> Array2<f32> {
+        pop.y
+            .map_axis(Axis(1), |row| row.std(1.))
+            .into_shape((pop.y.nrows(), 1))
+            .unwrap()
+    }
+
+    // Required method
+    pub fn cost_dim(&self) -> usize {
+        self.obj_dim
+    }
+}
+
+impl FitnessEvaluator for StdAndSum {
+    type IndividualsEvaluated = Fitness;
+    type ObjectiveDim = usize;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
+        let values = self.cost(pop);
+        let fitness = Fitness { values };
+        Ok(fitness)
+    }
+
+    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
+        Ok(self.cost_dim())
+    }
+}
+
+// TODO
+// Implement another example i.e. DEA optimization, Rastrigin, etc.
