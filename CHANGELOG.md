@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Openblas temporal link
+
+### 🐛 Bug Fixes
+
+- Temporal remove of feature flag as it is now default
+
+### 🧪 Testing
+
+- Doc tests for tests and integration tests for tarpaulin
+
+### Build
+
+- Cleanup
+- Tarpaulin new report
+
+## [0.6.9] - 2024-12-28
+
+### 🚀 Features
+
 - *(strategy)* Fix closeness to target stopping criteria
 - Added Rastrigin function
 - Continue to improve user interface
