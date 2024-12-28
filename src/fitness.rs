@@ -7,6 +7,11 @@ use ndarray::{Array2, Axis};
 // Allow for min or max in obj func
 //////////////
 
+//////////////
+// TODO
+// Decouple example fitness functions with trait
+//////////////
+
 /// Structure to hold fitness values of a population.
 #[derive(Debug, Clone)]
 pub struct Fitness {
@@ -148,3 +153,39 @@ impl FitnessEvaluator for StdAndSum {
 
 // TODO
 // Implement another example i.e. DEA optimization, Rastrigin, etc.
+
+pub struct Rastrigin {
+    pub obj_dim: usize,
+}
+
+impl Rastrigin {
+    pub fn cost(&self, pop: &PopulationY) -> Array2<f32> {
+        let a = 10.0;
+        pop.y
+            .map_axis(Axis(1), |row| {
+                row.map(|x| x.powi(2) - a * (2.0 * std::f32::consts::PI * x).cos() + a)
+                    .sum()
+            })
+            .into_shape((pop.y.nrows(), 1))
+            .unwrap()
+    }
+
+    pub fn cost_dim(&self) -> usize {
+        self.obj_dim
+    }
+}
+
+impl FitnessEvaluator for Rastrigin {
+    type IndividualsEvaluated = Fitness;
+    type ObjectiveDim = usize;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
+        let values = self.cost(pop);
+        let fitness = Fitness { values };
+        Ok(fitness)
+    }
+
+    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
+        Ok(self.cost_dim())
+    }
+}
