@@ -10,17 +10,29 @@ repository = "https://github.com/maulberto3/haru_cmaes"
 #     "src/simple_use.rs",
 # ]
 
+[lib]
+name = "haru_cmaes"
+path = "src/lib.rs"
+
+[[bin]]
+name = "simple_use"
+path = "examples/simple_use.rs" # this make only compile what's in /src
+
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }
-ndarray = { version = "0.15.6", features = ["blas"] }
-blas-src = { version = "0.10.0", features = ["openblas"] }
+ndarray = { version = "0.15.6" }  # 16 errors out
+# blas-src = { version = "0.10.0", features = ["openblas"] }
 # openblas-src = { version = "0.10.9", features = ["cblas", "system"] }
-ndarray-linalg = { version = "0.16", features = ["openblas-system"] }
-ndarray-rand = { version = "0.14" }
+ndarray-linalg = { version = "0.16.0" }
+ndarray-rand = { version = "0.14.0" }  # 15 also errors
+
+[features]
+openblas = ["ndarray-linalg/openblas-system"]
+profile_memory = []
 
 [dev-dependencies]
-pprof = { version = "0.13", features = ["flamegraph"] }
+pprof = { version = "0.14.0", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 argmin = { version = "0.10" }
 argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }

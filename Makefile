@@ -15,22 +15,22 @@ clean:
 lint:
 	cargo fmt --check && cargo clippy -- -D warnings
 test:
-	cargo test --tests
+	cargo test --tests --features=openblas
 cove:
-	cargo tarpaulin --out Html
+	cargo tarpaulin --out Html --features=openblas
 prep:
 	cargo machete && cargo build
 doct:
 	cargo doc
 exam:
-	cargo run --release --example simple_use
+	cargo run --release --example simple_use --features=openblas
 build:
 	clear && make clean && make lint && make test && make cove && make prep && make doct && make exam
 ###
 benc:
 	clear && cargo bench --bench mine
 prof:
-	clear && cargo run --release --example flamegraph
+	clear && cargo run --release --example flamegraph --features=openblas
 ###
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:

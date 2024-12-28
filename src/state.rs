@@ -1,5 +1,6 @@
 use anyhow::Result;
 use ndarray::{Array, Array1, Array2};
+#[allow(unused_imports)]
 use ndarray_linalg::Eig;
 // use ndarray_rand::RandomExt;
 // use rand::distributions::Uniform;
@@ -18,7 +19,7 @@ pub struct CmaesState {
     pub eig_vals: Array1<f32>,   // Eigenvalues of the covariance matrix.
     pub inv_sqrt: Array2<f32>,   // Matrix for the inverse square root of the covariance matrix.
     pub mean: Array1<f32>,       // Mean of the population.
-    pub sigma: f32,              // Ste-size (standard deviation).
+    pub sigma: f32,              // Step-size (standard deviation).
     pub g: i32,                  // Curren generation.
     pub evals_count: i32,        // Number of evaluations performed.
     pub ps: Array1<f32>,         // Evolution path for step-size adaptation.
@@ -27,16 +28,19 @@ pub struct CmaesState {
 
 /// Trait for Cmaes State
 pub trait CmaesStateLogic {
-    fn init_state(params: &CmaesParams) -> Result<CmaesState>;
+    type NewState;
+
+    fn init_state(params: &CmaesParams) -> Result<Self::NewState>;
     fn prepare_ask(&mut self, params: &CmaesParams) -> Result<()>;
     fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()>;
 }
 
 impl CmaesStateLogic for CmaesState {
     /// Initializes the state for the CMA-ES algorithm.
-    fn init_state(params: &CmaesParams) -> Result<Self> {
+    type NewState = CmaesState;
+
+    fn init_state(params: &CmaesParams) -> Result<Self::NewState> {
         // Create initial values for the state
-        // print!("Creating a new state... ");
         let z: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
         let y: Array2<f32> = Array2::zeros((params.popsize as usize, params.xstart.len()));
         let best_y: Array1<f32> = Array1::zeros(params.xstart.len());
@@ -104,29 +108,32 @@ impl CmaesStateLogic for CmaesState {
         // dbg!(&self);
         // println!("");
 
-        // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
-        let (eig_vals, eig_vecs) = self.cov.eig().unwrap();
+        #[cfg(feature = "openblas")]
+        {
+            // Get eigenvalues and eigenvectors of covariance matrix i.e. C = B * Λ * B^T
+            let (eig_vals, eig_vecs) = self.cov.eig().unwrap();
 
-        // Extract real parts of eigenvalues and eigenvectors
-        let mut eig_vals: Array1<f32> = eig_vals.mapv(|eig| eig.re);
-        let eig_vecs: Array2<f32> = eig_vecs.mapv(|vec| vec.re);
+            // Extract real parts of eigenvalues and eigenvectors
+            let mut eig_vals: Array1<f32> = eig_vals.mapv(|eig| eig.re);
+            let eig_vecs: Array2<f32> = eig_vecs.mapv(|vec| vec.re);
 
-        // Ensure positive numbers
-        eig_vals.map_inplace(|elem| {
-            if *elem < 0.0 {
-                *elem = 0.1 // TODO: instability here with f32::EPSILON, try other values
-            } else if *elem > 10. {
-                *elem = 10.; // Clamp to a maximum value to avoid overflow
-            }
-        });
+            // Ensure positive numbers
+            eig_vals.map_inplace(|elem| {
+                if *elem < 0.0 {
+                    *elem = 0.1 // TODO: instability here with f32::EPSILON, try other values
+                } else if *elem > 10. {
+                    *elem = 10.; // Clamp to a maximum value to avoid overflow
+                }
+            });
 
-        // Short-hand for inverse square root of C
-        self.inv_sqrt = Array2::from_diag(&eig_vals.map(|elem| elem.powf(-0.5)));
-        self.inv_sqrt = eig_vecs.dot(&self.inv_sqrt).dot(&eig_vecs.t());
+            // Short-hand for inverse square root of C
+            self.inv_sqrt = Array2::from_diag(&eig_vals.map(|elem| elem.powf(-0.5)));
+            self.inv_sqrt = eig_vecs.dot(&self.inv_sqrt).dot(&eig_vecs.t());
 
-        // Store
-        self.eig_vecs = eig_vecs;
-        self.eig_vals = eig_vals;
+            // Store
+            self.eig_vecs = eig_vecs;
+            self.eig_vals = eig_vals;
+        }
 
         Ok(())
     }
