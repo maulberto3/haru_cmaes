@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- *(strategy)* Fix closeness to target stopping criteria
+- Added Rastrigin function
+- Continue to improve user interface
+
+### 🐛 Bug Fixes
+
+- *(params)* Remove obj_value param, update all params if setter
+- *(README)* For example now refer to simple_use.rs
+- Minor type redundacy
+
+### 🚜 Refactor
+
+- *(fitness)* Define fitness and then apply trait
+- *(strategy)* A few refactos
+- *(state)* A few refactors
+- Update explanation and verbose flag
+
+### 📚 Documentation
+
+- *(fitness)* More context on the doctest for SquareAndSum
+- *(fitness)* More context on the doctest for SquareAndSum
+
+### ⚡ Performance
+
+- *(strategy)* Less verbose methods
+- Added memory profile (linux) conditional cfg
+- Unlink backend to end users (as suggested by devs)
+
+### Build
+
+- Specific ndarray version
+- Full build outputs
+
+## [0.6.8] - 2024-12-25
+
 ### 🐛 Bug Fixes
 
 - Use blas_src already at lib.rs
