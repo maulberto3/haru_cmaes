@@ -15,7 +15,7 @@ clean:
 lint:
 	cargo fmt --check && cargo clippy -- -D warnings
 test:
-	cargo test --tests --features=openblas
+	cargo test --doc --features=openblas
 cove:
 	cargo tarpaulin --out Html --features=openblas
 prep:
