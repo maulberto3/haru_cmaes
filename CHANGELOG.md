@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Temporal remove of feature flag as it is now default
+- Bump version, already taken by git tag
 
 ### 🧪 Testing
 
