@@ -2,7 +2,6 @@ use anyhow::Result;
 use ndarray::Array2;
 use std::{fs::File, io::Read};
 
-
 pub fn into_f_major(mat: &Array2<f32>) -> Result<Array2<f32>> {
     let shape = mat.dim();
     // println!("");
@@ -40,4 +39,3 @@ pub fn format_number(num: usize) -> String {
 
     result.chars().rev().collect()
 }
-
