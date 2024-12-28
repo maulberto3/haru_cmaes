@@ -14,6 +14,20 @@ EDIT: I plan to enhance this library as much as possible with ndarray, so no nal
 
 Please see simple_use.rs
 
+## About OpenBlas
+
+I have started unlinking my project to not use any backend like OpenBlas. However, I am  missing, at least as of now, a pure Rust implementation of eigen decomposition, as without OpenBlas, cmaes won't work (I haven't tried any other algebra backend).
+
+I should have that so that the crate would run seemlessly without Openblas or any other backend. However, as stated I do not have it yet, so OpenBlas is required.
+
+Ideally, you would just `cargo run` without openblas and it'd work. And if you'd need more power, you'd just `cargo run --features=openblas`.
+
+But it turns out that `cargo publ` needs to assert that the crate can operate without features; thus that's why I have my temporal build.rs: to include OpenBlas as default and make my project run well. 
+
+As soon as I have my entire cmaes project implemented without OpenBlas, I have to stick to that build.rs
+
+This may be one good reason to migrate matrix calculations to nalgebra as it has both with and without backend implementations for eigen decomposition (just like pengowen's cmaes crate did).
+
 ## Requirements for (ndarray and friends): BLAS algebra
 
 I assume you have a clean brand new linux environment, so follow the instructions. You can also refer to the working Github actions, if that helps you better.

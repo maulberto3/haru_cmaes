@@ -15,7 +15,7 @@ name = "haru_cmaes"
 path = "src/lib.rs"
 
 [[bin]]
-name = "simple_use"
+name = "example"
 path = "examples/simple_use.rs" # this make only compile what's in /src
 
 [dependencies]
@@ -28,6 +28,7 @@ ndarray-linalg = { version = "0.16.0" }
 ndarray-rand = { version = "0.14.0" }  # 15 also errors
 
 [features]
+default = ["ndarray-linalg/openblas-system"]
 openblas = ["ndarray-linalg/openblas-system"]
 profile_memory = []
 
