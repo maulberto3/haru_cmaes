@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - *(params)* Remove obj_value param, update all params if setter
 - *(README)* For example now refer to simple_use.rs
 - Minor type redundacy
+- Bump version
 
 ### 🚜 Refactor
 
