@@ -108,7 +108,7 @@ impl CmaesParamsValidator for CmaesParams {
         let k = self.popsize as f32;
         let iterable: Vec<f32> = (0..self.popsize)
             .map(|x| {
-                if x < self.mu as i32 {
+                if x < self.mu {
                     (k / 2.0 + 0.5).ln() - ((x + 1) as f32).ln()
                 } else {
                     0.0
