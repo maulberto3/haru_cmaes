@@ -1,11 +1,13 @@
 use std::time::Instant;
 
 use crate::{
-    fitness::{allow_objective_func, FitnessEvaluator, SquareAndSum, StdAndSum},
+    fitness::{allow_objective_func, FitnessEvaluator, Rastrigin},
     CmaesAlgo, CmaesAlgoOptimizer, CmaesParams, CmaesParamsValidator, CmaesState, CmaesStateLogic,
 };
 use anyhow::Result;
 use ndarray::Array1;
+// use ndarray_rand::RandomExt;
+// use rand::distributions::Uniform;
 
 // #[allow(unused_imports)]
 // use blas_src;
@@ -35,7 +37,7 @@ pub fn example() -> Result<()> {
     let start = Instant::now();
 
     // Create cost function, i.e. see fitness.rs for an example
-    let objective_function = SquareAndSum { obj_dim: 50 };
+    let objective_function = Rastrigin { obj_dim: 50 };
     // let objective_function = StdAndSum { obj_dim: 45 };
 
     // Check allowed objective function
@@ -45,7 +47,8 @@ pub fn example() -> Result<()> {
     let params = CmaesParams::new()?
         .set_popsize(50)?
         .set_xstart(vec![0.0; obj_dim])?
-        .set_sigma(0.75)?;
+        // .set_xstart(Array1::random(obj_dim, Uniform::new(-0.5, 0.5)).to_vec())?
+        .set_sigma(0.25)?;
 
     // Create a new CMA-ES instance
     let cmaes = CmaesAlgo::new(params)?;
@@ -69,22 +72,19 @@ pub fn example() -> Result<()> {
         best_y.push(*state.best_y_fit.first().unwrap());
 
         // Stopping criteria 1: Check if we are there yet?
-        let last_50_best_y = if best_y.len() > 50 {
-            best_y[best_y.len() - 50..].to_vec()
+        let last_50_best_y = if best_y.len() > 25 {
+            best_y[best_y.len() - 25..].to_vec()
         } else {
             best_y[..].to_vec()
         };
         let best_y_avg = Array1::from_vec(last_50_best_y).mean().unwrap();
-        ////////////////
-        // TODO
-        // Allow flag for verbose state
         if verbose {
             print!("{:+.4?}  ", &best_y_avg)
         }
         ////////////////
         if (state.best_y_fit.first().unwrap() - best_y_avg).abs() < cmaes.params.tol {
             if verbose {
-                println!("Search stopped due to closeness to target")
+                println!("Search stopped due to tolerance change met")
             }
             break;
         }
