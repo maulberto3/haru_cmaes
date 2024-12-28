@@ -64,6 +64,12 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// ASK
     /// Generates a new population and transforms it based on the CMA-ES parameters and state.
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
+
+        #[cfg(feature = "profile_memory")] {
+            use crate::utils::{format_number, get_memory_usage};
+            println!("Memory usage: {} Mb", format_number(get_memory_usage()?));
+        }
+
         state.prepare_ask(&self.params)?;
 
         let z: Array2<f32> = self.ask_z(&self.params, state)?.z;

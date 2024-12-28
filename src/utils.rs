@@ -1,5 +1,7 @@
 use anyhow::Result;
 use ndarray::Array2;
+use std::{fs::File, io::Read};
+
 
 pub fn into_f_major(mat: &Array2<f32>) -> Result<Array2<f32>> {
     let shape = mat.dim();
@@ -14,3 +16,28 @@ pub fn into_f_major(mat: &Array2<f32>) -> Result<Array2<f32>> {
     // println!("");
     Ok(f_mat)
 }
+
+pub fn get_memory_usage() -> Result<usize> {
+    let mut s = String::new();
+    File::open("/proc/self/statm")?.read_to_string(&mut s)?;
+    let fields: Vec<&str> = s.split_whitespace().collect();
+    Ok(fields[1].parse::<usize>().unwrap() * 4096 / 1000000) // Resident Set Size in bytes
+}
+
+pub fn format_number(num: usize) -> String {
+    let num_str = num.to_string();
+    let mut result = String::new();
+    let mut count = 0;
+
+    for c in num_str.chars().rev() {
+        if count == 3 {
+            result.push(',');
+            count = 0;
+        }
+        result.push(c);
+        count += 1;
+    }
+
+    result.chars().rev().collect()
+}
+
