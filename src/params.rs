@@ -182,4 +182,41 @@ impl CmaesParamsValidator for CmaesParams {
         self.sigma = sigma;
         Ok(self)
     }
+
+    /// Sets tolerance
+    ///
+    /// Example
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_tol(0.1));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
+    fn set_tol(mut self, tol: f32) -> Result<Self::Validated> {
+        self.tol = tol;
+        Ok(self)
+    }
+
+    /// Sets enforce covariance sparsity
+    ///
+    /// Example
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_zs(0.1));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
+    fn set_zs(mut self, zs: f32) -> Result<Self::Validated> {
+        if zs > 0.2 {
+            self.zs = 0.2
+        }
+        self.zs = zs;
+        Ok(self)
+    }
 }
