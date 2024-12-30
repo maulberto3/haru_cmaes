@@ -1,11 +1,8 @@
+use crate::params::CmaesParams;
 use anyhow::Result;
 use nalgebra::{DMatrix, DVector, SymmetricEigen};
-// use ndarray_rand::RandomExt;
-// use rand::distributions::Uniform;
-use crate::params::CmaesParams;
-// use crate::utils::into_f_major;
 
-/// State for the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.
+/// Structure to hold state for CMA-ES.
 #[derive(Debug, Clone)]
 pub struct CmaesState {
     pub z: DMatrix<f32>,          // Matrix of standard normal random variables.
@@ -24,7 +21,7 @@ pub struct CmaesState {
     pub pc: DVector<f32>,         // Evolution path for covariance matrix adaptation.
 }
 
-/// Trait for Cmaes State
+/// Trait for CMA-ES State
 pub trait CmaesStateLogic {
     type NewState;
 
@@ -33,10 +30,24 @@ pub trait CmaesStateLogic {
     fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()>;
 }
 
+/// Implementing Trait for CMA-ES State
 impl CmaesStateLogic for CmaesState {
-    /// Initializes the state for the CMA-ES algorithm.
     type NewState = CmaesState;
 
+    /// Initiates a new CMA-ES state
+    ///
+    /// Example
+    ///
+    /// ```rust
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    ///
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params).unwrap();
+    /// let state = CmaesState::init_state(&cmaes.params);
+    /// assert!(state.is_ok());
+    /// ```
     fn init_state(params: &CmaesParams) -> Result<Self::NewState> {
         // Create initial values for the state
         let z: DMatrix<f32> = DMatrix::zeros(params.popsize as usize, params.xstart.len());
@@ -72,30 +83,18 @@ impl CmaesStateLogic for CmaesState {
         })
     }
 
-    /// Prepares the state by performing eigen decomposition on the covariance matrix.
+    /// Prepares covariance, eignevalues and eigenvectors.
     fn prepare_ask(&mut self, params: &CmaesParams) -> Result<()> {
         let _ = self.eigen_decomposition(params);
         Ok(())
     }
 
     /// Performs eigen decomposition on the covariance matrix.
-    ///
-    /// This method computes the eigenvalues and eigenvectors of the covariance matrix,
-    /// adjusts the eigenvalues to ensure numerical stability, and reconstructs the matrix
-    /// for use in the CMA-ES algorithm.
     fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()> {
         // Ensure symmetric covariance
-        // self.cov.zip_mut_with(&self.cov.t().to_owned(), |x, &t| {
-        //     *x = (*x + t) / 2.0;
-        // });
         self.cov = (&self.cov + &self.cov.transpose()) / 2.0;
 
-        // // Enforce sparsity for matrix eigen efficiency
-        // self.cov.map_inplace(|x| {
-        //     if x.abs() < params.zs {
-        //         *x = 0.0
-        //     }
-        // });
+        // Enforce sparsity for matrix eigen computation efficiency
         self.cov.iter_mut().for_each(|x| {
             if x.abs() < params.zs {
                 *x = 0.0;
@@ -129,7 +128,6 @@ impl CmaesStateLogic for CmaesState {
             feature = "intel-mkl"
         )))]
         let eigen = SymmetricEigen::try_new(self.cov.clone(), 1e-20, 0).unwrap();
-
         let mut eig_vals: DVector<f32> = eigen.eigenvalues;
         let eig_vecs: DMatrix<f32> = eigen.eigenvectors;
 
@@ -146,7 +144,7 @@ impl CmaesStateLogic for CmaesState {
         let inv_sqrt_diag = DMatrix::from_diagonal(&eig_vals.map(|eig| eig.powf(-0.5)));
         self.inv_sqrt = &eig_vecs * &inv_sqrt_diag * eig_vecs.transpose();
 
-        // Store eigenvalues and eigenvectors
+        // Store
         self.eig_vecs = eig_vecs;
         self.eig_vals = eig_vals;
 
