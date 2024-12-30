@@ -8,7 +8,7 @@ fn main() -> Result<()> {
     let guard = ProfilerGuard::new(1000)?;
 
     // Run the example
-    for _i in 0..100 {
+    for _i in 0..200 {
         simple_use::example()?;
     }
     println!("Finished simple CMA-ES optimization.");
