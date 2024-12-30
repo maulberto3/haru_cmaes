@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚜 Refactor
+
+- Full migration to nalgebra
+
+## [0.6.10] - 2024-12-28
+
 ### 🚀 Features
 
 - Openblas temporal link
