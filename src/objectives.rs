@@ -1,15 +1,19 @@
-use crate::{fitness::{Fitness, FitnessEvaluator}, strategy::PopulationY};
+use crate::{
+    fitness::{Fitness, FitnessEvaluator},
+    strategy::PopulationY,
+};
 use anyhow::Result;
 use nalgebra::DVector;
 
-/// Implementation of the square and sum as simple fitness function.
+/// Implementation of the square and sum as fitness function.
 ///
 /// Example of a fitness function
 ///
 /// Example
 ///
 /// ```rust
-/// use haru_cmaes::fitness::SquareAndSum;
+/// use haru_cmaes::objectives::SquareAndSum;
+/// use haru_cmaes::fitness::FitnessEvaluator;
 /// use haru_cmaes::strategy::PopulationY;;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
@@ -21,10 +25,10 @@ use nalgebra::DVector;
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
 /// let objective_function = SquareAndSum { obj_dim: 4 };
-/// let fitness = objective_function.cost(&pop);
+/// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
-/// assert!(fitness.shape() == (3, 1));
+/// assert!(fitness.values.shape() == (3, 1));
 /// ```
 pub struct SquareAndSum {
     pub obj_dim: usize,
@@ -61,14 +65,15 @@ impl FitnessEvaluator for SquareAndSum {
     }
 }
 
-/// Implementation of the standard deviation and sum as simple fitness function.
+/// Implementation of the standard deviation and sum as fitness function.
 ///
 /// Example of a fitness function
 ///
 /// Example
 ///
 /// ```rust
-/// use haru_cmaes::fitness::StdAndSum;
+/// use haru_cmaes::objectives::StdAndSum;
+/// use haru_cmaes::fitness::FitnessEvaluator;
 /// use haru_cmaes::strategy::PopulationY;;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
@@ -80,10 +85,10 @@ impl FitnessEvaluator for SquareAndSum {
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
 /// let objective_function = StdAndSum { obj_dim: 4 };
-/// let fitness = objective_function.cost(&pop);
+/// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
-/// assert!(fitness.shape() == (3, 1));
+/// assert!(fitness.values.shape() == (3, 1));
 /// ```
 pub struct StdAndSum {
     pub obj_dim: usize,
@@ -125,9 +130,31 @@ impl FitnessEvaluator for StdAndSum {
     }
 }
 
-// TODO
-// Implement another example i.e. DEA optimization, Rastrigin, etc.
-
+/// Implementation of the Rastrigin function as fitness function.
+///
+/// Example of a fitness function
+///
+/// Example
+///
+/// ```rust
+/// use haru_cmaes::objectives::Rastrigin;
+/// use haru_cmaes::fitness::FitnessEvaluator;
+/// use haru_cmaes::strategy::PopulationY;;
+/// use nalgebra::{Matrix3x4, DMatrix};
+///
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
+/// let pop = PopulationY { y };
+/// let objective_function = Rastrigin { obj_dim: 4 };
+/// let fitness = objective_function.evaluate(&pop).unwrap();
+///
+/// // We should have one fitness value per individual
+/// assert!(fitness.values.shape() == (3, 1));
+/// ```
 pub struct Rastrigin {
     pub obj_dim: usize,
 }
