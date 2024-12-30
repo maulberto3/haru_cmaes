@@ -23,19 +23,22 @@ pub struct CmaesParams {
 
 /// Trait defining validation methods for CMA-ES parameters.
 pub trait CmaesParamsValidator {
-    type Output;
-    fn new() -> Result<Self::Output>;
+    type Validated;
+    fn new() -> Result<Self::Validated>;
     // Fundamental
-    fn set_popsize(self, popsize: i32) -> Result<Self::Output>;
-    fn set_xstart(self, xstart: Vec<f32>) -> Result<Self::Output>;
-    fn set_sigma(self, sigma: f32) -> Result<Self::Output>;
+    fn set_popsize(self, popsize: i32) -> Result<Self::Validated>;
+    fn set_xstart(self, xstart: Vec<f32>) -> Result<Self::Validated>;
+    fn set_sigma(self, sigma: f32) -> Result<Self::Validated>;
     // Helper
     fn update_dependent_params(&mut self);
+    // Other worth specifying
+    fn set_tol(self, tol: f32) -> Result<Self::Validated>;
+    fn set_zs(self, zs: f32) -> Result<Self::Validated>;
 }
 
 /// Trait for Validated Cmaes Params
 impl CmaesParamsValidator for CmaesParams {
-    type Output = CmaesParams;
+    type Validated = CmaesParams;
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
     ///
@@ -48,12 +51,12 @@ impl CmaesParamsValidator for CmaesParams {
     ///
     /// assert!(params.is_ok());
     /// ```
-    fn new() -> Result<Self::Output> {
+    fn new() -> Result<Self::Validated> {
         let popsize: i32 = 10;
         let xstart = vec![0.0; 6];
         let sigma = 0.75;
         let tol = 0.01;
-        let zs = 0.01;
+        let zs = 0.05;
         // Update these after setters
         let n = xstart.len() as f32;
         let mu = popsize / 2;
@@ -157,7 +160,7 @@ impl CmaesParamsValidator for CmaesParams {
     ///
     /// assert!(params.is_ok());
     /// ```
-    fn set_xstart(mut self, xstart: Vec<f32>) -> Result<Self::Output> {
+    fn set_xstart(mut self, xstart: Vec<f32>) -> Result<Self::Validated> {
         self.xstart = xstart;
         self.update_dependent_params();
         Ok(self)
@@ -175,7 +178,7 @@ impl CmaesParamsValidator for CmaesParams {
     ///
     /// assert!(params.is_ok());
     /// ```
-    fn set_sigma(mut self, sigma: f32) -> Result<Self::Output> {
+    fn set_sigma(mut self, sigma: f32) -> Result<Self::Validated> {
         self.sigma = sigma;
         Ok(self)
     }
