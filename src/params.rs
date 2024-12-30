@@ -21,7 +21,7 @@ pub struct CmaesParams {
                                // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
 }
 
-/// Trait defining validation methods for CMA-ES parameters.
+/// Trait for CMA-ES parameters.
 pub trait CmaesParamsValidator {
     type Validated;
     fn new() -> Result<Self::Validated>;
@@ -36,7 +36,7 @@ pub trait CmaesParamsValidator {
     fn set_zs(self, zs: f32) -> Result<Self::Validated>;
 }
 
-/// Trait for Validated Cmaes Params
+/// Implmenting Trait for CMA-ES parameters.
 impl CmaesParamsValidator for CmaesParams {
     type Validated = CmaesParams;
 
@@ -52,12 +52,15 @@ impl CmaesParamsValidator for CmaesParams {
     /// assert!(params.is_ok());
     /// ```
     fn new() -> Result<Self::Validated> {
+        // Must update all parameters if this one's setter is used
         let popsize: i32 = 10;
+        // Must update all parameters if this one's setter is used
         let xstart = vec![0.0; 6];
+
         let sigma = 0.75;
         let tol = 0.01;
         let zs = 0.05;
-        // Update these after setters
+
         let n = xstart.len() as f32;
         let mu = popsize / 2;
         let k = popsize as f32;
@@ -131,7 +134,7 @@ impl CmaesParamsValidator for CmaesParams {
         self.damps = 2. * self.mueff / k + 0.3 + self.cs;
     }
 
-    /// Sets population size
+    /// Sets population size.
     ///
     /// Example
     ///
@@ -148,7 +151,7 @@ impl CmaesParamsValidator for CmaesParams {
         self.update_dependent_params();
         Ok(self)
     }
-    /// Sets origin of search
+    /// Sets origin of search.
     ///
     /// Example
     ///
@@ -166,7 +169,7 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(self)
     }
 
-    /// Sets step size (sigma)
+    /// Sets step size (sigma).
     ///
     /// Example
     ///
@@ -183,7 +186,7 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(self)
     }
 
-    /// Sets tolerance
+    /// Sets tolerance.
     ///
     /// Example
     ///
@@ -200,7 +203,7 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(self)
     }
 
-    /// Sets enforce covariance sparsity
+    /// Sets enforce covariance sparsity.
     ///
     /// Example
     ///
