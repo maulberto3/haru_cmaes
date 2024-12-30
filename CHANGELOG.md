@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Bump version
+
 ### 🚜 Refactor
 
 - Better looking graph-dep png
