@@ -1,4 +1,5 @@
-use crate::fitness::{allow_objective_func, FitnessEvaluator, Rastrigin};
+use crate::fitness::{allow_objective_func, FitnessEvaluator};
+use crate::objectives::Rastrigin;
 use crate::params::{CmaesParams, CmaesParamsValidator};
 use crate::state::{CmaesState, CmaesStateLogic};
 use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};

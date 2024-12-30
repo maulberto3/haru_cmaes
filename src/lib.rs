@@ -15,6 +15,7 @@ pub mod state;
 pub mod strategy;
 
 pub mod fitness;
+pub mod objectives;
 
 pub mod utils;
 
