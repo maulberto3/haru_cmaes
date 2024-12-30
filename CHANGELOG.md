@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### 🚜 Refactor
 
+- Better looking graph-dep png
+
+### ⚙️ Miscellaneous Tasks
+
+- Some ci artifacts and fixed minor issues
+
+## [1.0.0] - 2024-12-30
+
+### 🚜 Refactor
+
 - Full migration to nalgebra
 
 ## [0.6.10] - 2024-12-28
