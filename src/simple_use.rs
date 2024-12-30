@@ -1,10 +1,11 @@
-use crate::fitness::{allow_objective_func, FitnessEvaluator};
+use crate::fitness::{FitnessFunction, FitnessEvaluator};
 use crate::objectives::Rastrigin;
 use crate::params::{CmaesParams, CmaesParamsValidator};
 use crate::state::{CmaesState, CmaesStateLogic};
 use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
 use anyhow::Result;
 use nalgebra::DVector;
+use std::env::var;
 use std::io::{self, Write};
 use std::time::Instant;
 
@@ -30,23 +31,18 @@ use std::time::Instant;
 
 pub fn example() -> Result<()> {
     // Define verbose or not
-    let verbose = true;
-    // let stdout = io::Stdout::
+    let verbose = var("VERBOSE").unwrap_or("No".to_string());
 
     // Take start time
     let start = Instant::now();
 
     // Create cost function, i.e. see fitness.rs for an example
-    let objective_function = Rastrigin { obj_dim: 50 };
-    // let objective_function = StdAndSum { obj_dim: 45 };
-
-    // Check allowed objective function
-    let (obj, obj_dim) = allow_objective_func(objective_function)?;
+    let obj_func = Rastrigin { obj_dim: 50 };
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()?
         .set_popsize(50)?
-        .set_xstart(vec![0.0; obj_dim])?
+        .set_xstart(vec![0.0; obj_func.cost_dim()])?
         .set_sigma(0.25)?;
 
     // Create a new CMA-ES instance
@@ -62,7 +58,7 @@ pub fn example() -> Result<()> {
         let mut pop = cmaes.ask(&mut state)?;
 
         // Evaluate the fitness of the population
-        let mut fitness = obj.evaluate(&pop)?;
+        let mut fitness = obj_func.evaluate(&pop)?;
 
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
@@ -70,20 +66,24 @@ pub fn example() -> Result<()> {
         // Save current best
         best_y.push(state.best_y_fit.row(0)[0]);
 
-        // Stopping criteria 1: Check if we are there yet?
+        ////////////////////////////
+        // TODO
+        // Abstract away stopping criteria
+        ////////////////////////////
+        // Stopping criteria: Check if we are there yet?
         let last_50_best_y = if best_y.len() > 25 {
             best_y[best_y.len() - 25..].to_vec()
         } else {
             best_y[..].to_vec()
         };
         let best_y_avg = DVector::from_vec(last_50_best_y).mean();
-        if verbose {
+        if verbose != "No" {
             print!("{:+.4?}  ", &best_y_avg);
             io::stdout().flush().unwrap()
         }
         if (state.best_y_fit.row(0)[0] - best_y_avg).abs() < cmaes.params.tol {
-            if verbose {
-                println!("  ===> Search stopped due to tolerance change met")
+            if verbose != "No" {
+                println!("\n===> Search stopped due to tolerance change met")
             }
             break;
         }
@@ -91,7 +91,7 @@ pub fn example() -> Result<()> {
         step += 1;
     }
     // Print the average fitness of the best solutions
-    if verbose {
+    if verbose != "No" {
         println!(
             "Step {} | Fitness: {:+.4?} | Duration p/step: {:.4} secs",
             step,
