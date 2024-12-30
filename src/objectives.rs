@@ -1,9 +1,9 @@
 use crate::{
-    fitness::{Fitness, FitnessEvaluator},
+    fitness::FitnessFunction,
     strategy::PopulationY,
 };
-use anyhow::Result;
 use nalgebra::DVector;
+
 
 /// Implementation of the square and sum as fitness function.
 ///
@@ -34,9 +34,9 @@ pub struct SquareAndSum {
     pub obj_dim: usize,
 }
 
-impl SquareAndSum {
+impl FitnessFunction for SquareAndSum {
     // Required method
-    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         pop.y
             .row_iter()
             .map(|row| row.iter().map(|x| x.powi(2)).sum())
@@ -45,23 +45,8 @@ impl SquareAndSum {
     }
 
     // Required method
-    pub fn cost_dim(&self) -> usize {
+    fn cost_dim(&self) -> usize {
         self.obj_dim
-    }
-}
-
-impl FitnessEvaluator for SquareAndSum {
-    type IndividualsEvaluated = Fitness;
-    type ObjectiveDim = usize;
-
-    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
-        let values = self.cost(pop);
-        let fitness = Fitness { values };
-        Ok(fitness)
-    }
-
-    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
-        Ok(self.cost_dim())
     }
 }
 
@@ -94,9 +79,9 @@ pub struct StdAndSum {
     pub obj_dim: usize,
 }
 
-impl StdAndSum {
+impl FitnessFunction for StdAndSum {
     // Required method
-    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         pop.y
             .row_iter()
             .map(|row| {
@@ -110,23 +95,8 @@ impl StdAndSum {
     }
 
     // Required method
-    pub fn cost_dim(&self) -> usize {
+    fn cost_dim(&self) -> usize {
         self.obj_dim
-    }
-}
-
-impl FitnessEvaluator for StdAndSum {
-    type IndividualsEvaluated = Fitness;
-    type ObjectiveDim = usize;
-
-    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
-        let values = self.cost(pop);
-        let fitness = Fitness { values };
-        Ok(fitness)
-    }
-
-    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
-        Ok(self.cost_dim())
     }
 }
 
@@ -159,8 +129,8 @@ pub struct Rastrigin {
     pub obj_dim: usize,
 }
 
-impl Rastrigin {
-    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+impl FitnessFunction for Rastrigin {
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         let (a, pi) = (10.0, std::f32::consts::PI);
         pop.y
             .row_iter()
@@ -173,22 +143,7 @@ impl Rastrigin {
             .into()
     }
 
-    pub fn cost_dim(&self) -> usize {
+    fn cost_dim(&self) -> usize {
         self.obj_dim
-    }
-}
-
-impl FitnessEvaluator for Rastrigin {
-    type IndividualsEvaluated = Fitness;
-    type ObjectiveDim = usize;
-
-    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated> {
-        let values = self.cost(pop);
-        let fitness = Fitness { values };
-        Ok(fitness)
-    }
-
-    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim> {
-        Ok(self.cost_dim())
     }
 }
