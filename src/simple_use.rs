@@ -1,13 +1,11 @@
-use std::time::Instant;
-
-use crate::{
-    fitness::{allow_objective_func, FitnessEvaluator, Rastrigin},
-    CmaesAlgo, CmaesAlgoOptimizer, CmaesParams, CmaesParamsValidator, CmaesState, CmaesStateLogic,
-};
+use crate::fitness::{allow_objective_func, FitnessEvaluator, Rastrigin};
+use crate::params::{CmaesParams, CmaesParamsValidator};
+use crate::state::{CmaesState, CmaesStateLogic};
+use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
 use anyhow::Result;
-use ndarray::Array1;
-// use ndarray_rand::RandomExt;
-// use rand::distributions::Uniform;
+use nalgebra::DVector;
+use std::io::{self, Write};
+use std::time::Instant;
 
 // #[allow(unused_imports)]
 // use blas_src;
@@ -32,6 +30,7 @@ use ndarray::Array1;
 pub fn example() -> Result<()> {
     // Define verbose or not
     let verbose = true;
+    // let stdout = io::Stdout::
 
     // Take start time
     let start = Instant::now();
@@ -69,7 +68,7 @@ pub fn example() -> Result<()> {
         state = cmaes.tell(state, &mut pop, &mut fitness)?;
 
         // Save current best
-        best_y.push(*state.best_y_fit.first().unwrap());
+        best_y.push(state.best_y_fit.row(0)[0]);
 
         // Stopping criteria 1: Check if we are there yet?
         let last_50_best_y = if best_y.len() > 25 {
@@ -77,14 +76,15 @@ pub fn example() -> Result<()> {
         } else {
             best_y[..].to_vec()
         };
-        let best_y_avg = Array1::from_vec(last_50_best_y).mean().unwrap();
+        let best_y_avg = DVector::from_vec(last_50_best_y).mean();
         if verbose {
-            print!("{:+.4?}  ", &best_y_avg)
+            print!("{:+.4?}  ", &best_y_avg);
+            io::stdout().flush().unwrap()
         }
         ////////////////
-        if (state.best_y_fit.first().unwrap() - best_y_avg).abs() < cmaes.params.tol {
+        if (state.best_y_fit.row(0)[0] - best_y_avg).abs() < cmaes.params.tol {
             if verbose {
-                println!("Search stopped due to tolerance change met")
+                println!("  ===> Search stopped due to tolerance change met")
             }
             break;
         }
@@ -96,7 +96,7 @@ pub fn example() -> Result<()> {
         println!(
             "Step {} | Fitness: {:+.4?} | Duration p/step: {:.4} secs",
             step,
-            &state.best_y_fit.first().unwrap(),
+            &state.best_y_fit.row(0)[0],
             (start.elapsed().as_micros() as f32) / 1000000.0 / (step as f32)
         )
     }

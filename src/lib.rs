@@ -9,13 +9,10 @@
 // use blas_src; // necessary for eig
 
 pub mod params;
-pub use crate::params::{CmaesParams, CmaesParamsValidator};
 
 pub mod state;
-pub use crate::state::{CmaesState, CmaesStateLogic};
 
 pub mod strategy;
-pub use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
 
 pub mod fitness;
 

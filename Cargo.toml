@@ -1,6 +1,6 @@
 [package]
 name = "haru_cmaes"
-version = "0.6.10"
+version = "1.0.0"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
@@ -21,23 +21,28 @@ path = "examples/simple_use.rs" # this make only compile what's in /src
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }
-ndarray = { version = "0.15.6" }  # 16 errors out
+nalgebra = { version = "0.33.2" }
+statrs = { version = "0.18.0" }
+ndarray-linalg = { version = "0.16.0" }
+nalgebra-lapack = { version = "0.25.0", optional = true }
+# ndarray = { version = "0.15.6" }  # 16 errors out
 # blas-src = { version = "0.10.0", features = ["openblas"] }
 # openblas-src = { version = "0.10.9", features = ["cblas", "system"] }
-ndarray-linalg = { version = "0.16.0" }
-ndarray-rand = { version = "0.14.0" }  # 15 also errors
+# ndarray-rand = { version = "0.14.0" }  # 15 also errors
 
 [features]
-default = ["ndarray-linalg/openblas-system"]
-openblas = ["ndarray-linalg/openblas-system"]
+default = []
 profile_memory = []
+openblas   = ["nalgebra-lapack/openblas"]
+netlib     = ["nalgebra-lapack/netlib"]
+accelerate = ["nalgebra-lapack/accelerate"]
+intel-mkl  = ["nalgebra-lapack/intel-mkl"]
 
 [dev-dependencies]
 pprof = { version = "0.14.0", features = ["flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 argmin = { version = "0.10" }
 argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"] }
-nalgebra = "0.33.2"
 cmaes = "0.2.2"
 
 [[bench]]

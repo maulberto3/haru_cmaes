@@ -23,7 +23,7 @@ pub fn example() -> Result<()> {
         .initial_mean(vec![0.0; dim])
         .initial_step_size(sigma)
         .max_generations(150)
-        .enable_printing(9999)
+        // .enable_printing(999999)
         .build(square_and_sum)
         .unwrap();
     

@@ -1,24 +1,24 @@
 use anyhow::Result;
-use ndarray::{s, Array1};
+use nalgebra::DVector;
 
 /// Parameters for CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
 #[derive(Debug, Clone)]
 pub struct CmaesParams {
-    pub popsize: i32,         // Population size
-    pub xstart: Vec<f32>,     // Initial guess (mean vector)
-    pub sigma: f32,           // Step-size (standard deviation)
-    pub tol: f32,             // Tolerance for convergence, optional
-    pub zs: f32,              // Enforce zero sparsity for quicker computational results, optional
-    pub n: f32,               // Dimension of the problem space (xstart size)
-    pub mu: i32,              // Number of parents (best individuals)
-    pub weights: Array1<f32>, // Weights for recombination
-    pub mueff: f32,           // Effective number of parents
-    pub cc: f32,              // Cumulation constant for the rank-one update
-    pub cs: f32,              // Cumulation constant for the rank-mu update
-    pub c1: f32,              // Learning rate for the rank-one update
-    pub cmu: f32,             // Learning rate for the rank-mu update
-    pub damps: f32,           // Damping for step-size adaptation
-                              // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
+    pub popsize: i32,          // Population size
+    pub xstart: Vec<f32>,      // Initial guess (mean vector)
+    pub sigma: f32,            // Step-size (standard deviation)
+    pub tol: f32,              // Tolerance for convergence, optional
+    pub zs: f32,               // Enforce zero sparsity for quicker computational results, optional
+    pub n: f32,                // Dimension of the problem space (xstart size)
+    pub mu: i32,               // Number of parents (best individuals)
+    pub weights: DVector<f32>, // Weights for recombination
+    pub mueff: f32,            // Effective number of parents
+    pub cc: f32,               // Cumulation constant for the rank-one update
+    pub cs: f32,               // Cumulation constant for the rank-mu update
+    pub c1: f32,               // Learning rate for the rank-one update
+    pub cmu: f32,              // Learning rate for the rank-mu update
+    pub damps: f32,            // Damping for step-size adaptation
+                               // pub lazy_gap_evals: f32, // Gap to postpone eigendecomposition
 }
 
 /// Trait defining validation methods for CMA-ES parameters.
@@ -42,14 +42,14 @@ impl CmaesParamsValidator for CmaesParams {
     /// Example
     ///
     /// ```rust
-    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new();
     ///
     /// assert!(params.is_ok());
     /// ```
     fn new() -> Result<Self::Output> {
-        let popsize = 10;
+        let popsize: i32 = 10;
         let xstart = vec![0.0; 6];
         let sigma = 0.75;
         let tol = 0.01;
@@ -67,11 +67,11 @@ impl CmaesParamsValidator for CmaesParams {
                 }
             })
             .collect();
-        let weights: Array1<f32> = Array1::from_iter(iterable);
-        let w_sum = weights.slice(s![..mu]).sum();
-        let weights: Array1<f32> = weights.mapv(|x| x / w_sum);
-        let mueff: f32 = (weights.slice(s![..mu]).sum() * weights.slice(s![..mu]).sum())
-            / weights.slice(s![..mu]).mapv(|x| x * x).sum();
+        let weights: DVector<f32> = DVector::from_vec(iterable);
+        let w_sum: f32 = weights.rows(0, mu as usize).iter().sum();
+        let weights: DVector<f32> = weights.map(|x| x / w_sum);
+        let weights_mu = weights.rows(0, mu as usize).into_owned();
+        let mueff: f32 = (weights_mu.iter().sum::<f32>().powi(2)) / weights_mu.map(|x| x * x).sum();
         let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
         let cs = (mueff + 2.) / (n + mueff + 5.);
         let c1 = 2. / ((n + 1.3) * (n + 1.3) + mueff);
@@ -115,11 +115,11 @@ impl CmaesParamsValidator for CmaesParams {
                 }
             })
             .collect();
-        let weights: Array1<f32> = Array1::from_iter(iterable);
-        let w_sum = weights.slice(s![..self.mu]).sum();
-        self.weights = weights.mapv(|x| x / w_sum);
-        self.mueff = (self.weights.slice(s![..self.mu]).sum().powi(2))
-            / self.weights.slice(s![..self.mu]).mapv(|x| x * x).sum();
+        let weights: DVector<f32> = DVector::from_vec(iterable);
+        let w_sum: f32 = weights.rows(0, self.mu as usize).iter().sum();
+        self.weights = weights.map(|x| x / w_sum);
+        let weights_mu = &self.weights.rows(0, self.mu as usize).into_owned();
+        self.mueff = (weights_mu.iter().sum::<f32>().powi(2)) / weights_mu.map(|x| x * x).sum();
         self.cc = (4. + self.mueff / self.n) / (self.n + 4. + 2. * self.mueff / self.n);
         self.cs = (self.mueff + 2.) / (self.n + self.mueff + 5.);
         self.c1 = 2. / ((self.n + 1.3).powi(2) + self.mueff);
@@ -133,7 +133,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// Example
     ///
     /// ```rust
-    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new()
     ///     .and_then(|p| p.set_popsize(15));
@@ -150,7 +150,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// Example
     ///
     /// ```rust
-    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new()
     ///     .and_then(|p| p.set_xstart(vec![0.0; 60]));
@@ -168,7 +168,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// Example
     ///
     /// ```rust
-    /// use haru_cmaes::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new()
     ///     .and_then(|p| p.set_sigma(0.85));
@@ -177,7 +177,6 @@ impl CmaesParamsValidator for CmaesParams {
     /// ```
     fn set_sigma(mut self, sigma: f32) -> Result<Self::Output> {
         self.sigma = sigma;
-        self.update_dependent_params();
         Ok(self)
     }
 }

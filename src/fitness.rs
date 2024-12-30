@@ -1,6 +1,6 @@
 use crate::strategy::PopulationY;
 use anyhow::Result;
-use ndarray::{Array2, Axis};
+use nalgebra::DVector;
 
 //////////////
 // TODO
@@ -15,7 +15,7 @@ use ndarray::{Array2, Axis};
 /// Structure to hold fitness values of a population.
 #[derive(Debug, Clone)]
 pub struct Fitness {
-    pub values: Array2<f32>, // Fitness values for each individual in the population.
+    pub values: DVector<f32>, // Fitness values for each individual in the population.
 }
 
 /// Trait defining the evaluation method for fitness functions.
@@ -42,22 +42,22 @@ pub fn allow_objective_func<E: FitnessEvaluator>(
 /// Example
 ///
 /// ```rust
-/// use ndarray_rand::RandomExt;
-/// use ndarray::Array2;
-/// use rand::distributions::Uniform;
 /// use haru_cmaes::fitness::SquareAndSum;
 /// use haru_cmaes::strategy::PopulationY;;
+/// use nalgebra::{Matrix3x4, DMatrix};
 ///
-/// let individuals = 10;
-/// let objective_function = SquareAndSum { obj_dim: 15 };
-/// let shape = (individuals, objective_function.obj_dim);
-/// // random population
-/// let y = Array2::random(shape, Uniform::new(-1., 1.));
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
+/// let objective_function = SquareAndSum { obj_dim: 4 };
 /// let fitness = objective_function.cost(&pop);
 ///
 /// // We should have one fitness value per individual
-/// assert!(fitness.shape() == &[individuals, 1]);
+/// assert!(fitness.shape() == (3, 1));
 /// ```
 pub struct SquareAndSum {
     pub obj_dim: usize,
@@ -65,11 +65,12 @@ pub struct SquareAndSum {
 
 impl SquareAndSum {
     // Required method
-    pub fn cost(&self, pop: &PopulationY) -> Array2<f32> {
+    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         pop.y
-            .map_axis(Axis(1), |row| row.map(|elem| elem.powi(2)).sum())
-            .into_shape((pop.y.nrows(), 1))
-            .unwrap()
+            .row_iter()
+            .map(|row| row.iter().map(|x| x.powi(2)).sum())
+            .collect::<Vec<f32>>()
+            .into()
     }
 
     // Required method
@@ -100,22 +101,22 @@ impl FitnessEvaluator for SquareAndSum {
 /// Example
 ///
 /// ```rust
-/// use ndarray_rand::RandomExt;
-/// use ndarray::Array2;
-/// use rand::distributions::Uniform;
 /// use haru_cmaes::fitness::StdAndSum;
 /// use haru_cmaes::strategy::PopulationY;;
+/// use nalgebra::{Matrix3x4, DMatrix};
 ///
-/// let individuals = 10;
-/// let objective_function = StdAndSum { obj_dim: 15 };
-/// let shape = (individuals, objective_function.obj_dim);
-/// // random population
-/// let y = Array2::random(shape, Uniform::new(-1., 1.));
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
+/// let objective_function = StdAndSum { obj_dim: 4 };
 /// let fitness = objective_function.cost(&pop);
 ///
 /// // We should have one fitness value per individual
-/// assert!(fitness.shape() == &[individuals, 1]);
+/// assert!(fitness.shape() == (3, 1));
 /// ```
 pub struct StdAndSum {
     pub obj_dim: usize,
@@ -123,11 +124,17 @@ pub struct StdAndSum {
 
 impl StdAndSum {
     // Required method
-    pub fn cost(&self, pop: &PopulationY) -> Array2<f32> {
+    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         pop.y
-            .map_axis(Axis(1), |row| row.std(1.))
-            .into_shape((pop.y.nrows(), 1))
-            .unwrap()
+            .row_iter()
+            .map(|row| {
+                let mean = row.mean();
+                let variance =
+                    row.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / row.len() as f32;
+                variance.sqrt()
+            })
+            .collect::<Vec<f32>>()
+            .into()
     }
 
     // Required method
@@ -159,15 +166,17 @@ pub struct Rastrigin {
 }
 
 impl Rastrigin {
-    pub fn cost(&self, pop: &PopulationY) -> Array2<f32> {
-        let a = 10.0;
+    pub fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+        let (a, pi) = (10.0, std::f32::consts::PI);
         pop.y
-            .map_axis(Axis(1), |row| {
-                row.map(|x| x.powi(2) - a * (2.0 * std::f32::consts::PI * x).cos() + a)
+            .row_iter()
+            .map(|row| {
+                row.iter()
+                    .map(|x| x.powi(2) - a * (2.0 * pi * x).cos() + a)
                     .sum()
             })
-            .into_shape((pop.y.nrows(), 1))
-            .unwrap()
+            .collect::<Vec<f32>>()
+            .into()
     }
 
     pub fn cost_dim(&self) -> usize {
