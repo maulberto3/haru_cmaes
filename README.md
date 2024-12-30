@@ -27,3 +27,14 @@ Ideally, you would just `cargo run` without openblas and it'd work. And if you'd
 But it turns out that `cargo publ` needs to assert that the crate can operate without features; thus that's why I have my temporal build.rs: to include OpenBlas as default and make this crate run well.
 
 As soon as I have my entire cmaes project implemented without OpenBlas i.e. with nalgebra, I have to stick to that build.rs.
+
+### Additional Tools
+
+Install `cargo-depgraph`, `graphviz`, `cargo machete` and `git cliff` for ci/cd workflow:
+
+```
+sudo apt install graphviz
+cargo install cargo-depgraph
+cargo install cargo-machete
+cargo install git-cliff
+```

@@ -21,7 +21,7 @@ use std::time::Instant;
 // Then, we pass those params to Cmaes algorithm and start
 // the ask-tell loop
 //
-// Here, it is shown that if the mean of last 50 best
+// Here, it is shown that if the mean of last 25 best
 // optimization values is close to current best,
 // the lops breaks
 //
@@ -46,7 +46,6 @@ pub fn example() -> Result<()> {
     let params = CmaesParams::new()?
         .set_popsize(50)?
         .set_xstart(vec![0.0; obj_dim])?
-        // .set_xstart(Array1::random(obj_dim, Uniform::new(-0.5, 0.5)).to_vec())?
         .set_sigma(0.25)?;
 
     // Create a new CMA-ES instance
@@ -81,7 +80,6 @@ pub fn example() -> Result<()> {
             print!("{:+.4?}  ", &best_y_avg);
             io::stdout().flush().unwrap()
         }
-        ////////////////
         if (state.best_y_fit.row(0)[0] - best_y_avg).abs() < cmaes.params.tol {
             if verbose {
                 println!("  ===> Search stopped due to tolerance change met")

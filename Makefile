@@ -6,7 +6,7 @@ prod-size:
 tree:
 	cargo tree
 graph-dep:
-	cargo depgraph --all-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
+	cargo depgraph --dedup-transitive-deps | dot -Tpng > dependencies_graph_of_current_cargo_toml.png
 deps:
 	make tree && make graph-dep
 ###
@@ -19,7 +19,7 @@ test:
 cove:
 	cargo tarpaulin --out Html
 prep:
-	cargo machete && cargo build
+	cargo machete && cargo build && cargo build --release
 doct:
 	cargo doc
 exam:

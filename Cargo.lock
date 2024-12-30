@@ -842,7 +842,6 @@ dependencies = [
  "criterion",
  "nalgebra 0.33.2",
  "nalgebra-lapack",
- "ndarray-linalg",
  "pprof",
  "rand",
  "statrs",
