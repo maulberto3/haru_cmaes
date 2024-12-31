@@ -7,8 +7,9 @@ use nalgebra::{DMatrix, DVector, SymmetricEigen};
 pub struct CmaesState {
     pub z: DMatrix<f32>,          // Matrix of standard normal random variables.
     pub y: DMatrix<f32>,          // Matrix of candidate solutions.
-    pub best_y: DVector<f32>,     // Best candidate solution.
-    pub best_y_fit: DVector<f32>, // Fitness values of the best candidates.
+    pub best_y: DVector<f32>,     // Best candidate.
+    pub best_y_fit: DVector<f32>, // Fitness value of the best candidate.
+    pub best_y_hist: Vec<f32>,    // Historical fitness values of the best candidate.
     pub cov: DMatrix<f32>,        // Covariance matrix of the population.
     pub eig_vecs: DMatrix<f32>,   // Eigenvectors of the covariance matrix.
     pub eig_vals: DVector<f32>,   // Eigenvalues of the covariance matrix.
@@ -19,6 +20,10 @@ pub struct CmaesState {
     pub evals_count: i32,         // Number of evaluations performed.
     pub ps: DVector<f32>,         // Evolution path for step-size adaptation.
     pub pc: DVector<f32>,         // Evolution path for covariance matrix adaptation.
+                                  ////////////////
+                                  // TODO
+                                  // Allow flag for verbose state, maybe with tracing
+                                  ////////////////
 }
 
 /// Trait for CMA-ES State
@@ -54,6 +59,7 @@ impl CmaesStateLogic for CmaesState {
         let y: DMatrix<f32> = DMatrix::zeros(params.popsize as usize, params.xstart.len());
         let best_y: DVector<f32> = DVector::zeros(params.xstart.len());
         let best_y_fit: DVector<f32> = DVector::from_element(1, f32::MAX);
+        let best_y_hist: Vec<f32> = Vec::new();
         let cov: DMatrix<f32> = DMatrix::identity(params.xstart.len(), params.xstart.len());
         let inv_sqrt: DMatrix<f32> = DMatrix::identity(params.xstart.len(), params.xstart.len());
         let eig_vecs: DMatrix<f32> = DMatrix::identity(params.xstart.len(), params.xstart.len());
@@ -70,6 +76,7 @@ impl CmaesStateLogic for CmaesState {
             y,
             best_y,
             best_y_fit,
+            best_y_hist,
             cov,
             eig_vecs,
             eig_vals,
@@ -101,11 +108,6 @@ impl CmaesStateLogic for CmaesState {
             }
         });
 
-        ////////////////
-        // TODO
-        // Allow flag for verbose state
-        // maybe with tracing
-        ////////////////
         // println!("{:?}", &self);
         // dbg!(&self);
         // println!("");
