@@ -42,8 +42,6 @@ impl CmaesParamsValidator for CmaesParams {
 
     /// Creates default parameters for the CMA-ES algorithm based on the provided parameters.
     ///
-    /// Example
-    ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
@@ -136,8 +134,6 @@ impl CmaesParamsValidator for CmaesParams {
 
     /// Sets population size.
     ///
-    /// Example
-    ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
@@ -152,8 +148,6 @@ impl CmaesParamsValidator for CmaesParams {
         Ok(self)
     }
     /// Sets origin of search.
-    ///
-    /// Example
     ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
@@ -171,8 +165,6 @@ impl CmaesParamsValidator for CmaesParams {
 
     /// Sets step size (sigma).
     ///
-    /// Example
-    ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
@@ -188,8 +180,6 @@ impl CmaesParamsValidator for CmaesParams {
 
     /// Sets tolerance.
     ///
-    /// Example
-    ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
@@ -204,8 +194,6 @@ impl CmaesParamsValidator for CmaesParams {
     }
 
     /// Sets enforce covariance sparsity.
-    ///
-    /// Example
     ///
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};

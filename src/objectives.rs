@@ -5,8 +5,6 @@ use nalgebra::DVector;
 ///
 /// Example of a fitness function
 ///
-/// Example
-///
 /// ```rust
 /// use haru_cmaes::objectives::SquareAndSum;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
@@ -54,8 +52,6 @@ impl FitnessFunction for SquareAndSum {
 /// Implementation of the standard deviation and sum as fitness function.
 ///
 /// Example of a fitness function
-///
-/// Example
 ///
 /// ```rust
 /// use haru_cmaes::objectives::StdAndSum;
@@ -110,8 +106,6 @@ impl FitnessFunction for StdAndSum {
 ///
 /// Example of a fitness function
 ///
-/// Example
-///
 /// ```rust
 /// use haru_cmaes::objectives::Rastrigin;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
@@ -162,8 +156,6 @@ impl FitnessFunction for Rastrigin {
 /// Implementation of a (negative) hyperbole.
 ///
 /// Example of a fitness function
-///
-/// Example
 ///
 /// ```rust
 /// use haru_cmaes::objectives::XSquare;
