@@ -1,9 +1,5 @@
-use crate::{
-    fitness::FitnessFunction,
-    strategy::PopulationY,
-};
+use crate::fitness::{FitnessFunction, MinOrMax, PopulationY};
 use nalgebra::DVector;
-
 
 /// Implementation of the square and sum as fitness function.
 ///
@@ -13,8 +9,7 @@ use nalgebra::DVector;
 ///
 /// ```rust
 /// use haru_cmaes::objectives::SquareAndSum;
-/// use haru_cmaes::fitness::FitnessEvaluator;
-/// use haru_cmaes::strategy::PopulationY;;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -32,6 +27,7 @@ use nalgebra::DVector;
 /// ```
 pub struct SquareAndSum {
     pub obj_dim: usize,
+    pub dir: MinOrMax,
 }
 
 impl FitnessFunction for SquareAndSum {
@@ -48,6 +44,11 @@ impl FitnessFunction for SquareAndSum {
     fn cost_dim(&self) -> usize {
         self.obj_dim
     }
+
+    // Required method
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
+    }
 }
 
 /// Implementation of the standard deviation and sum as fitness function.
@@ -58,8 +59,7 @@ impl FitnessFunction for SquareAndSum {
 ///
 /// ```rust
 /// use haru_cmaes::objectives::StdAndSum;
-/// use haru_cmaes::fitness::FitnessEvaluator;
-/// use haru_cmaes::strategy::PopulationY;;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -77,6 +77,7 @@ impl FitnessFunction for SquareAndSum {
 /// ```
 pub struct StdAndSum {
     pub obj_dim: usize,
+    pub dir: MinOrMax,
 }
 
 impl FitnessFunction for StdAndSum {
@@ -98,6 +99,11 @@ impl FitnessFunction for StdAndSum {
     fn cost_dim(&self) -> usize {
         self.obj_dim
     }
+
+    // Required method
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
+    }
 }
 
 /// Implementation of the Rastrigin function as fitness function.
@@ -108,8 +114,7 @@ impl FitnessFunction for StdAndSum {
 ///
 /// ```rust
 /// use haru_cmaes::objectives::Rastrigin;
-/// use haru_cmaes::fitness::FitnessEvaluator;
-/// use haru_cmaes::strategy::PopulationY;;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -127,6 +132,7 @@ impl FitnessFunction for StdAndSum {
 /// ```
 pub struct Rastrigin {
     pub obj_dim: usize,
+    pub dir: MinOrMax,
 }
 
 impl FitnessFunction for Rastrigin {
@@ -145,5 +151,61 @@ impl FitnessFunction for Rastrigin {
 
     fn cost_dim(&self) -> usize {
         self.obj_dim
+    }
+
+    // Required method
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
+    }
+}
+
+/// Implementation of a (negative) hyperbole.
+///
+/// Example of a fitness function
+///
+/// Example
+///
+/// ```rust
+/// use haru_cmaes::objectives::XSquare;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use nalgebra::{Matrix3x4, DMatrix};
+///
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
+/// let pop = PopulationY { y };
+/// let objective_function = XSquare { obj_dim: 4 };
+/// let fitness = objective_function.evaluate(&pop).unwrap();
+///
+/// // We should have one fitness value per individual
+/// assert!(fitness.values.shape() == (3, 1));
+/// ```
+pub struct XSquare {
+    pub obj_dim: usize,
+    pub dir: MinOrMax,
+}
+
+impl FitnessFunction for XSquare {
+    // Required method
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+        let result = pop
+            .y
+            .row_iter()
+            .map(|row| row.iter().map(|x| -x * x).sum())
+            .collect::<Vec<f32>>();
+        DVector::from_vec(result).add_scalar(5.0)
+    }
+
+    // Required method
+    fn cost_dim(&self) -> usize {
+        self.obj_dim
+    }
+
+    // Required method
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
     }
 }
