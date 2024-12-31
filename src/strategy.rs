@@ -1,3 +1,5 @@
+use crate::fitness::{PopulationY, PopulationZ};
+use crate::utils::median;
 use crate::{
     fitness::Fitness,
     params::CmaesParams,
@@ -8,34 +10,55 @@ use nalgebra::{DMatrix, DVector};
 use rand::prelude::Distribution;
 use statrs::distribution::MultivariateNormal;
 
-/// Struct to hold the population as normal data points
-#[derive(Debug, Clone)]
-pub struct PopulationZ {
-    pub z: DMatrix<f32>,
-}
-
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
 pub struct CmaesAlgo {
     pub params: CmaesParams,
 }
 
+/// Implementing initial logic for CMA-ES algorithm.
 impl CmaesAlgo {
-    /// Creates a new CMA-ES instance with validated parameters.
+    /// Creates a new CMA-ES algorithm instance.
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::CmaesAlgo;
+    /// 
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params);
+    /// 
+    /// assert!(cmaes.is_ok());
+    /// ```
+    /// doctest this
+    ///
     pub fn new(params: CmaesParams) -> Result<Self> {
         // let params = CmaesParams::validate(params)?;
         Ok(Self { params })
     }
 
     /// Generates a matrix of standard normal random variables.
-    fn ask_z(&self, params: &CmaesParams, state: &mut CmaesState) -> Result<PopulationZ> {
-        // refactor
-        let mean = DVector::from_vec(vec![0.0; params.xstart.len()]);
-        let cov = DMatrix::identity(params.xstart.len(), params.xstart.len());
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
+    /// 
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params).unwrap();
+    /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
+    /// let z = cmaes.ask_z(&mut state);
+    /// 
+    /// assert!(z.is_ok());
+    /// ```
+    pub fn ask_z(&self, state: &mut CmaesState) -> Result<PopulationZ> {
+        // refactor!
+        let mean = DVector::from_vec(vec![0.0; self.params.xstart.len()]);
+        let cov = DMatrix::identity(self.params.xstart.len(), self.params.xstart.len());
         let normal = MultivariateNormal::new_from_nalgebra(mean, cov).unwrap();
         let mut rng = rand::thread_rng();
-        let mut data: Vec<f32> = Vec::with_capacity(params.popsize as usize * params.xstart.len());
-        for _ in 0..params.popsize {
+        let mut data: Vec<f32> =
+            Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
+        for _ in 0..self.params.popsize {
             let sample = normal
                 .sample(&mut rng)
                 .iter()
@@ -43,21 +66,21 @@ impl CmaesAlgo {
                 .collect::<Vec<f32>>(); // Generate a random sample``
             data.extend(sample);
         }
-        let z = DMatrix::from_row_slice(params.popsize as usize, params.xstart.len(), &data);
-        state.z = z.to_owned();
+        let z = DMatrix::from_row_slice(
+            self.params.popsize as usize,
+            self.params.xstart.len(),
+            &data,
+        );
+        state.z.copy_from(&z);
         Ok(PopulationZ { z })
     }
 }
 
-/// Struct to hold the population as (eigen-)rotated data points
-#[derive(Debug, Clone)]
-pub struct PopulationY {
-    pub y: DMatrix<f32>,
-}
-
+/// Trait for CMA-ES algorithm.
 pub trait CmaesAlgoOptimizer {
     type NewPopulation;
     type NewState;
+    type Done;
 
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation>;
     fn tell(
@@ -66,14 +89,30 @@ pub trait CmaesAlgoOptimizer {
         pop: &mut PopulationY,
         fitness: &mut Fitness,
     ) -> Result<Self::NewState>;
+    fn is_done(&self, state: &CmaesState) -> Result<Self::Done>;
 }
 
+/// Implementing Trait for CMA-ES algorithm.
 impl CmaesAlgoOptimizer for CmaesAlgo {
     type NewPopulation = PopulationY;
     type NewState = CmaesState;
+    type Done = bool;
 
     /// ASK
-    /// Generates a new population and transforms it based on the CMA-ES parameters and state.
+    /// Generates a new population.
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
+    /// 
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params).unwrap();
+    /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
+    /// let y = cmaes.ask(&mut state);
+    /// 
+    /// assert!(y.is_ok());
+    /// ```
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
         #[cfg(feature = "profile_memory")]
         {
@@ -83,7 +122,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
 
         state.prepare_ask(&self.params)?;
 
-        let z: DMatrix<f32> = self.ask_z(&self.params, state)?.z;
+        let z: DMatrix<f32> = self.ask_z(state)?.z;
 
         // let eig_vals_sqrt: DMatrix<f32> = DMatrix::from_diag(&state.eig_vals.mapv(f32::sqrt));
         let eig_vals_sqrt: DMatrix<f32> = DMatrix::from_diagonal(
@@ -104,13 +143,38 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
                 .collect::<Vec<_>>(),
         );
 
-        state.y = y.clone();
+        state.y.copy_from(&y);
 
         Ok(PopulationY { y })
     }
 
     /// TELL
     /// Updates the CMA-ES state based on the new population and fitness values.
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
+    /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
+    /// use haru_cmaes::objectives::SquareAndSum;
+    /// 
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params).unwrap();
+    /// 
+    /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
+    /// 
+    /// let mut y = cmaes.ask(&mut state);
+    /// 
+    /// let obj_func = SquareAndSum {
+    ///     obj_dim: 5,
+    ///     dir: MinOrMax::Min,
+    /// };
+    /// 
+    /// let mut fitness = obj_func.evaluate(&y)?;
+    /// state = cmaes.tell(state, &mut y, &mut fitness);
+    /// 
+    /// assert!(state.is_ok());
+    /// ```
     fn tell(
         &self,
         mut state: CmaesState,
@@ -141,7 +205,8 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         pop.y.copy_from(&sorted_xs);
         fitness.values.copy_from(&sorted_fit);
 
-        // Update best solution, assumes minimization
+        // Record current best solution, update best solution if any
+        state.best_y_hist.push(fitness.values.rows(0, self.params.mu as usize).mean());
         if fitness.values[0] < state.best_y_fit[0] {
             state.best_y.copy_from(&pop.y.row(0).transpose());
             state.best_y_fit.copy_from(&fitness.values.row(0));
@@ -197,5 +262,30 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         state.sigma *= f32::min(1.0, other).exp();
 
         Ok(state)
+    }
+    
+    /// DONE
+    /// Stopping criteria: close (smoothed) to target
+    ///
+    /// TODO
+    /// doctest this
+    ///
+    fn is_done(&self, state: &CmaesState) -> Result<Self::Done> {
+        let best_y_avg = if state.best_y_hist.len() > 10 {
+            let data = state.best_y_hist[state.best_y_hist.len() - 10..].to_vec();
+            DVector::from_vec(data).mean()
+            // median(data)
+        } else {
+            let data = state.best_y_hist[..].to_vec();
+            DVector::from_vec(data).mean()
+            // median(data)
+        };
+
+        if (state.best_y_fit.row(0)[0] - best_y_avg).abs() < self.params.tol {
+            println!("\n===> Search stopped due to tolerance change met");
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
 }
