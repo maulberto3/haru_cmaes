@@ -1,6 +1,6 @@
 [package]
 name = "haru_cmaes"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
@@ -42,10 +42,6 @@ cmaes = "0.2.2"
 
 [[bench]]
 name = "argmin"
-harness = false
-
-[[bench]]
-name = "eig_vs"
 harness = false
 
 [[bench]]
