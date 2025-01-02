@@ -56,7 +56,7 @@ impl CmaesParamsValidator for CmaesParams {
         let xstart = vec![0.0; 6];
 
         let sigma = 0.75;
-        let tol = 0.01;
+        let tol = 0.001;
         let zs = 0.05;
 
         let n = xstart.len() as f32;
