@@ -23,10 +23,10 @@ impl CmaesAlgo {
     /// ```rust
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::CmaesAlgo;
-    /// 
+    ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params);
-    /// 
+    ///
     /// assert!(cmaes.is_ok());
     /// ```
     /// doctest this
@@ -42,12 +42,12 @@ impl CmaesAlgo {
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
     /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
-    /// 
+    ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
     /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
     /// let z = cmaes.ask_z(&mut state);
-    /// 
+    ///
     /// assert!(z.is_ok());
     /// ```
     pub fn ask_z(&self, state: &mut CmaesState) -> Result<PopulationZ> {
@@ -89,7 +89,7 @@ pub trait CmaesAlgoOptimizer {
         pop: &mut PopulationY,
         fitness: &mut Fitness,
     ) -> Result<Self::NewState>;
-    fn is_done(&self, state: &CmaesState) -> Result<Self::Done>;
+    fn is_done(&self, state: &CmaesState, step: i32) -> Result<Self::Done>;
 }
 
 /// Implementing Trait for CMA-ES algorithm.
@@ -105,12 +105,12 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
     /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
-    /// 
+    ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
     /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
     /// let y = cmaes.ask(&mut state);
-    /// 
+    ///
     /// assert!(y.is_ok());
     /// ```
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
@@ -157,22 +157,22 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
     /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
     /// use haru_cmaes::objectives::SquareAndSum;
-    /// 
+    ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
-    /// 
+    ///
     /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
-    /// 
+    ///
     /// let mut y = cmaes.ask(&mut state);
-    /// 
+    ///
     /// let obj_func = SquareAndSum {
     ///     obj_dim: 5,
     ///     dir: MinOrMax::Min,
     /// };
-    /// 
+    ///
     /// let mut fitness = obj_func.evaluate(&y)?;
     /// state = cmaes.tell(state, &mut y, &mut fitness);
-    /// 
+    ///
     /// assert!(state.is_ok());
     /// ```
     fn tell(
@@ -206,7 +206,10 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         fitness.values.copy_from(&sorted_fit);
 
         // Record current best solution, update best solution if any
-        state.best_y_hist.push(fitness.values.rows(0, self.params.mu as usize).mean());
+        // println!("{}", &fitness.values);
+        state
+            .best_y_hist
+            .push(fitness.values.rows(0, 2).mean());
         if fitness.values[0] < state.best_y_fit[0] {
             state.best_y.copy_from(&pop.y.row(0).transpose());
             state.best_y_fit.copy_from(&fitness.values.row(0));
@@ -263,14 +266,18 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
 
         Ok(state)
     }
-    
+
     /// DONE
     /// Stopping criteria: close (smoothed) to target
     ///
     /// TODO
     /// doctest this
     ///
-    fn is_done(&self, state: &CmaesState) -> Result<Self::Done> {
+    fn is_done(&self, state: &CmaesState, step: i32) -> Result<Self::Done> {
+        ////////////////
+        // TODO
+        // Dynamic how many historicals to average
+        ////////////////
         let best_y_avg = if state.best_y_hist.len() > 10 {
             let data = state.best_y_hist[state.best_y_hist.len() - 10..].to_vec();
             DVector::from_vec(data).mean()
@@ -281,7 +288,15 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             // median(data)
         };
 
-        if (state.best_y_fit.row(0)[0] - best_y_avg).abs() < self.params.tol {
+        println!("Best y fit GLOBAL {:?}", state.best_y_fit.row(0)[0]);
+        println!("Fit Hist (avg) {:?}", &state.best_y_hist);
+        // println!();
+
+        ////////////////
+        // TODO
+        // Dynamic how steps to require
+        ////////////////
+        if (step > 5) & ((state.best_y_fit.row(0)[0] - best_y_avg).abs() < self.params.tol) {
             println!("\n===> Search stopped due to tolerance change met");
             Ok(true)
         } else {
