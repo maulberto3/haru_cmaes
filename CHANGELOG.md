@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Minor cleanup
+- Bump version after fulll build
+
+### Build
+
+- New version artifacts and cleanup
 
 ## [1.0.2] - 2025-01-02
 
