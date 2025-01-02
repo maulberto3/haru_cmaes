@@ -1,11 +1,6 @@
 use anyhow::Result;
 use nalgebra::{DMatrix, DVector};
 
-//////////////
-// TODO
-// Allow for min or max in obj func
-//////////////
-
 /// Struct to hold the population as normal data points
 #[derive(Debug, Clone)]
 pub struct PopulationZ {

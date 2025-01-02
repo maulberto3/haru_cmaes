@@ -833,7 +833,7 @@ dependencies = [
 
 [[package]]
 name = "haru_cmaes"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "argmin",

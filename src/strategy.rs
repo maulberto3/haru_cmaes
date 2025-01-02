@@ -207,6 +207,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
 
         // Record current best solution, update best solution if any
         // println!("{}", &fitness.values);
+        // println!("{}", &pop.y);
         state
             .best_y_hist
             .push(fitness.values.rows(0, 2).mean());
