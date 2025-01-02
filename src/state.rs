@@ -44,9 +44,9 @@ impl CmaesStateLogic for CmaesState {
     /// Example
     ///
     /// ```rust
-    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
     ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
@@ -101,14 +101,26 @@ impl CmaesStateLogic for CmaesState {
         // Ensure symmetric covariance
         self.cov = (&self.cov + &self.cov.transpose()) / 2.0;
 
-        // Enforce sparsity for matrix eigen computation efficiency
-        self.cov.iter_mut().for_each(|x| {
-            if x.abs() < params.zs {
-                *x = 0.0;
+        // For matrix eigen computation efficiency
+        // non-diag -> enforce sparsity 
+        // diag -> ensure positive
+        for i in 0..self.cov.nrows() {
+            for j in 0..self.cov.nrows() {
+                let x = self.cov.index_mut((i, j));
+                if i == j {
+                    // Diagonal entry
+                    if *x < 0.0 {
+                        *x = 0.1;
+                    }
+                } else if *x < params.zs {
+                    // Non-diagonal entry
+                    *x = 0.0;
+                }
             }
-        });
+        }
 
-        // println!("{:?}", &self);
+        ////////////////
+        // dbg!(&self);
         // dbg!(&self);
         // println!("");
         ////////////////
