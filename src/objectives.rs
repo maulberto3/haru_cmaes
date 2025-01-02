@@ -8,6 +8,7 @@ use nalgebra::{DMatrix, DVector};
 /// ```rust
 /// use haru_cmaes::objectives::SquareAndSum;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -17,7 +18,7 @@ use nalgebra::{DMatrix, DVector};
 /// );
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
-/// let objective_function = SquareAndSum { obj_dim: 4 };
+/// let objective_function = SquareAndSum { obj_dim: 4, dir: MinOrMax::Min };
 /// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
@@ -56,6 +57,7 @@ impl FitnessFunction for SquareAndSum {
 /// ```rust
 /// use haru_cmaes::objectives::StdAndSum;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -65,7 +67,7 @@ impl FitnessFunction for SquareAndSum {
 /// );
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
-/// let objective_function = StdAndSum { obj_dim: 4 };
+/// let objective_function = StdAndSum { obj_dim: 4, dir: MinOrMax::Min };
 /// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
@@ -109,6 +111,7 @@ impl FitnessFunction for StdAndSum {
 /// ```rust
 /// use haru_cmaes::objectives::Rastrigin;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -118,7 +121,7 @@ impl FitnessFunction for StdAndSum {
 /// );
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
-/// let objective_function = Rastrigin { obj_dim: 4 };
+/// let objective_function = Rastrigin { obj_dim: 4, dir: MinOrMax::Min };
 /// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
@@ -160,6 +163,7 @@ impl FitnessFunction for Rastrigin {
 /// ```rust
 /// use haru_cmaes::objectives::XSquare;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
 /// use nalgebra::{Matrix3x4, DMatrix};
 ///
 /// let static_matrix = Matrix3x4::new(
@@ -169,7 +173,7 @@ impl FitnessFunction for Rastrigin {
 /// );
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
-/// let objective_function = XSquare { obj_dim: 4 };
+/// let objective_function = XSquare { obj_dim: 4, dir: MinOrMax::Min };
 /// let fitness = objective_function.evaluate(&pop).unwrap();
 ///
 /// // We should have one fitness value per individual
@@ -202,7 +206,7 @@ impl FitnessFunction for XSquare {
     }
 }
 
-/// Doctest pending
+// Doctest pending
 pub struct ConstraintProblem {
     pub obj_dim: usize,
     pub dir: MinOrMax,

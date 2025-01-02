@@ -163,15 +163,16 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     ///
     /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
     ///
-    /// let mut y = cmaes.ask(&mut state);
+    /// let mut y = cmaes.ask(&mut state).unwrap();
     ///
     /// let obj_func = SquareAndSum {
     ///     obj_dim: 5,
     ///     dir: MinOrMax::Min,
     /// };
     ///
-    /// let mut fitness = obj_func.evaluate(&y)?;
-    /// state = cmaes.tell(state, &mut y, &mut fitness);
+    /// let mut fitness = obj_func.evaluate(&y).unwrap();
+    /// // for soem reason, cargo test --doc didn't like without 'let'
+    /// let state = cmaes.tell(state, &mut y, &mut fitness);
     ///
     /// assert!(state.is_ok());
     /// ```
@@ -287,8 +288,8 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             // median(data)
         };
 
-        println!("Best y fit GLOBAL {:?}", state.best_y_fit.row(0)[0]);
-        println!("Fit Hist (avg) {:?}", &state.best_y_hist);
+        // println!("Best y fit GLOBAL {:?}", state.best_y_fit.row(0)[0]);
+        // println!("Fit Hist (avg) {:?}", &state.best_y_hist);
         // println!();
 
         ////////////////

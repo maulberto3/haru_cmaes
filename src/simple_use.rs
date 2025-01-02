@@ -1,5 +1,5 @@
 use crate::fitness::{FitnessEvaluator, MinOrMax};
-use crate::objectives::Rastrigin;
+use crate::objectives::SquareAndSum;
 use crate::params::{CmaesParams, CmaesParamsValidator};
 use crate::state::{CmaesState, CmaesStateLogic};
 use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
@@ -38,9 +38,9 @@ pub fn example() -> Result<()> {
     let start = Instant::now();
 
     // Create cost function, i.e. see fitness.rs for an example
-    let obj_func = Rastrigin {
+    let obj_func = SquareAndSum {
         obj_dim: 50,
-        dir: MinOrMax::Max,
+        dir: MinOrMax::Min,
         // target: 1.0,
         // output_dim: 2,
         // input_dim: 2,
@@ -82,8 +82,8 @@ pub fn example() -> Result<()> {
 
         // Log some info
         if verbose != "No" {
-            print!("best_y fit {:+.5?} ", &state.best_y_fit.row(0)[0]);
-            print!("best y {:+.5?} ", &state.best_y.row(0)[0]);
+            print!("{:+.5?} ", &state.best_y_fit.row(0)[0]);
+            // print!("best y {:+.5?} ", &state.best_y.row(0)[0]);
             io::stdout().flush().unwrap()
         }
 
