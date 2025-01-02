@@ -102,7 +102,7 @@ impl CmaesStateLogic for CmaesState {
         self.cov = (&self.cov + &self.cov.transpose()) / 2.0;
 
         // For matrix eigen computation efficiency
-        // non-diag -> enforce sparsity 
+        // non-diag -> enforce sparsity
         // diag -> ensure positive
         for i in 0..self.cov.nrows() {
             for j in 0..self.cov.nrows() {

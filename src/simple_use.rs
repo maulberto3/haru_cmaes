@@ -1,10 +1,10 @@
 use crate::fitness::{FitnessEvaluator, MinOrMax};
-use crate::objectives::{ConstraintProblem, DEAProblem, Rastrigin, SquareAndSum, StdAndSum, XSquare};
+use crate::objectives::Rastrigin;
 use crate::params::{CmaesParams, CmaesParamsValidator};
 use crate::state::{CmaesState, CmaesStateLogic};
 use crate::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
 use anyhow::Result;
-use nalgebra::DMatrix;
+// use nalgebra::DMatrix;
 use std::env::var;
 #[allow(unused_imports)]
 use std::io::{self, Write};
@@ -49,7 +49,6 @@ pub fn example() -> Result<()> {
         //     4.0, 5.5, 6.0, 2.5,
         //     6.0, 8.5, 7.0, 9.5,
         // ])
-
     };
 
     // Initialize CMA-ES parameters

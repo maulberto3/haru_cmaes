@@ -1,5 +1,5 @@
 use crate::fitness::{PopulationY, PopulationZ};
-use crate::utils::median;
+// use crate::utils::median;
 use crate::{
     fitness::Fitness,
     params::CmaesParams,
@@ -208,9 +208,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         // Record current best solution, update best solution if any
         // println!("{}", &fitness.values);
         // println!("{}", &pop.y);
-        state
-            .best_y_hist
-            .push(fitness.values.rows(0, 2).mean());
+        state.best_y_hist.push(fitness.values.rows(0, 2).mean());
         if fitness.values[0] < state.best_y_fit[0] {
             state.best_y.copy_from(&pop.y.row(0).transpose());
             state.best_y_fit.copy_from(&fitness.values.row(0));
