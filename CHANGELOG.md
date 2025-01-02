@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- Custom median function for evaluation
+- Allow historical tracking of best candidates fitness
+- Allow for min or max objective funtions
+- More optimization precision by default
+- Added required # of steps before first output
+- Latest example
+- Added ConstraintProblem and DEAProblem examples
+
+### 🐛 Bug Fixes
+
+- Test is now obsolete due to nalgebra crate adoption
+- *(covariance)* Enforce sparsity for non-diagonal elements and positivity for diagonal elements
+
+### 🚜 Refactor
+
+- Decouple fitness with objectives
+- Improved clarity for associated type
+- A bit of cleanup for clarity
+- Latest example
+- Minor cleanup
+
+### ⚡ Performance
+
+- More samples for cpu profiler
+- Added blanket impl for fitness functions
+
+### 🧪 Testing
+
+- Added tests
+- Improved tests for clarity
+- Added test for state (plus a bit of cleanup)
+- Added tests
+
+### ⚙️ Miscellaneous Tasks
+
+- Minor clean up
+
+## [1.0.1] - 2024-12-30
+
 ### 🐛 Bug Fixes
 
 - Bump version
