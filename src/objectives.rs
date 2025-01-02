@@ -1,5 +1,5 @@
 use crate::fitness::{FitnessFunction, MinOrMax, PopulationY};
-use nalgebra::DVector;
+use nalgebra::{DMatrix, DVector};
 
 /// Implementation of the square and sum as fitness function.
 ///
@@ -153,7 +153,7 @@ impl FitnessFunction for Rastrigin {
     }
 }
 
-/// Implementation of a (negative) hyperbole.
+/// Implementation of a (negative) hyperbole with max at 5.0.
 ///
 /// Example of a fitness function
 ///
@@ -200,4 +200,134 @@ impl FitnessFunction for XSquare {
     fn optimization_type(&self) -> &MinOrMax {
         &self.dir
     }
+}
+
+/// Doctest pending
+pub struct ConstraintProblem  {
+    pub obj_dim: usize,
+    pub dir: MinOrMax,
+    pub target: f32,
+}
+
+impl FitnessFunction for ConstraintProblem  {
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+        self.objective(&pop) - self.constraint_1(&pop)
+    }
+
+    fn cost_dim(&self) -> usize {
+        self.obj_dim
+    }
+
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
+    }
+}
+
+impl ConstraintProblem  {
+    // For a plot check https://www.wolframalpha.com/input?i=abs%28x+-+1.0%29%2C+%28x+-+1.0%29%5E2.0+%2B+x%2F5
+    pub fn objective(&self, pop: &PopulationY) -> DVector<f32> {
+        // Trivial optimization: reach a target value (pointy cone at 1.0)
+        pop.y
+            .row_iter()
+            .map(|row| (row
+                .iter()
+                .map(|x| (x - self.target).abs() )
+                .sum() ))
+            .collect::<Vec<f32>>()
+            .into()
+    }
+
+    pub fn constraint_1(&self, pop: &PopulationY) -> DVector<f32> {
+        // Trivial constraint: a steeper objective function
+        pop.y
+            .row_iter()
+            .map(|row| (row
+                .iter()
+                .map(|x| (x - self.target).powf(2.) + x / 5. )
+                .sum() ))
+            .collect::<Vec<f32>>()
+            .into()
+    }
+}
+
+/// Doctest pending
+pub struct DEAProblem  {
+    // https://www.mdpi.com/2077-0472/14/7/1032
+    pub obj_dim: usize,
+    pub dir: MinOrMax,
+    pub output_dim: usize,
+    pub input_dim: usize,
+    pub data: DMatrix<f32>,
+}
+
+impl FitnessFunction for DEAProblem  {
+    fn cost(&self, pop: &PopulationY) -> DVector<f32> {
+        self.rollout_pop(&pop)
+    }
+
+    fn cost_dim(&self) -> usize {
+        self.output_dim + self.input_dim
+    }
+
+    fn optimization_type(&self) -> &MinOrMax {
+        &self.dir
+    }
+}
+
+impl DEAProblem  {
+    fn num(&self, out_coef: &DVector<f32>, out_data: &DVector<f32>) -> DVector<f32> {
+        out_coef.component_mul(out_data)
+    }
+    
+    fn den(&self, inp_coef: &DVector<f32>, inp_data: &DVector<f32>) -> DVector<f32> {
+        inp_coef.component_mul(inp_data)
+    }
+
+    fn dea(&self, out_coef: &DVector<f32>, out_data: &DVector<f32>, inp_coef: &DVector<f32>, inp_data: &DVector<f32>) -> f32 {
+        self.num(out_coef, out_data).sum() / self.den(inp_coef, inp_data).sum()
+    }
+    
+    fn objective(&self, out_coef: &DVector<f32>, out_data: &DVector<f32>, inp_coef: &DVector<f32>, inp_data: &DVector<f32>) -> f32 {
+        self.dea(out_coef, out_data, inp_coef, inp_data).sqrt()
+    }
+
+    fn constr(&self, inp_coef: &DVector<f32>, inp_data: &DVector<f32>) -> f32 {
+        (self.den(inp_coef, inp_data).sum() - 1.0).abs()
+    }
+
+    fn others(&self, out_coef: &DVector<f32>, out_data: &DVector<f32>, inp_coef: &DVector<f32>, inp_data: &DVector<f32>) -> f32 {
+        (self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0).abs()
+    }
+
+    fn rollout_indiv(&self, coef: &DVector<f32>) -> f32 {
+        let out_coef = coef.rows(0, self.output_dim).abs().clone_owned();
+        let out_data = self.data.columns(0, self.output_dim);
+        
+        let inp_coef = coef.rows(self.output_dim, self.input_dim).abs().clone_owned();
+        let inp_data = self.data.columns(self.output_dim, self.input_dim);
+        
+        let mut res: f32 = 0.0;
+        
+        for i in 0..self.data.shape().0 {
+            if i == 0 {
+                res += self.objective(&out_coef, &out_data.row(i).transpose(), &inp_coef, &inp_data.row(i).transpose());
+                res -= self.constr(&inp_coef, &inp_data.row(i).transpose());
+            } else {
+                res -= self.others(&out_coef, &out_data.row(i).transpose(), &inp_coef, &inp_data.row(i).transpose());
+                // res -= self.constr(&inp_coef, &inp_data.row(i).transpose());
+            }
+        }
+        res
+    }
+
+    fn rollout_pop(&self, pop: &PopulationY) -> DVector<f32> {
+        let mut res = Vec::new();
+        for i in 0..pop.y.shape().0 {
+            let indiv =  pop.y.row(i);
+            let value = self.rollout_indiv(&indiv.transpose());
+            res.push(value)
+        }
+        DVector::from_vec(res)
+    }
+
 }
