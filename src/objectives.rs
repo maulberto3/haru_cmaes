@@ -316,7 +316,12 @@ impl DEAProblem {
         inp_coef: &DVector<f32>,
         inp_data: &DVector<f32>,
     ) -> f32 {
-        (self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0).abs()
+        // To account only for when others dea passes 1.0
+        if (self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0) > 0.0 {
+            self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0
+        } else {
+            0.0
+        }
     }
 
     fn rollout_indiv(&self, coef: &DVector<f32>) -> f32 {
