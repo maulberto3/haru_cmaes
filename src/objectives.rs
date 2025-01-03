@@ -228,12 +228,12 @@ impl FitnessFunction for ConstraintProblem {
 }
 
 impl ConstraintProblem {
-    // For a plot check https://www.wolframalpha.com/input?i=abs%28x+-+1.0%29%2C+%28x+-+1.0%29%5E2.0+%2B+x%2F5
+    // For a plot check https://www.wolframalpha.com/input?i=abs%28x+-+1.0%29%5E0.5%2C+%280.5x+-+1.0%29%5E2.0+%2B+x%2F5
     pub fn objective(&self, pop: &PopulationY) -> DVector<f32> {
         // Trivial optimization: reach a target value (pointy cone at 1.0)
         pop.y
             .row_iter()
-            .map(|row| (row.iter().map(|x| (x - self.target).abs()).sum()))
+            .map(|row| (row.iter().map(|x| (x - self.target).abs().sqrt()).sum()))
             .collect::<Vec<f32>>()
             .into()
     }
@@ -244,7 +244,7 @@ impl ConstraintProblem {
             .row_iter()
             .map(|row| {
                 row.iter()
-                    .map(|x| (x - self.target).powf(2.) + x / 5.)
+                    .map(|x| (0.5 * x - self.target).powi(2) + x / 5.)
                     .sum()
             })
             .collect::<Vec<f32>>()
@@ -316,7 +316,7 @@ impl DEAProblem {
         inp_coef: &DVector<f32>,
         inp_data: &DVector<f32>,
     ) -> f32 {
-        // To account only for when others dea passes 1.0
+        // To account only for when others' dea surpasses 1.0
         if (self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0) > 0.0 {
             self.dea(out_coef, out_data, inp_coef, inp_data) - 1.0
         } else {
@@ -334,37 +334,31 @@ impl DEAProblem {
             .clone_owned();
         let inp_data = self.data.columns(self.output_dim, self.input_dim);
 
-        let mut res: f32 = 0.0;
-
-        for i in 0..self.data.shape().0 {
-            if i == 0 {
-                res += self.objective(
-                    &out_coef,
-                    &out_data.row(i).transpose(),
-                    &inp_coef,
-                    &inp_data.row(i).transpose(),
-                );
-                res -= self.constr(&inp_coef, &inp_data.row(i).transpose());
-            } else {
-                res -= self.others(
-                    &out_coef,
-                    &out_data.row(i).transpose(),
-                    &inp_coef,
-                    &inp_data.row(i).transpose(),
-                );
-                // res -= self.constr(&inp_coef, &inp_data.row(i).transpose());
-            }
-        }
+        let res = out_data
+            .row_iter()
+            .zip(inp_data.row_iter())
+            .enumerate()
+            .map(|(i, (out_row, inp_row))| {
+                let out_row = out_row.transpose();
+                let inp_row = inp_row.transpose();
+                if i == 0 {
+                    self.objective(&out_coef, &out_row, &inp_coef, &inp_row)
+                        - self.constr(&inp_coef, &inp_row)
+                } else {
+                    -self.others(&out_coef, &out_row, &inp_coef, &inp_row)
+                    // -self.constr(&inp_coef, &inp_row)
+                }
+            })
+            .sum();
         res
     }
 
     fn rollout_pop(&self, pop: &PopulationY) -> DVector<f32> {
-        let mut res = Vec::new();
-        for i in 0..pop.y.shape().0 {
-            let indiv = pop.y.row(i);
-            let value = self.rollout_indiv(&indiv.transpose());
-            res.push(value)
-        }
+        let res: Vec<f32> = pop
+            .y
+            .row_iter()
+            .map(|row| self.rollout_indiv(&row.transpose()))
+            .collect();
         DVector::from_vec(res)
     }
 }
