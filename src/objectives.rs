@@ -3,8 +3,6 @@ use nalgebra::{DMatrix, DVector};
 
 /// Implementation of the square and sum as fitness function.
 ///
-/// Example of a fitness function
-///
 /// ```rust
 /// use haru_cmaes::objectives::SquareAndSum;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
@@ -51,8 +49,6 @@ impl FitnessFunction for SquareAndSum {
 }
 
 /// Implementation of the standard deviation and sum as fitness function.
-///
-/// Example of a fitness function
 ///
 /// ```rust
 /// use haru_cmaes::objectives::StdAndSum;
@@ -106,8 +102,6 @@ impl FitnessFunction for StdAndSum {
 
 /// Implementation of the Rastrigin function as fitness function.
 ///
-/// Example of a fitness function
-///
 /// ```rust
 /// use haru_cmaes::objectives::Rastrigin;
 /// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
@@ -133,6 +127,7 @@ pub struct Rastrigin {
 }
 
 impl FitnessFunction for Rastrigin {
+    // Required method
     fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         let (a, pi) = (10.0, std::f32::consts::PI);
         pop.y
@@ -146,6 +141,7 @@ impl FitnessFunction for Rastrigin {
             .into()
     }
 
+    // Required method
     fn cost_dim(&self) -> usize {
         self.obj_dim
     }
@@ -157,8 +153,6 @@ impl FitnessFunction for Rastrigin {
 }
 
 /// Implementation of a (negative) hyperbole with max at 5.0.
-///
-/// Example of a fitness function
 ///
 /// ```rust
 /// use haru_cmaes::objectives::XSquare;
@@ -206,7 +200,27 @@ impl FitnessFunction for XSquare {
     }
 }
 
-// Doctest pending
+/// Implementation of an optimization problem with constraint
+///
+/// ```rust
+/// use haru_cmaes::objectives::ConstraintProblem;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
+/// use nalgebra::{Matrix3x4, DMatrix};
+///
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
+/// let pop = PopulationY { y };
+/// let objective_function = ConstraintProblem { obj_dim: 4, dir: MinOrMax::Min, target: 0.5 };
+/// let fitness = objective_function.evaluate(&pop).unwrap();
+///
+/// // We should have one fitness value per individual
+/// assert!(fitness.values.shape() == (3, 1));
+/// ```
 pub struct ConstraintProblem {
     pub obj_dim: usize,
     pub dir: MinOrMax,
@@ -214,14 +228,17 @@ pub struct ConstraintProblem {
 }
 
 impl FitnessFunction for ConstraintProblem {
+    // Required method
     fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         self.objective(pop) - self.constraint_1(pop)
     }
 
+    // Required method
     fn cost_dim(&self) -> usize {
         self.obj_dim
     }
 
+    // Required method
     fn optimization_type(&self) -> &MinOrMax {
         &self.dir
     }
@@ -252,7 +269,37 @@ impl ConstraintProblem {
     }
 }
 
-/// Doctest pending
+/// Implementation of DEA Efficieny Analysis
+/// https://www.mdpi.com/2077-0472/14/7/1032
+///
+/// ```rust
+/// use haru_cmaes::objectives::DEAProblem;
+/// use haru_cmaes::fitness::{PopulationY, FitnessEvaluator};
+/// use haru_cmaes::fitness::MinOrMax;
+/// use nalgebra::{Matrix3x4, DMatrix};
+///
+/// let static_matrix = Matrix3x4::new(
+///     1.0, 2.0, 3.0, 3.5,
+///     4.0, 5.0, 6.0, 6.5,
+///     7.0, 8.0, 9.0, 9.5,
+/// );
+/// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
+/// let pop = PopulationY { y };
+/// let objective_function = DEAProblem { 
+///     obj_dim: 4,
+///     dir: MinOrMax::Min,
+///     output_dim: 2,
+///     input_dim: 2,
+///     data: DMatrix::from_row_slice(3, 4, &vec![
+///         1.2, 3.0, 2.0, 2.5,
+///         4.0, 5.5, 6.0, 2.5,
+///         6.0, 8.5, 7.0, 9.5,
+///      ]) };
+/// let fitness = objective_function.evaluate(&pop).unwrap();
+///
+/// // We should have one fitness value per individual
+/// assert!(fitness.values.shape() == (3, 1));
+/// ```
 pub struct DEAProblem {
     // https://www.mdpi.com/2077-0472/14/7/1032
     pub obj_dim: usize,
@@ -263,14 +310,17 @@ pub struct DEAProblem {
 }
 
 impl FitnessFunction for DEAProblem {
+    // Required method
     fn cost(&self, pop: &PopulationY) -> DVector<f32> {
         self.rollout_pop(pop)
     }
 
+    // Required method
     fn cost_dim(&self) -> usize {
         self.output_dim + self.input_dim
     }
 
+    // Required method
     fn optimization_type(&self) -> &MinOrMax {
         &self.dir
     }
