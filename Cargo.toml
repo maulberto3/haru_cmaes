@@ -16,7 +16,7 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "example"
-path = "examples/simple_use.rs" # this make only compile what's in /src
+path = "examples/simple_use.rs" # this enforces compile only necessary what's in /src
 
 [dependencies]
 anyhow = { version = "1.0.86" }
