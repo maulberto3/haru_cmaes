@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 ### 🐛 Bug Fixes
 
+- To account only for when others dea passes 1.0
+- Removed now obsolete from ndarray (allowed unused) import of backend
+
+### 🚜 Refactor
+
+- Constraint and DEA functions
+- More clarity on blanket impl
+
+### 📚 Documentation
+
+- More clarity on why specify a bin entry point
+
+### 🧪 Testing
+
+- Added doctests and minor redundancy
+
+## [1.0.4] - 2025-01-02
+
+### 🐛 Bug Fixes
+
 - Minor cleanup
 - Bump version after fulll build
 
