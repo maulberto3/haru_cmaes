@@ -32,15 +32,7 @@ pub trait FitnessFunction {
     fn optimization_type(&self) -> &MinOrMax;
 }
 
-/// A wrapper trait for fitness functions.
-pub trait FitnessEvaluator {
-    type IndividualsEvaluated;
-    type ObjectiveDim;
-
-    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated>;
-    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim>;
-}
-
+/// Blanket implementation for fitness functions
 impl<T> FitnessEvaluator for T
 where
     T: FitnessFunction,
@@ -64,10 +56,11 @@ where
     }
 }
 
-// /// Function to allow only for complying objective functions
-// pub fn allow_objective_func<E: FitnessEvaluator>(
-//     objective_function: E,
-// ) -> Result<(E, E::ObjectiveDim)> {
-//     let objective_dim = objective_function.evaluator_dim()?;
-//     Ok((objective_function, objective_dim))
-// }
+/// A wrapper trait for fitness functions.
+pub trait FitnessEvaluator {
+    type IndividualsEvaluated;
+    type ObjectiveDim;
+
+    fn evaluate(&self, pop: &PopulationY) -> Result<Self::IndividualsEvaluated>;
+    fn evaluator_dim(&self) -> Result<Self::ObjectiveDim>;
+}
