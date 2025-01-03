@@ -10,9 +10,6 @@ use std::env::var;
 use std::io::{self, Write};
 use std::time::Instant;
 
-// #[allow(unused_imports)]
-// use blas_src;
-
 // Example usage of the CMA-ES algorithm.
 //
 // First, it defines and checks that your objective
