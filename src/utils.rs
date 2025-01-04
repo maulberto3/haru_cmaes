@@ -36,17 +36,29 @@ pub fn get_memory_usage() -> Result<usize> {
 
 pub fn format_number(num: usize) -> String {
     let num_str = num.to_string();
-    let mut result = String::new();
-    let mut count = 0;
+    // let mut result = String::new();
+    // let mut count = 0;
 
-    for c in num_str.chars().rev() {
-        if count == 3 {
-            result.push(',');
-            count = 0;
-        }
-        result.push(c);
-        count += 1;
-    }
+    // for c in num_str.chars().rev() {
+    //     if count == 3 {
+    //         result.push(',');
+    //         count = 0;
+    //     }
+    //     result.push(c);
+    //     count += 1;
+    // }
+
+    let result: String = num_str
+        .chars()
+        .rev()
+        .enumerate()
+        .map(|(i, c)| {
+            if i == 3 {
+                return ',';
+            }
+            c
+        })
+        .collect();
 
     result.chars().rev().collect()
 }

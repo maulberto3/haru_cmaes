@@ -8,7 +8,6 @@ use crate::{
 use anyhow::Result;
 use nalgebra::{DMatrix, DVector};
 use rand::prelude::Distribution;
-use statrs::distribution::MultivariateNormal;
 
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
@@ -52,22 +51,26 @@ impl CmaesAlgo {
     /// ```
     pub fn ask_z(&self, state: &mut CmaesState) -> Result<PopulationZ> {
         let mut rng = rand::thread_rng();
-        let mut data: Vec<f32> =
-            Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
-        for _ in 0..self.params.popsize {
-            let sample = &state.normal_distr
-                .sample(&mut rng)
-                .iter()
-                .map(|x| *x as f32)
-                .collect::<Vec<f32>>(); // Generate a random sample``
-            data.extend(sample);
-        }
+        // let mut data: Vec<f32> =
+        //     Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
+        let data: Vec<f32> = (0..self.params.popsize)
+            .into_iter()
+            .flat_map(|_i| {
+                state
+                    .normal_distr
+                    .sample(&mut rng)
+                    .iter()
+                    .map(|x| *x as f32)
+                    .collect::<Vec<f32>>()
+            })
+            .collect();
         let z = DMatrix::from_row_slice(
             self.params.popsize as usize,
             self.params.xstart.len(),
             &data,
         );
         state.z.copy_from(&z);
+        // state.z = z.clone();
         Ok(PopulationZ { z })
     }
 }
@@ -242,6 +245,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         state.cov = &state.cov + pc_outer;
 
         // Perform the rank-mu update
+        // refactor for
         for (i, w) in self.params.weights.iter().enumerate() {
             let mut w = *w;
             if w < 0. {
