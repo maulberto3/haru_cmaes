@@ -285,7 +285,7 @@ impl ConstraintProblem {
 /// );
 /// let y = DMatrix::from_row_slice(3, 4, static_matrix.as_slice());
 /// let pop = PopulationY { y };
-/// let objective_function = DEAProblem { 
+/// let objective_function = DEAProblem {
 ///     obj_dim: 4,
 ///     dir: MinOrMax::Min,
 ///     output_dim: 2,
