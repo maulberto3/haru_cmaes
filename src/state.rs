@@ -1,10 +1,12 @@
 use crate::params::CmaesParams;
 use anyhow::Result;
-use nalgebra::{DMatrix, DVector, SymmetricEigen};
+use nalgebra::{DMatrix, DVector, Dyn, SymmetricEigen};
+use statrs::distribution::MultivariateNormal;
 
 /// Structure to hold state for CMA-ES.
 #[derive(Debug, Clone)]
 pub struct CmaesState {
+    pub normal_distr: MultivariateNormal<Dyn>,
     pub z: DMatrix<f32>,          // Matrix of standard normal random variables.
     pub y: DMatrix<f32>,          // Matrix of candidate solutions.
     pub best_y: DVector<f32>,     // Best candidate.
@@ -55,6 +57,9 @@ impl CmaesStateLogic for CmaesState {
     /// ```
     fn init_state(params: &CmaesParams) -> Result<Self::NewState> {
         // Create initial values for the state
+        let normal_mean = DVector::from_vec(vec![0.0; params.xstart.len()]);
+        let normal_cov = DMatrix::identity(params.xstart.len(), params.xstart.len());
+        let normal_distr = MultivariateNormal::new_from_nalgebra(normal_mean, normal_cov).unwrap();
         let z: DMatrix<f32> = DMatrix::zeros(params.popsize as usize, params.xstart.len());
         let y: DMatrix<f32> = DMatrix::zeros(params.popsize as usize, params.xstart.len());
         let best_y: DVector<f32> = DVector::zeros(params.xstart.len());
@@ -72,6 +77,7 @@ impl CmaesStateLogic for CmaesState {
         let pc: DVector<f32> = DVector::zeros(params.xstart.len());
 
         Ok(CmaesState {
+            normal_distr,
             z,
             y,
             best_y,

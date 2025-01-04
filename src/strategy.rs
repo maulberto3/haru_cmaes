@@ -51,15 +51,11 @@ impl CmaesAlgo {
     /// assert!(z.is_ok());
     /// ```
     pub fn ask_z(&self, state: &mut CmaesState) -> Result<PopulationZ> {
-        // refactor!
-        let mean = DVector::from_vec(vec![0.0; self.params.xstart.len()]);
-        let cov = DMatrix::identity(self.params.xstart.len(), self.params.xstart.len());
-        let normal = MultivariateNormal::new_from_nalgebra(mean, cov).unwrap();
         let mut rng = rand::thread_rng();
         let mut data: Vec<f32> =
             Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
         for _ in 0..self.params.popsize {
-            let sample = normal
+            let sample = &state.normal_distr
                 .sample(&mut rng)
                 .iter()
                 .map(|x| *x as f32)
@@ -171,7 +167,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// };
     ///
     /// let mut fitness = obj_func.evaluate(&y).unwrap();
-    /// // for soem reason, cargo test --doc didn't like without 'let'
+    /// // for some reason, `cargo test --doc`` didn't like it without 'let'
     /// let state = cmaes.tell(state, &mut y, &mut fitness);
     ///
     /// assert!(state.is_ok());
