@@ -8,11 +8,17 @@ All notable changes to this project will be documented in this file.
 
 - To account only for when others dea passes 1.0
 - Removed now obsolete from ndarray (allowed unused) import of backend
+- Minor cleanups
+- Bump version
+- Removed custom error
 
 ### 🚜 Refactor
 
 - Constraint and DEA functions
 - More clarity on blanket impl
+- Build distr once, then call it
+- With iter instead of for
+- Fold for clarity on cov aggregation, plus no degradation
 
 ### 📚 Documentation
 
@@ -21,6 +27,11 @@ All notable changes to this project will be documented in this file.
 ### 🧪 Testing
 
 - Added doctests and minor redundancy
+- Added doctest
+
+### Build
+
+- Some build artifacts
 
 ## [1.0.4] - 2025-01-02
 
