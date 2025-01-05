@@ -139,8 +139,7 @@ impl CmaesStateLogic for CmaesState {
             feature = "accelerate",
             feature = "intel-mkl"
         ))]
-        let mut eigen =
-            nalgebra_lapack::SymmetricEigen::try_new(self.cov.clone())?;
+        let mut eigen = nalgebra_lapack::SymmetricEigen::try_new(self.cov.clone())?;
 
         #[cfg(not(any(
             feature = "openblas",
