@@ -54,7 +54,6 @@ impl CmaesAlgo {
         // let mut data: Vec<f32> =
         //     Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
         let data: Vec<f32> = (0..self.params.popsize)
-            .into_iter()
             .flat_map(|_i| {
                 state
                     .normal_distr
@@ -266,11 +265,26 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         Ok(state)
     }
 
-    /// DONE
-    /// Stopping criteria: close (smoothed) to target
     ///
     /// TODO
     /// doctest this
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
+    /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
+    /// use nalgebra::DVector;
+    ///
+    /// let params = CmaesParams::new().unwrap();
+    /// let cmaes = CmaesAlgo::new(params).unwrap();
+    /// let mut state = CmaesState::init_state(&cmaes.params).unwrap();
+    /// state.best_y_hist = vec![16.0, 14.0, 12.0, 11.1, 10.6, 9.1, 9.1, 7.9, 7.9, 7.9, 7.9, 6.5, 6.5, 5.3, 5.3];
+    /// state.best_y_fit = DVector::from_element(1, 5.0);
+    /// let step = 7;
+    /// let result = cmaes.is_done(&state, step).unwrap();
+    ///
+    /// assert_eq!(result, false);
+    /// ```
     ///
     fn is_done(&self, state: &CmaesState, step: i32) -> Result<Self::Done> {
         ////////////////
