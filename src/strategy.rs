@@ -238,25 +238,24 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         // Adapt covariance matrix C
         let c1a =
             self.params.c1 * (1. - (1. - hsig * hsig) * self.params.cc * (2. - self.params.cc));
-        state
-            .cov
-            .copy_from(&state.cov.map(|x| x * (1. - c1a - self.params.cmu)));
+        state.cov = state.cov.map(|x| x * (1. - c1a - self.params.cmu));
         let pc_outer: DMatrix<f32> = &state.pc * &state.pc.transpose().map(|x| x * self.params.c1);
         state.cov = &state.cov + pc_outer;
 
         // Perform the rank-mu update
         // refactor for
-        for (i, w) in self.params.weights.iter().enumerate() {
-            let mut w = *w;
-            if w < 0. {
-                w = 0.001
-            }
-            let dx: DVector<f32> = &pop.y.rows(i, 1).transpose() - &xold;
-            let dx: DMatrix<f32> = &dx * &dx.transpose();
-            let dx: DMatrix<f32> =
-                dx.map(|x| x * w * self.params.cmu / (self.params.sigma * self.params.sigma));
-            state.cov = &state.cov + dx;
-        }
+        state.cov = self.params.weights.iter().enumerate().fold(
+            state.cov.clone(), // Start with the initial covariance matrix
+            |mut cov, (i, &w)| {
+                let w = if w < 0.0 { 0.001 } else { w }; // Ensure `w` is non-negative
+                let dx: DVector<f32> = &pop.y.rows(i, 1).transpose() - &xold;
+                let dx: DMatrix<f32> = &dx * &dx.transpose();
+                let dx: DMatrix<f32> =
+                    dx.map(|x| x * w * self.params.cmu / (self.params.sigma * self.params.sigma));
+                cov += dx; // Update the accumulated covariance
+                cov
+            },
+        );
 
         // Perform step-size sigma update
         let cn = self.params.cs / self.params.damps;
