@@ -110,6 +110,7 @@ impl CmaesStateLogic for CmaesState {
         // For matrix eigen computation efficiency
         // non-diag -> enforce sparsity
         // diag -> ensure positive
+        // current fast approach, i.e. for_each, map are slow
         for i in 0..self.cov.nrows() {
             for j in 0..self.cov.nrows() {
                 let x = self.cov.index_mut((i, j));
@@ -139,7 +140,7 @@ impl CmaesStateLogic for CmaesState {
             feature = "intel-mkl"
         ))]
         let mut eigen =
-            nalgebra_lapack::SymmetricEigen::try_new(self.cov.clone()).ok_or(PosDefCovError)?;
+            nalgebra_lapack::SymmetricEigen::try_new(self.cov.clone())?;
 
         #[cfg(not(any(
             feature = "openblas",
