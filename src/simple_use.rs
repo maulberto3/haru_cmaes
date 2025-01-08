@@ -51,7 +51,7 @@ pub fn example() -> Result<()> {
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()?
         .set_popsize(50)?
-        .set_xstart(vec![0.5; obj_func.evaluator_dim()?])?
+        .set_xstart(obj_func.evaluator_dim()?, 0.5)?
         .set_sigma(0.5)?;
 
     // Create a new CMA-ES instance
