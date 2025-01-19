@@ -6,6 +6,8 @@ authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/maulberto3/haru_cmaes"
+# documentation = https://docs.rs/haru_cmaes/1.0.5/haru_cmaes/
+keywords = ["CMA-ES", "optimization", "algorithm"]
 # exclude = [
 #     "src/simple_use.rs",
 # ]
@@ -15,8 +17,12 @@ name = "haru_cmaes"
 path = "src/lib.rs"
 
 [[bin]]
-name = "example"
-path = "examples/simple_use.rs" # this enforces compile only necessary what's in /src
+name = "simple"
+path = "examples/simple.rs" # this enforces compile only necessary what's in /src, i.e. hack
+
+[[bin]]
+name = "express"
+path = "examples/express.rs" # this enforces compile only necessary what's in /src, i.e. hack
 
 [dependencies]
 anyhow = { version = "1.0.86" }
