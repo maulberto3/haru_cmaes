@@ -23,9 +23,9 @@ prep:
 doct:
 	cargo doc
 exam:
-	cargo run --release --bin example
+	cargo run --release --bin express_use
 build:
-	clear && make clean && make lint && make test && make cove && make prep && make doct && make exam
+	clear && make clean && make lint && make test && make cove && make prep && make doct
 ###
 benc:
 	clear && cargo bench --bench mine

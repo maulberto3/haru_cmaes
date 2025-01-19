@@ -58,10 +58,7 @@ impl CmaesStateLogic for CmaesState {
     /// ```
     fn init_state(params: &CmaesParams) -> Result<Self::NewState> {
         // Create initial values for the state
-        let mut vec = Vec::with_capacity(params.xstart.len());
-        for _ in 0..params.xstart.len() {
-            vec.push(0.0);
-        }
+        let vec = vec![0.0; params.xstart.len()];
         let normal_mean = DVector::from_vec(vec);
         let normal_cov = DMatrix::identity(params.xstart.len(), params.xstart.len());
         let normal_distr = MultivariateNormal::new_from_nalgebra(normal_mean, normal_cov).unwrap();

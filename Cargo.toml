@@ -16,14 +16,6 @@ keywords = ["CMA-ES", "optimization", "algorithm"]
 name = "haru_cmaes"
 path = "src/lib.rs"
 
-[[bin]]
-name = "simple"
-path = "examples/simple.rs" # this enforces compile only necessary what's in /src, i.e. hack
-
-[[bin]]
-name = "express"
-path = "examples/express.rs" # this enforces compile only necessary what's in /src, i.e. hack
-
 [dependencies]
 anyhow = { version = "1.0.86" }
 rand = { version = "0.8.5" }

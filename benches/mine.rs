@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use haru_cmaes::simple_use;
+use haru_cmaes::ask_tell_use;
 
 /// Benchmark function for the `cmaes` example.
 ///
@@ -9,7 +9,9 @@ use haru_cmaes::simple_use;
 ///
 /// * `c` - A mutable reference to a `Criterion` object for benchmarking.
 fn cmaes_benchmark(c: &mut Criterion) {
-    c.bench_function("CMA-ES Mine", |b| b.iter(|| simple_use::example().unwrap()));
+    c.bench_function("CMA-ES Mine", |b| {
+        b.iter(|| ask_tell_use::ask_tell_example().unwrap())
+    });
 }
 
 criterion_group!(benches, cmaes_benchmark);

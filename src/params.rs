@@ -53,10 +53,8 @@ impl CmaesParamsValidator for CmaesParams {
         // Must update all parameters if this one's setter is used
         let popsize: i32 = 10;
         // Must update all parameters if this one's setter is used
-        let mut xstart = Vec::with_capacity(6);
-        for _ in 0..6 {
-            xstart.push(0.0);
-        }
+        let xstart = vec![0.0; 6];
+
         let sigma = 0.75;
         let tol = 0.001;
         let zs = 0.05;
@@ -160,11 +158,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// assert!(params.is_ok());
     /// ```
     fn set_xstart(mut self, capacity: usize, origin: f32) -> Result<Self::Validated> {
-        let mut vec = Vec::with_capacity(capacity);
-        for _ in 0..capacity {
-            vec.push(origin);
-        }
-        self.xstart = vec;
+        self.xstart = vec![origin; capacity];
         self.update_dependent_params();
         Ok(self)
     }

@@ -10,24 +10,7 @@ use std::env::var;
 use std::io::{self, Write};
 use std::time::Instant;
 
-// Example usage of the CMA-ES algorithm.
-//
-// First, it defines and checks that your objective
-// function is allowed
-//
-// Then, create default Cmaes parameters, after which
-// can be adjusted to specific values
-//
-// Then, we pass those params to Cmaes algorithm and start
-// the ask-tell loop
-//
-// Here, it is shown that if the mean of last 25 best
-// optimization values is close to current best,
-// the lops breaks
-//
-// Finally, the solution is under state.best_y and state.best_y_fit
-
-pub fn example() -> Result<()> {
+pub fn ask_tell_example() -> Result<CmaesState> {
     // Define verbose or not
     let verbose = var("VERBOSE").unwrap_or("No".to_string());
 
@@ -98,5 +81,5 @@ pub fn example() -> Result<()> {
         println!("{:+.5?}", &state.best_y);
     }
 
-    Ok(())
+    Ok(state)
 }
