@@ -47,10 +47,6 @@ argmin-math = { version = "0.4", features = ["ndarray_latest", "nalgebra_latest"
 cmaes = "0.2.2"
 
 [[bench]]
-name = "argmin"
-harness = false
-
-[[bench]]
 name = "hansen"
 harness = false
 
