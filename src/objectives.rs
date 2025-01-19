@@ -270,7 +270,7 @@ impl ConstraintProblem {
 }
 
 /// Implementation of DEA Efficieny Analysis
-/// https://www.mdpi.com/2077-0472/14/7/1032
+/// <https://www.mdpi.com/2077-0472/14/7/1032>
 ///
 /// ```rust
 /// use haru_cmaes::objectives::DEAProblem;
