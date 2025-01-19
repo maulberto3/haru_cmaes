@@ -7,25 +7,25 @@ use statrs::distribution::MultivariateNormal;
 #[derive(Debug, Clone)]
 pub struct CmaesState {
     pub normal_distr: MultivariateNormal<Dyn>, // Normal distributnio function
-    pub z: DMatrix<f32>,          // Matrix of standard normal random variables.
-    pub y: DMatrix<f32>,          // Matrix of candidate solutions.
-    pub best_y: DVector<f32>,     // Best candidate.
-    pub best_y_fit: DVector<f32>, // Fitness value of the best candidate.
-    pub best_y_hist: Vec<f32>,    // Historical fitness values of the best candidate.
-    pub cov: DMatrix<f32>,        // Covariance matrix of the population.
-    pub eig_vecs: DMatrix<f32>,   // Eigenvectors of the covariance matrix.
-    pub eig_vals: DVector<f32>,   // Eigenvalues of the covariance matrix.
-    pub inv_sqrt: DMatrix<f32>,   // Matrix for the inverse square root of the covariance matrix.
-    pub mean: DVector<f32>,       // Mean of the population.
-    pub sigma: f32,               // Step-size (standard deviation).
-    pub g: i32,                   // Curren generation.
-    pub evals_count: i32,         // Number of evaluations performed.
-    pub ps: DVector<f32>,         // Evolution path for step-size adaptation.
-    pub pc: DVector<f32>,         // Evolution path for covariance matrix adaptation.
-                                  ////////////////
-                                  // TODO
-                                  // Allow flag for verbose state, maybe with tracing
-                                  ////////////////
+    pub z: DMatrix<f32>,                       // Matrix of standard normal random variables.
+    pub y: DMatrix<f32>,                       // Matrix of candidate solutions.
+    pub best_y: DVector<f32>,                  // Best candidate.
+    pub best_y_fit: DVector<f32>,              // Fitness value of the best candidate.
+    pub best_y_hist: Vec<f32>,                 // Historical fitness values of the best candidate.
+    pub cov: DMatrix<f32>,                     // Covariance matrix of the population.
+    pub eig_vecs: DMatrix<f32>,                // Eigenvectors of the covariance matrix.
+    pub eig_vals: DVector<f32>,                // Eigenvalues of the covariance matrix.
+    pub inv_sqrt: DMatrix<f32>, // Matrix for the inverse square root of the covariance matrix.
+    pub mean: DVector<f32>,     // Mean of the population.
+    pub sigma: f32,             // Step-size (standard deviation).
+    pub g: i32,                 // Curren generation.
+    pub evals_count: i32,       // Number of evaluations performed.
+    pub ps: DVector<f32>,       // Evolution path for step-size adaptation.
+    pub pc: DVector<f32>,       // Evolution path for covariance matrix adaptation.
+                                ////////////////
+                                // TODO
+                                // Allow flag for verbose state, maybe with tracing
+                                ////////////////
 }
 
 /// Trait for CMA-ES State
@@ -35,6 +35,7 @@ pub trait CmaesStateLogic {
     fn init_state(params: &CmaesParams) -> Result<Self::NewState>;
     fn prepare_ask(&mut self, params: &CmaesParams) -> Result<()>;
     fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()>;
+    fn get_best(&self) -> Result<(DVector<f32>, DVector<f32>)>;
 }
 
 /// Implementing Trait for CMA-ES State
@@ -173,5 +174,9 @@ impl CmaesStateLogic for CmaesState {
         self.eig_vals = eig_vals;
 
         Ok(())
+    }
+
+    fn get_best(&self) -> Result<(DVector<f32>, DVector<f32>)> {
+        Ok((self.best_y.clone(), self.best_y_fit.clone()))
     }
 }

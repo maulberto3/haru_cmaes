@@ -19,6 +19,7 @@ pub mod objectives;
 
 pub mod utils;
 
+pub mod express_use;
 pub mod simple_use;
 
 // TODO:

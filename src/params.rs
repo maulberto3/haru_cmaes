@@ -159,7 +159,7 @@ impl CmaesParamsValidator for CmaesParams {
     ///
     /// assert!(params.is_ok());
     /// ```
-    fn set_xstart(mut self, capacity: usize, origin: f32 ) -> Result<Self::Validated> {
+    fn set_xstart(mut self, capacity: usize, origin: f32) -> Result<Self::Validated> {
         let mut vec = Vec::with_capacity(capacity);
         for _ in 0..capacity {
             vec.push(origin);
