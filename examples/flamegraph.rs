@@ -1,5 +1,5 @@
 use anyhow::Result;
-use haru_cmaes::simple_use;
+use haru_cmaes::ask_tell_use;
 use pprof::ProfilerGuard;
 use std::fs::File;
 
@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     // Run the example
     for _i in 0..200 {
-        simple_use::example()?;
+        ask_tell_use::ask_tell_example()?;
     }
     println!("Finished simple CMA-ES optimization.");
 
