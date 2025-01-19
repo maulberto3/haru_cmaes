@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- New simple express executor
+
+### 🐛 Bug Fixes
+
+- Removed function
+- Remove argmin bench
+- Removed unsued f_major and nlopt
+- Url proper format for doc
+
+### 🚜 Refactor
+
+- Added with_capacity for some vecs; needed update trait
+- Rename
+- Rename for clarity; simpler vec creation;
+
+### Build
+
+- New artifacts
+
+## [1.0.5] - 2025-01-05
+
 ### 🐛 Bug Fixes
 
 - To account only for when others dea passes 1.0
