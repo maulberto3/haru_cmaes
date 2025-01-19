@@ -59,8 +59,5 @@ jobs:
       - name: Set TERM environment variable
         run: echo "TERM=xterm" >> $GITHUB_ENV
 
-      - name: Format the code
-        run: make prep
-
       - name: Run tests
         run: make test
