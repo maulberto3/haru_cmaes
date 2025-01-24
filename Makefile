@@ -15,17 +15,17 @@ clean:
 lint:
 	cargo fmt --check && cargo clippy -- -D warnings
 test:
-	cargo test --doc
+	cargo test
 cove:
 	cargo tarpaulin --out Html
 prep:
 	cargo machete && cargo build && cargo build --release
-doct:
+docu:
 	cargo doc
 exam:
 	cargo run --release --bin express_use
 build:
-	clear && make clean && make lint && make test && make cove && make prep && make doct
+	clear && make clean && make lint && make cove && make prep && make docu
 ###
 benc:
 	clear && cargo bench --bench mine
