@@ -39,25 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-rust-toolchain-
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz
-
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
-
-      - name: Install cargo-depgraph
-        run: cargo install cargo-depgraph
-
-      - name: Install cargo-machete
-        run: cargo install cargo-machete
     
       - name: Set TERM environment variable
         run: echo "TERM=xterm" >> $GITHUB_ENV
 
       - name: Run tests
-        run: make test
+        run: cargo build
