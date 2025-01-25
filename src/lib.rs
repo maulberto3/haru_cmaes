@@ -4,10 +4,6 @@
 //!
 //! For detailed usage and examples, please refer to `lib.rs` and the examples directory.
 
-// #[allow(unused_imports)]
-// #[allow(clippy::single_component_path_imports)]
-// use blas_src; // necessary for eig
-
 pub mod params;
 
 pub mod state;
@@ -22,9 +18,3 @@ pub mod utils;
 pub mod express_use;
 
 pub mod ask_tell_use;
-
-// TODO:
-// Check code and refactor more to mutable, mostly state
-// initialize vectors with capacity
-// use arrays where possible
-// use nalgebra for better eig
