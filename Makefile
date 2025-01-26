@@ -26,12 +26,12 @@ exam:
 	cargo run --release --bin express_use
 build:
 	clear && make clean && make lint && make cove && make prep && make docu
-###
+##############################
 benc:
 	clear && cargo bench --bench mine
 prof:
 	clear && cargo run --release --example flamegraph
-###
+##############################
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:
 	# Generate the changelog and commit it in the same step

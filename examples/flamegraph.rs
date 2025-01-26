@@ -11,7 +11,7 @@ fn main() -> Result<()> {
     for _i in 0..200 {
         ask_tell_use::ask_tell_example()?;
     }
-    println!("Finished simple CMA-ES optimization.");
+    // println!("Finished simple CMA-ES optimization.");
 
     // Stop the profiler and generate the report
     if let Ok(report) = guard.report().build() {

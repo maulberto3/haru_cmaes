@@ -44,7 +44,7 @@ pub fn ask_tell_example() -> Result<CmaesState> {
     let mut state = CmaesState::init_state(&cmaes.params)?;
 
     // Run the CMA-ES algorithm until close to objective value
-    let mut step = 0;
+    let mut step = 1;
     loop {
         // Generate a new population
         let mut pop = cmaes.ask(&mut state)?;

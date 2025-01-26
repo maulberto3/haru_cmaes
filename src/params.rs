@@ -205,6 +205,7 @@ impl CmaesParamsValidator for CmaesParams {
     /// ```
     fn set_zs(mut self, zs: f32) -> Result<Self::Validated> {
         if zs > 0.2 {
+            println!("Setting zs above 0.2 might affect diagonal values");
             self.zs = 0.2
         }
         self.zs = zs;
