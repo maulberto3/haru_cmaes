@@ -55,7 +55,8 @@ impl CmaesAlgo {
                     // Convert uniform random numbers to standard normal distribution
                     let u1 = fastrand::f32();
                     let u2 = fastrand::f32();
-                    (-2.0 * u1.ln()).sqrt() * (2.0 * std::f32::consts::PI * u2).cos()
+                    (-2.0 * u1.clamp(0.0001, 0.9999).ln()).sqrt()
+                        * (2.0 * std::f32::consts::PI * u2).cos()
                 })
             })
             .collect();
@@ -118,7 +119,6 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
 
         let z: DMatrix<f32> = self.ask_z(state)?.z;
 
-        // let eig_vals_sqrt: DMatrix<f32> = DMatrix::from_diag(&state.eig_vals.mapv(f32::sqrt));
         let eig_vals_sqrt: DMatrix<f32> = DMatrix::from_diagonal(
             &state
                 .eig_vals
@@ -128,11 +128,17 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
                 .into(),
         );
 
-        // print!("{:?} ", &state.sigma);
+        // println!();
+        // println!("eig_vals_sqrt {:?}", &eig_vals_sqrt.data);
+        // println!("z {:?}", &z.data);
+        // print!("sigma {:?} ", &state.sigma);
         // io::stdout().flush().unwrap();
 
         let scaled_z: DMatrix<f32> = z.map(|x| x * state.sigma) * &eig_vals_sqrt;
+        // println!("z * sigma * eig_vals_sqrt {:?}", &scaled_z.data);
+
         let rotated_z: DMatrix<f32> = scaled_z * &state.eig_vecs.transpose();
+        // println!("z * sigma * eig_vals_sqrt * eig_vecs.t {:?}", &rotated_z.data);
 
         let y: DMatrix<f32> = DMatrix::from_rows(
             &rotated_z
