@@ -31,6 +31,10 @@ benc:
 	clear && cargo bench --bench mine
 prof:
 	clear && cargo run --release --example flamegraph
+samp:
+	# To grant temporary access before using samply
+	# echo '1' | sudo tee /proc/sys/kernel/perf_event_paranoid
+	clear && samply record cargo run --release --bin ask_tell
 ##############################
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:
