@@ -184,9 +184,9 @@ impl FitnessFunction for XSquare {
         let result = pop
             .y
             .row_iter()
-            .map(|row| row.iter().map(|x| -x * x).sum())
+            .map(|row| row.iter().map(|x| x * x).sum())
             .collect::<Vec<f32>>();
-        DVector::from_vec(result).add_scalar(5.0)
+        DVector::from_vec(result) // .add_scalar(5.0)
     }
 
     // Required method
@@ -391,6 +391,7 @@ impl DEAProblem {
             .map(|(i, (out_row, inp_row))| {
                 let out_row = out_row.transpose();
                 let inp_row = inp_row.transpose();
+                // Assumes here first row is current entity to optimize
                 if i == 0 {
                     self.objective(&out_coef, &out_row, &inp_coef, &inp_row)
                         - self.constr(&inp_coef, &inp_row)
