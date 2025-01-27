@@ -12,6 +12,8 @@ pub fn express_executor(objective_function: impl FitnessFunction) -> impl CmaesS
         .set_popsize(objective_function.cost_dim() as i32)
         .unwrap()
         .set_xstart(objective_function.cost_dim(), 0.0)
+        .unwrap()
+        .set_only_diag(true)
         .unwrap();
 
     // Create a new CMA-ES instance
@@ -21,7 +23,7 @@ pub fn express_executor(objective_function: impl FitnessFunction) -> impl CmaesS
     let mut state = CmaesState::init_state(&cmaes.params).unwrap();
 
     // Run the CMA-ES algorithm until close to objective value
-    let mut step = 0;
+    let mut step = 1;
     loop {
         // Generate a new population
         let mut pop = cmaes.ask(&mut state).unwrap();

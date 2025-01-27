@@ -119,7 +119,7 @@ impl CmaesStateLogic for CmaesState {
                 if i == j {
                     // Diagonal entry
                     if *x < 0.0 {
-                        *x = 0.1;
+                        *x = 0.1 // + (fastrand::f32() / 100.0);
                     }
                 } else if params.only_diag {
                     // Non-diagonal entry
@@ -154,21 +154,33 @@ impl CmaesStateLogic for CmaesState {
         let mut eig_vals: DVector<f32> = eigen.eigenvalues;
         let eig_vecs: DMatrix<f32> = eigen.eigenvectors;
 
-        // println!("{}", &eig_vals);
-        // println!("{}", &eig_vecs);
-
         // Ensure positive eigenvalues
-        eig_vals.iter_mut().for_each(|eig| {
-            if *eig < 0.0 {
-                *eig = 0.1; // Adjust negative eigenvalues
-            } else if *eig > 10.0 {
-                *eig = 10.0; // Clamp to a maximum value
+        eig_vals.iter_mut().for_each(|val| {
+            if *val < 0.0 {
+                *val = 0.1; // Adjust negative valenvalues
+            } else if *val > 10.0 {
+                *val = 10.0; // Clamp to a maximum value
             }
         });
+
+        // // Clamp eigenvector elements to a range to avoid extreme values
+        // eig_vecs.iter_mut().for_each(|vec| {
+        //         if *vec < -10.0 {
+        //             *vec = -10.0; // Minimum limit
+        //         } else if *vec > 10.0 {
+        //             *vec = 10.0; // Maximum limit
+        //         }
+        // });
 
         // Calculate the inverse square root of eigenvalues
         let inv_sqrt_diag = DMatrix::from_diagonal(&eig_vals.map(|eig| eig.powf(-0.5)));
         self.inv_sqrt = &eig_vecs * &inv_sqrt_diag * eig_vecs.transpose();
+
+        // print!("{:?} ", &self.cov.mean());
+        // print!("{:?} ", &eig_vals.mean());
+        // print!("{:?} ", &eig_vecs.mean());
+        // println!("{:?}", &inv_sqrt_diag.mean());
+        // println!("{}", &eig_vecs);
 
         // Store
         self.eig_vecs = eig_vecs;
