@@ -35,7 +35,8 @@ pub fn ask_tell_example() -> Result<CmaesState> {
     let params = CmaesParams::new()?
         .set_popsize(50)?
         .set_xstart(obj_func.evaluator_dim()?, 0.5)?
-        .set_sigma(0.5)?;
+        .set_sigma(0.5)?
+        .set_only_diag(true)?;
 
     // Create a new CMA-ES instance
     let cmaes = CmaesAlgo::new(params)?;

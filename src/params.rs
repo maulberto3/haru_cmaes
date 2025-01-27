@@ -8,7 +8,7 @@ pub struct CmaesParams {
     pub xstart: Vec<f32>,      // Initial guess (mean vector)
     pub sigma: f32,            // Step-size (standard deviation)
     pub tol: f32,              // Tolerance for convergence, optional
-    pub zs: f32,               // Enforce zero sparsity for quicker computational results, optional
+    pub only_diag: bool,       // Whether to use only diag and no covariances or not
     pub n: f32,                // Dimension of the problem space (xstart size)
     pub mu: i32,               // Number of parents (best individuals)
     pub weights: DVector<f32>, // Weights for recombination
@@ -33,7 +33,7 @@ pub trait CmaesParamsValidator {
     fn update_dependent_params(&mut self);
     // Other worth specifying
     fn set_tol(self, tol: f32) -> Result<Self::Validated>;
-    fn set_zs(self, zs: f32) -> Result<Self::Validated>;
+    fn set_only_diag(self, only_diag: bool) -> Result<Self::Validated>;
 }
 
 /// Implmenting Trait for CMA-ES parameters.
@@ -57,7 +57,7 @@ impl CmaesParamsValidator for CmaesParams {
 
         let sigma = 0.75;
         let tol = 0.001;
-        let zs = 0.05;
+        let only_diag = false;
 
         let n = xstart.len() as f32;
         let mu = popsize / 2;
@@ -90,7 +90,7 @@ impl CmaesParamsValidator for CmaesParams {
             // Objective's
             tol,
             // Computational's
-            zs,
+            only_diag,
             // Others
             n,
             mu,
@@ -199,16 +199,12 @@ impl CmaesParamsValidator for CmaesParams {
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     ///
     /// let params = CmaesParams::new()
-    ///     .and_then(|p| p.set_zs(0.1));
+    ///     .and_then(|p| p.set_only_diag(true));
     ///
     /// assert!(params.is_ok());
     /// ```
-    fn set_zs(mut self, zs: f32) -> Result<Self::Validated> {
-        if zs > 0.2 {
-            println!("Setting zs above 0.2 might affect diagonal values");
-            self.zs = 0.2
-        }
-        self.zs = zs;
+    fn set_only_diag(mut self, only_diag: bool) -> Result<Self::Validated> {
+        self.only_diag = only_diag;
         Ok(self)
     }
 }

@@ -112,7 +112,7 @@ impl CmaesStateLogic for CmaesState {
         // For matrix eigen computation efficiency
         // non-diag -> enforce sparsity
         // diag -> ensure positive
-        // current fast approach, i.e. for_each, map are slow
+        // current fast approach, i.e. for_each (.map is slow)
         for i in 0..self.cov.nrows() {
             for j in 0..self.cov.nrows() {
                 let x = self.cov.index_mut((i, j));
@@ -121,13 +121,16 @@ impl CmaesStateLogic for CmaesState {
                     if *x < 0.0 {
                         *x = 0.1;
                     }
-                } else if *x < params.zs {
-                    // Non-diagonal entry
-                    *x = 0.0;
+                } else {
+                    if params.only_diag {
+                        // Non-diagonal entry
+                        *x = 0.0;
+                    }
                 }
             }
         }
-
+        
+        // println!("cov {:?}", &self.cov);
         ////////////////
         // dbg!(&self);
         // dbg!(&self);
@@ -152,6 +155,9 @@ impl CmaesStateLogic for CmaesState {
         let eigen = SymmetricEigen::try_new(self.cov.clone(), 1e-20, 0).unwrap();
         let mut eig_vals: DVector<f32> = eigen.eigenvalues;
         let eig_vecs: DMatrix<f32> = eigen.eigenvectors;
+
+        // println!("{}", &eig_vals);
+        // println!("{}", &eig_vecs);
 
         // Ensure positive eigenvalues
         eig_vals.iter_mut().for_each(|eig| {
