@@ -121,11 +121,9 @@ impl CmaesStateLogic for CmaesState {
                     if *x < 0.0 {
                         *x = 0.1;
                     }
-                } else {
-                    if params.only_diag {
-                        // Non-diagonal entry
-                        *x = 0.0;
-                    }
+                } else if params.only_diag {
+                    // Non-diagonal entry
+                    *x = 0.0;
                 }
             }
         }

@@ -56,7 +56,7 @@ impl CmaesAlgo {
                     let u1 = fastrand::f32();
                     let u2 = fastrand::f32();
                     let z = (-2.0 * u1.ln()).sqrt() * (2.0 * std::f32::consts::PI * u2).cos();
-                    z as f32
+                    z
                 })
             })
             .collect();
