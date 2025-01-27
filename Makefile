@@ -25,7 +25,7 @@ docu:
 exam:
 	cargo run --release --bin express_use
 build:
-	clear && make clean && make lint && make cove && make prep && make docu
+	clear && make clean && make lint && make test && make prep && make docu
 ##############################
 benc:
 	clear && cargo bench --bench mine
