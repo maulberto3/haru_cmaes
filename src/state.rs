@@ -129,7 +129,7 @@ impl CmaesStateLogic for CmaesState {
                 }
             }
         }
-        
+
         // println!("cov {:?}", &self.cov);
         ////////////////
         // dbg!(&self);
