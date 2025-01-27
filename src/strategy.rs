@@ -7,7 +7,6 @@ use crate::{
 };
 use anyhow::Result;
 use nalgebra::{DMatrix, DVector};
-use rand::prelude::Distribution;
 
 /// Struct to hold the algorithm's data and ask and tell methods
 #[derive(Debug)]
@@ -50,17 +49,15 @@ impl CmaesAlgo {
     /// assert!(z.is_ok());
     /// ```
     pub fn ask_z(&self, state: &mut CmaesState) -> Result<PopulationZ> {
-        let mut rng = rand::thread_rng();
-        // let mut data: Vec<f32> =
-        //     Vec::with_capacity(self.params.popsize as usize * self.params.xstart.len());
         let data: Vec<f32> = (0..self.params.popsize)
             .flat_map(|_i| {
-                state
-                    .normal_distr
-                    .sample(&mut rng)
-                    .iter()
-                    .map(|x| *x as f32)
-                    .collect::<Vec<f32>>()
+                (0..self.params.xstart.len()).map(|_| {
+                    // Convert uniform random numbers to standard normal distribution
+                    let u1 = fastrand::f32();
+                    let u2 = fastrand::f32();
+                    let z = (-2.0 * u1.ln()).sqrt() * (2.0 * std::f32::consts::PI * u2).cos();
+                    z as f32
+                })
             })
             .collect();
         let z = DMatrix::from_row_slice(
@@ -132,8 +129,12 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
                 .into(),
         );
 
+        // print!("{:?} ", &state.sigma);
+        // io::stdout().flush().unwrap();
+
         let scaled_z: DMatrix<f32> = z.map(|x| x * state.sigma) * &eig_vals_sqrt;
         let rotated_z: DMatrix<f32> = scaled_z * &state.eig_vecs.transpose();
+
         let y: DMatrix<f32> = DMatrix::from_rows(
             &rotated_z
                 .row_iter()
