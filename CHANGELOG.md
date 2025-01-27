@@ -6,6 +6,43 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Faster rand
+- Faster rand
+- Samply (similar to flamegraph)
+- Default only diag; more clarity
+
+### 🐛 Bug Fixes
+
+- Stop tracking files
+- Stop tracking files
+- Small clean ups
+- Temporal fix of make test cmaes yeslogic-fontconfig-sys issue
+- Cleanup
+- Minor cleanups (revert perf-event2)
+- Remove sign under XSquare objective function
+- Enforcing (random) sparsity in cov introduced singularity
+- Minor cleanup
+- Clippy warnings
+- Clippy warnings
+- More clarity in first test
+- Normal draw had a bug
+
+### 🚜 Refactor
+
+- Updated github actions
+
+### ⚙️ Miscellaneous Tasks
+
+- Cargo test
+
+### ◀️ Revert
+
+- Bring back bins
+
+## [1.0.6] - 2025-01-19
+
+### 🚀 Features
+
 - New simple express executor
 
 ### 🐛 Bug Fixes
