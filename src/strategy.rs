@@ -111,7 +111,31 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     fn ask(&self, state: &mut CmaesState) -> Result<Self::NewPopulation> {
         #[cfg(feature = "profile_memory")]
         {
-            use crate::utils::{format_number, get_memory_usage};
+            use anyhow::Result;
+            use std::{fs::File, io::Read};
+
+            fn get_memory_usage() -> Result<usize> {
+                let mut s = String::new();
+                File::open("/proc/self/statm")?.read_to_string(&mut s)?;
+                let fields: Vec<&str> = s.split_whitespace().collect();
+                Ok(fields[1].parse::<usize>().unwrap() * 4096 / 1000000) // Resident Set Size in bytes
+            }
+
+            fn format_number(num: usize) -> String {
+                let num_str = num.to_string();
+                let result: String = num_str
+                    .chars()
+                    .rev()
+                    .enumerate()
+                    .map(|(i, c)| {
+                        if i == 3 {
+                            return ',';
+                        }
+                        c
+                    })
+                    .collect();
+                result.chars().rev().collect()
+            }
             println!("Memory usage: {} Mb", format_number(get_memory_usage()?));
         }
 
