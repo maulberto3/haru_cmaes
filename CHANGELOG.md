@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚜 Refactor
+
+- All examples no bin, only in folder
+
+## [1.0.8] - 2025-02-03
+
 ### 🚀 Features
 
 - Fold interface for specific number of generations
