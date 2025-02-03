@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Fold interface for specific number of generations
+
+### 🚜 Refactor
+
+- Contain profile_memory feature in cfg
+
+## [1.0.7] - 2025-01-27
+
+### 🚀 Features
+
 - Faster rand
 - Faster rand
 - Samply (similar to flamegraph)
