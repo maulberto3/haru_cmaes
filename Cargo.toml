@@ -1,6 +1,6 @@
 [package]
 name = "haru_cmaes"
-version = "1.0.7"
+version = "1.0.8"
 edition = "2021"
 authors = ["Mauricio Maroto maulberto3@hotmail.com"]
 description = "A simple CMA-ES optimization algorithm implementation based on Hansen's purecma Python implementation."
@@ -20,6 +20,10 @@ path = "examples/express.rs" # this enforces compile only necessary what's in /s
 [[bin]]
 name = "ask_tell"
 path = "examples/ask_tell.rs" # this enforces compile only necessary what's in /src
+
+[[bin]]
+name = "fold"
+path = "examples/fold.rs" # this enforces compile only necessary what's in /src
 
 [dependencies]
 anyhow = { version = "1.0.86" }
@@ -52,6 +56,10 @@ harness = false
 
 [[bench]]
 name = "pengowen"
+harness = false
+
+[[bench]]
+name = "fold"
 harness = false
 
 [profile.dev]

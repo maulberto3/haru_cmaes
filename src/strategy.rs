@@ -1,4 +1,4 @@
-use crate::fitness::{PopulationY, PopulationZ};
+use crate::fitness::{FitnessEvaluator, FitnessFunction, PopulationY, PopulationZ};
 // use crate::utils::median;
 use crate::{
     fitness::Fitness,
@@ -85,6 +85,11 @@ pub trait CmaesAlgoOptimizer {
         fitness: &mut Fitness,
     ) -> Result<Self::NewState>;
     fn is_done(&self, state: &CmaesState, step: i32) -> Result<Self::Done>;
+    fn rollout_fold(
+        &self,
+        state: CmaesState,
+        objective_function: impl FitnessFunction,
+    ) -> Result<Self::NewState>;
 }
 
 /// Implementing Trait for CMA-ES algorithm.
@@ -340,10 +345,23 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         // Dynamic how steps to require
         ////////////////
         if (step > 5) & ((state.best_y_fit.row(0)[0] - best_y_avg).abs() < self.params.tol) {
-            println!("\n===> Search stopped due to tolerance change met");
+            // println!("\n===> Search stopped due to tolerance of closeness change met");
             Ok(true)
         } else {
             Ok(false)
         }
+    }
+
+    fn rollout_fold(
+        &self,
+        state: CmaesState,
+        objective_function: impl FitnessFunction,
+    ) -> Result<CmaesState> {
+        let final_state = (0..self.params.num_gens).fold(state, |mut state, _| {
+            let mut pop = self.ask(&mut state).unwrap();
+            let mut fitness = objective_function.evaluate(&pop).unwrap();
+            self.tell(state, &mut pop, &mut fitness).unwrap()
+        });
+        Ok(final_state)
     }
 }

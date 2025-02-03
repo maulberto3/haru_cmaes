@@ -6,6 +6,7 @@ use nalgebra::DVector;
 pub struct CmaesParams {
     pub popsize: i32,          // Population size
     pub xstart: Vec<f32>,      // Initial guess (mean vector)
+    pub num_gens: i32,         // Initially run for exact amount of generations
     pub sigma: f32,            // Step-size (standard deviation)
     pub tol: f32,              // Tolerance for convergence, optional
     pub only_diag: bool,       // Whether to use only diag and no covariances or not
@@ -34,6 +35,7 @@ pub trait CmaesParamsValidator {
     // Other worth specifying
     fn set_tol(self, tol: f32) -> Result<Self::Validated>;
     fn set_only_diag(self, only_diag: bool) -> Result<Self::Validated>;
+    fn set_num_gens(self, num_gens: i32) -> Result<Self::Validated>;
 }
 
 /// Implmenting Trait for CMA-ES parameters.
@@ -58,6 +60,7 @@ impl CmaesParamsValidator for CmaesParams {
         let sigma = 0.75;
         let tol = 0.001;
         let only_diag = false;
+        let num_gens = 100;
 
         let n = xstart.len() as f32;
         let mu = popsize / 2;
@@ -87,10 +90,10 @@ impl CmaesParamsValidator for CmaesParams {
             popsize,
             xstart,
             sigma,
-            // Objective's
+            // Others
             tol,
-            // Computational's
             only_diag,
+            num_gens,
             // Others
             n,
             mu,
@@ -205,6 +208,21 @@ impl CmaesParamsValidator for CmaesParams {
     /// ```
     fn set_only_diag(mut self, only_diag: bool) -> Result<Self::Validated> {
         self.only_diag = only_diag;
+        Ok(self)
+    }
+
+    /// Sets enforce covariance sparsity.
+    ///
+    /// ```rust
+    /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
+    ///
+    /// let params = CmaesParams::new()
+    ///     .and_then(|p| p.set_num_gens(150));
+    ///
+    /// assert!(params.is_ok());
+    /// ```
+    fn set_num_gens(mut self, num_gens: i32) -> Result<Self::Validated> {
+        self.num_gens = num_gens;
         Ok(self)
     }
 }
