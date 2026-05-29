@@ -1,6 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
-use haru_cmaes::objectives::SquareAndSum;
+use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
@@ -17,26 +16,19 @@ fn ask_tell() {
     // Take start time
     let start = Instant::now();
 
-    // Create cost function, i.e. see fitness.rs for an example
-    let obj_func = SquareAndSum {
-        obj_dim: 50,
-        dir: MinOrMax::Min,
-        // target: 1.0,
-        // output_dim: 2,
-        // input_dim: 2,
-        // data: DMatrix::from_row_slice(3, 4, &vec![
-        //     1.2, 3.0, 2.0, 2.5,
-        //     4.0, 5.5, 6.0, 2.5,
-        //     6.0, 8.5, 7.0, 9.5,
-        // ])
-    };
+    // Define a custom objective with a closure (sum of squares)
+    let objective_function = UserFitness::new(
+        |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
+        4,
+        MinOrMax::Min,
+    );
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()
         .unwrap()
         .set_popsize(50)
         .unwrap()
-        .set_xstart(obj_func.evaluator_dim().unwrap(), 0.5)
+        .set_xstart(objective_function.evaluator_dim().unwrap(), 0.5)
         .unwrap()
         .set_sigma(0.5)
         .unwrap()
@@ -56,7 +48,7 @@ fn ask_tell() {
         let mut pop = cmaes.ask(&mut state).unwrap();
 
         // Evaluate the fitness of the population
-        let mut fitness = obj_func.evaluate(&pop).unwrap();
+        let mut fitness = objective_function.evaluate(&pop).unwrap();
 
         // Update the state with the new population and fitness values
         state = cmaes.tell(state, &mut pop, &mut fitness).unwrap();
