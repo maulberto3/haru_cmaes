@@ -48,5 +48,11 @@ jobs:
       - name: Set TERM environment variable
         run: echo "TERM=xterm" >> $GITHUB_ENV
 
-      - name: Run tests
-        run: cargo build
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run unit tests
+        run: cargo test --workspace --verbose
+
+      - name: Run `express` example
+        run: cargo run --example express --release --quiet
