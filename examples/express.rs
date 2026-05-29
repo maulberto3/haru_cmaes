@@ -1,6 +1,5 @@
 use haru_cmaes::fitness::MinOrMax;
-use haru_cmaes::fitness::{FitnessEvaluator, FitnessFunction};
-use haru_cmaes::objectives::SquareAndSum;
+use haru_cmaes::fitness::{FitnessEvaluator, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
@@ -9,13 +8,13 @@ use std::env::var;
 use std::io::{self, Write};
 use std::time::Instant;
 
-fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStateLogic, i32) {
+fn express_executor(objective_function: impl FitnessEvaluator) -> (impl CmaesStateLogic, i32) {
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()
         .unwrap()
-        .set_popsize(objective_function.cost_dim() as i32)
+        .set_popsize(objective_function.evaluator_dim().unwrap() as i32)
         .unwrap()
-        .set_xstart(objective_function.cost_dim(), 0.0)
+        .set_xstart(objective_function.evaluator_dim().unwrap(), 0.0)
         .unwrap()
         .set_only_diag(true)
         .unwrap();
@@ -26,7 +25,10 @@ fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStat
     // Initialize the CMA-ES state
     let mut state = CmaesState::init_state(&cmaes.params).unwrap();
 
-    println!("[CMA-ES] Starting optimization with objective dimension: {}", objective_function.cost_dim());
+    println!(
+        "[CMA-ES] Starting optimization with objective dimension: {}",
+        objective_function.evaluator_dim().unwrap()
+    );
 
     // Run the CMA-ES algorithm until close to objective value
     let mut step = 1;
@@ -59,14 +61,18 @@ fn main() {
     let start = Instant::now();
 
     // Define your objective function with required methods
-    let obj_func = SquareAndSum {
-        obj_dim: 50,
-        dir: MinOrMax::Min,
-    };
+    let obj_func = UserFitness::new(
+        |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
+        50,
+        MinOrMax::Min,
+    );
 
     println!("[EXPRESS] CMA-ES Optimization Example Started");
     println!("[EXPRESS] Objective: SquareAndSum (minimize sum of squares)");
-    println!("[EXPRESS] Objective Dimension: {}", obj_func.cost_dim());
+    println!(
+        "[EXPRESS] Objective Dimension: {}",
+        obj_func.evaluator_dim().unwrap()
+    );
 
     // Then, pass it to the simple executor:
     let (state, steps) = express_executor(obj_func);
@@ -81,7 +87,7 @@ fn main() {
     println!("[EXPRESS] Total Time: {:.4} seconds", elapsed);
     println!("[EXPRESS] Time per Step: {:.6} seconds", time_per_step);
     println!("[EXPRESS] Best Fitness: {:+.8e}", best_y_fit.row(0)[0]);
-    
+
     if verbose != "No" {
         println!("\n[EXPRESS] Best Solution Vector (first 10 components):");
         for (i, val) in best_y.row(0).iter().take(10).enumerate() {
