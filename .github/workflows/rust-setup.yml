@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Cache APT packages and lists
         id: cache-apt
         uses: actions/cache@v3
@@ -27,7 +28,7 @@ jobs:
 
       - name: APT cache hit message
         if: steps.cache-apt.outputs.cache-hit == 'true'
-        run: echo 'APT CACHE HIT: APT PACKAGES RESTORED FROM CACHE'
+        run: echo '::notice::APT CACHE HIT - APT PACKAGES RESTORED FROM CACHE'
 
       - name: Cache Cargo registry
         id: cache-cargo-registry
@@ -40,7 +41,7 @@ jobs:
 
       - name: Cargo registry cache hit message
         if: steps.cache-cargo-registry.outputs.cache-hit == 'true'
-        run: echo 'CARGO REGISTRY CACHE HIT: CARGO REGISTRY RESTORED FROM CACHE'
+        run: echo '::notice::CARGO REGISTRY CACHE HIT - CARGO REGISTRY RESTORED FROM CACHE'
 
       - name: Cache Rust toolchain
         id: cache-rust-toolchain
@@ -53,7 +54,7 @@ jobs:
 
       - name: Rust toolchain cache hit message
         if: steps.cache-rust-toolchain.outputs.cache-hit == 'true'
-        run: echo 'RUST TOOLCHAIN CACHE HIT: RUST TOOLCHAIN RESTORED FROM CACHE'
+        run: echo '::notice::RUST TOOLCHAIN CACHE HIT - RUST TOOLCHAIN RESTORED FROM CACHE'
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
