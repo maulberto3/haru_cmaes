@@ -13,19 +13,21 @@ deps:
 clean:
 	cargo cache --autoclean && cargo clean
 lint:
-	cargo fmt --check && cargo clippy -- -D warnings
+	cargo fmt && cargo clippy -- -D warnings
 test:
 	cargo test
-cove:
-	cargo tarpaulin --out Html
+# cove:
+# 	cargo tarpaulin --out Html
 prep:
-	cargo machete && cargo build && cargo build --release
+	cargo build --all-targets
 docu:
 	cargo doc
-exam:
-	cargo run --release --bin express_use
+# exam:
+# 	cargo run --release --bin express_use
+all: clean lint test prep docu
+
 build:
-	clear && make clean && make lint && make test && make prep && make docu
+	clear && make all
 ##############################
 benc:
 	clear && cargo bench --bench mine
