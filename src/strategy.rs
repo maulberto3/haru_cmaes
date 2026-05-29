@@ -1,4 +1,4 @@
-use crate::fitness::{FitnessEvaluator, FitnessFunction, PopulationY, PopulationZ};
+use crate::fitness::{FitnessEvaluator, PopulationY, PopulationZ};
 // use crate::utils::median;
 use crate::{
     fitness::Fitness,
@@ -88,7 +88,7 @@ pub trait CmaesAlgoOptimizer {
     fn rollout_fold(
         &self,
         state: CmaesState,
-        objective_function: impl FitnessFunction,
+        objective_function: impl FitnessEvaluator,
     ) -> Result<Self::NewState>;
 }
 
@@ -188,8 +188,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
     /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
-    /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
-    /// use haru_cmaes::objectives::SquareAndSum;
+    /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness, PopulationY, Fitness};
     ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
@@ -198,12 +197,16 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     ///
     /// let mut y = cmaes.ask(&mut state).unwrap();
     ///
-    /// let obj_func = SquareAndSum {
-    ///     obj_dim: 5,
-    ///     dir: MinOrMax::Min,
-    /// };
+    /// // Define a custom objective with a closure (sum of squares)
+    /// let objective_function = UserFitness::new(
+    ///     |individual: &nalgebra::DVector<f32>| {
+    ///         individual.iter().map(|x| x.powi(2)).sum()
+    ///     },
+    ///     4,
+    ///     MinOrMax::Min,
+    /// );
     ///
-    /// let mut fitness = obj_func.evaluate(&y).unwrap();
+    /// let mut fitness = objective_function.evaluate(&y).unwrap();
     /// // for some reason, `cargo test --doc`` didn't like it without 'let'
     /// let state = cmaes.tell(state, &mut y, &mut fitness);
     ///
@@ -355,7 +358,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     fn rollout_fold(
         &self,
         state: CmaesState,
-        objective_function: impl FitnessFunction,
+        objective_function: impl FitnessEvaluator,
     ) -> Result<CmaesState> {
         let final_state = (0..self.params.num_gens).fold(state, |mut state, _| {
             let mut pop = self.ask(&mut state).unwrap();
