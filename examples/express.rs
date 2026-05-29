@@ -26,6 +26,8 @@ fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStat
     // Initialize the CMA-ES state
     let mut state = CmaesState::init_state(&cmaes.params).unwrap();
 
+    println!("[CMA-ES] Starting optimization with objective dimension: {}", objective_function.cost_dim());
+
     // Run the CMA-ES algorithm until close to objective value
     let mut step = 1;
     loop {
@@ -40,6 +42,7 @@ fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStat
 
         // Continue or done?
         if let Ok(true) = cmaes.is_done(&state, step) {
+            println!("[CMA-ES] Convergence achieved at step {}", step);
             break;
         }
 
@@ -61,19 +64,32 @@ fn main() {
         dir: MinOrMax::Min,
     };
 
+    println!("[EXPRESS] CMA-ES Optimization Example Started");
+    println!("[EXPRESS] Objective: SquareAndSum (minimize sum of squares)");
+    println!("[EXPRESS] Objective Dimension: {}", obj_func.cost_dim());
+
     // Then, pass it to the simple executor:
     let (state, steps) = express_executor(obj_func);
     let (best_y, best_y_fit) = state.get_best().unwrap();
 
+    let elapsed = start.elapsed().as_secs_f32();
+    let time_per_step = elapsed / steps as f32;
+
     // Print best candidate and fitness
+    println!("\n[EXPRESS] ========== OPTIMIZATION COMPLETE ==========");
+    println!("[EXPRESS] Total Steps: {}", steps);
+    println!("[EXPRESS] Total Time: {:.4} seconds", elapsed);
+    println!("[EXPRESS] Time per Step: {:.6} seconds", time_per_step);
+    println!("[EXPRESS] Best Fitness: {:+.8e}", best_y_fit.row(0)[0]);
+    
     if verbose != "No" {
-        println!();
-        println!(
-            "Fitness: {:+.5?} | Duration p/step: {:.5} secs",
-            best_y_fit.row(0)[0],
-            (start.elapsed().as_micros() as f32) / 1000000.0 / (steps as f32)
-        );
-        // dbg!(state);
-        println!("{:+.5?}", best_y);
+        println!("\n[EXPRESS] Best Solution Vector (first 10 components):");
+        for (i, val) in best_y.row(0).iter().take(10).enumerate() {
+            println!("[EXPRESS]   x[{}] = {:+.8e}", i, val);
+        }
+        if best_y.ncols() > 10 {
+            println!("[EXPRESS]   ... ({} more components)", best_y.ncols() - 10);
+        }
     }
+    println!("[EXPRESS] =======================================\n");
 }
