@@ -108,6 +108,7 @@ impl CmaesStateLogic for CmaesState {
     fn eigen_decomposition(&mut self, params: &CmaesParams) -> Result<()> {
         // Ensure symmetric covariance
         self.cov = (&self.cov + &self.cov.transpose()) / 2.0;
+        self.cov = (&self.cov + &self.cov.transpose()) / 2.0;
 
         // For matrix eigen computation efficiency
         // non-diag -> enforce sparsity
@@ -128,12 +129,10 @@ impl CmaesStateLogic for CmaesState {
             }
         }
 
-        // println!("cov {:?}", &self.cov);
-        ////////////////
-        // dbg!(&self);
+        //////////////
         // dbg!(&self);
         // println!("");
-        ////////////////
+        //////////////
 
         // Perform eigen decomposition: C = B * Λ * B^T
         #[cfg(any(
@@ -150,37 +149,29 @@ impl CmaesStateLogic for CmaesState {
             feature = "accelerate",
             feature = "intel-mkl"
         )))]
-        let eigen = SymmetricEigen::try_new(self.cov.clone(), 1e-20, 0).unwrap();
+        let eigen = SymmetricEigen::try_new(self.cov.clone(), 1e-6, 0).unwrap();
         let mut eig_vals: DVector<f32> = eigen.eigenvalues;
         let eig_vecs: DMatrix<f32> = eigen.eigenvectors;
 
-        // Ensure positive eigenvalues
+        // Ensure positive eigenvalues with safe bounds
         eig_vals.iter_mut().for_each(|val| {
-            if *val < 0.0 {
-                *val = 0.1; // Adjust negative valenvalues
+            if val.is_nan() || val.is_infinite() {
+                *val = 0.1; // Replace NaN/inf with safe default
+            } else if *val < 0.1 {
+                *val = 0.1; // Ensure minimum eigenvalue to avoid overflow in powf(-0.5)
             } else if *val > 10.0 {
                 *val = 10.0; // Clamp to a maximum value
             }
         });
 
-        // // Clamp eigenvector elements to a range to avoid extreme values
-        // eig_vecs.iter_mut().for_each(|vec| {
-        //         if *vec < -10.0 {
-        //             *vec = -10.0; // Minimum limit
-        //         } else if *vec > 10.0 {
-        //             *vec = 10.0; // Maximum limit
-        //         }
-        // });
-
         // Calculate the inverse square root of eigenvalues
         let inv_sqrt_diag = DMatrix::from_diagonal(&eig_vals.map(|eig| eig.powf(-0.5)));
         self.inv_sqrt = &eig_vecs * &inv_sqrt_diag * eig_vecs.transpose();
 
-        // print!("{:?} ", &self.cov.mean());
-        // print!("{:?} ", &eig_vals.mean());
-        // print!("{:?} ", &eig_vecs.mean());
-        // println!("{:?}", &inv_sqrt_diag.mean());
-        // println!("{}", &eig_vecs);
+        // println!("cov {}", &self.cov);
+        // println!("eig_vals {}", &eig_vals);
+        // println!("eig_vecs {}", &eig_vecs);
+        // println!("inv_sqrt_diag {}", &inv_sqrt_diag);
 
         // Store
         self.eig_vecs = eig_vecs;
