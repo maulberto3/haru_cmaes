@@ -15,9 +15,9 @@ pub fn example() -> Result<()> {
     let square_and_sum = |x: &DVector<f64>| x.iter().map(|xi| xi.powi(2)).sum();
 
     // Set dimension and parameters
-    let dim = 50;
-    let popsize = 50;
-    let sigma = 0.75;
+    let dim = 10;
+    let popsize = 15;
+    let sigma = 0.5;
     let mut cmaes_state = CMAESOptions::new(vec![1.0; dim], 1.0)
         .population_size(popsize)
         .initial_mean(vec![0.0; dim])
