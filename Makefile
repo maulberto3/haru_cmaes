@@ -47,9 +47,14 @@ clif:
 	git commit -m "Update changelog for v$(VERSION)"
 
 publ:
-	# Check for uncommitted changes
-	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
-	# Perform the publish and then update changelog
-	clear && make clif && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags && cargo publish
-	# Optional: Clean cache after publishing (commented out)
-	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
+	@git diff-index --quiet HEAD || { echo "Error: Uncommitted changes! Commit before publishing."; exit 1; }
+	@echo "✓ Working tree clean"
+	@clear
+	@echo "Publishing v$(VERSION)..."
+	@make clif
+	@git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	@echo "🏷️  Tagged as v$(VERSION)"
+	@git push --tags
+	@echo "📤 Pushing tags..."
+	@cargo publish
+	@echo "✅ Successfully published v$(VERSION)"
