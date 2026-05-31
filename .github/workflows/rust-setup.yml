@@ -75,4 +75,4 @@ jobs:
       #   run: cargo test --workspace --verbose
 
       - name: Run `express` example
-        run: cargo run --example express --release
+        run: cargo run --example simple
