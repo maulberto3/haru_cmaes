@@ -19,12 +19,13 @@ test:
 # cove:
 # 	cargo tarpaulin --out Html
 prep:
-	cargo build --all-targets
+	cargo build --all-targets 
+	# Compiles lib + bins + examples + benches + tests
 docu:
 	cargo doc
-# exam:
-# 	cargo run --release --bin express_use
-all: clean lint test prep docu
+exam:
+	cargo run --release --bin express_use
+all: clean lint test prep exam docu
 
 build:
 	clear && make all
@@ -44,7 +45,6 @@ clif:
 	git cliff -o CHANGELOG.md
 	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
-	git push origin master
 
 publ:
 	# Check for uncommitted changes
