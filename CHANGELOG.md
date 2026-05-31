@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Replace SquareAndSum with UserFitness closure for custom objective in benchmarks
 - Replace SquareAndSum with UserFitness closure for objective functions in examples
 - Implement UserFitness closure for custom fitness evaluation in PopulationY
+- Add flamegraph examples to demonstrate CMA-ES optimization
 
 ### 🐛 Bug Fixes
 
@@ -18,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Update cache hit messages to use notice format for consistency
 - Remove notice format from cache hit messages for consistency
 - Remove unnecessary flags from cargo build and run commands for simplicity
+- Improve eigenvalue handling in eigen decomposition for stability
 
 ### 🚜 Refactor
 
@@ -32,6 +34,18 @@ All notable changes to this project will be documented in this file.
 - Enhance documentation for fitness structures and evaluator trait
 - Reorder num_gens field in CmaesParams struct and clarify variable types in implementation
 - Update Makefile to enable exam target and improve comments
+- Enhance covariance matrix handling and update population scaling in CMA-ES
+- Format cmu calculation for improved readability
+- Improve code readability and adjust CMA-ES parameters in optimization test
+- Rename and streamline fold.rs and add simple.rs, move flamegraph out of examples folder
+- Update example run command in rust-setup.yml to use 'simple'
+- Update Python environment paths and streamline CMA-ES parameters in benchmarks
+- Standardize CMA-ES parameters in examples to improve consistency
+
+### 📚 Documentation
+
+- Add pendingoptimizations overview to identify performance bottlenecks
+- Enhance README with detailed usage examples, features, and performance benchmarks
 
 ### 🧪 Testing
 
