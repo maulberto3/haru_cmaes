@@ -36,8 +36,8 @@ fn run_python_script(script_path: &str, env: &str) -> std::io::Result<String> {
 ///
 /// * `c` - A mutable reference to a `Criterion` object for benchmarking.
 fn python_script_benchmark(c: &mut Criterion) {
-    let python_env = "/home/mau/python_env/bin"; // Adjust this to the path of your custom environment
-    let python_script = "/home/mau/haru_cmaes/assets/hansen.py";
+    let python_env = "/home/maulb/hansen_env/bin"; // Adjust this to the path of your custom environment
+    let python_script = "/home/maulb/haru_cmaes/assets/hansen.py";
 
     c.bench_function("CMA-ES Hansen", |b| {
         b.iter(|| {

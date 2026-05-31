@@ -3,30 +3,23 @@ use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
-// use nalgebra::DMatrix;
-use std::env::var;
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::time::Instant;
 
 fn ask_tell() {
-    // Define verbose or not
-    let verbose = var("VERBOSE").unwrap_or("No".to_string());
-
-    // Take start time
-    let start = Instant::now();
-
     // Define a custom objective with a closure (sum of squares)
+    let objective_dim = 10;
     let objective_function = UserFitness::new(
         |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
-        4,
+        objective_dim,
         MinOrMax::Min,
     );
 
     // Initialize CMA-ES parameters
+    let popsize = 15;
     let params = CmaesParams::new()
         .unwrap()
-        .set_popsize(50)
+        .set_popsize(popsize)
         .unwrap()
         .set_xstart(objective_function.evaluator_dim().unwrap(), 0.5)
         .unwrap()
@@ -58,26 +51,7 @@ fn ask_tell() {
             break;
         }
 
-        // Log some info
-        if verbose != "No" {
-            print!("{:+.5?} ", &state.best_y_fit.row(0)[0]);
-            // print!("best y {:+.5?} ", &state.best_y.row(0)[0]);
-            io::stdout().flush().unwrap()
-        }
-
         step += 1;
-    }
-    // Print the average fitness of the best solutions
-    if verbose != "No" {
-        println!();
-        println!(
-            "Step {} | Fitness: {:+.5?} | Duration p/step: {:.5} secs",
-            step,
-            &state.best_y_fit.row(0)[0],
-            (start.elapsed().as_micros() as f32) / 1000000.0 / (step as f32)
-        );
-        // dbg!(state);
-        println!("{:+.5?}", &state.best_y);
     }
 }
 
@@ -87,10 +61,3 @@ fn cmaes_benchmark(c: &mut Criterion) {
 
 criterion_group!(benches, cmaes_benchmark);
 criterion_main!(benches);
-
-// fn benchmarks(c: &mut Criterion) {
-//     let mut group = c.benchmark_group("My Group");
-//     group.bench_function("Function 1", |b| b.iter(|| function1()));
-//     group.bench_function("Function 2", |b| b.iter(|| function2()));
-//     group.finish();
-// }
