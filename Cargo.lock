@@ -769,7 +769,7 @@ dependencies = [
 
 [[package]]
 name = "haru_cmaes"
-version = "1.0.9"
+version = "2.0.1"
 dependencies = [
  "anyhow",
  "cmaes",

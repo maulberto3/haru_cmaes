@@ -6,8 +6,8 @@ use nalgebra::DVector;
 pub struct CmaesParams {
     pub popsize: i32,          // Population size
     pub xstart: Vec<f32>,      // Initial guess (mean vector)
-    pub num_gens: i32,         // Initially run for exact amount of generations
     pub sigma: f32,            // Step-size (standard deviation)
+    pub num_gens: i32,         // Initially run for exact amount of generations
     pub tol: f32,              // Tolerance for convergence, optional
     pub only_diag: bool,       // Whether to use only diag and no covariances or not
     pub n: f32,                // Dimension of the problem space (xstart size)
@@ -79,11 +79,11 @@ impl CmaesParamsValidator for CmaesParams {
         let weights: DVector<f32> = weights.map(|x| x / w_sum);
         let weights_mu = weights.rows(0, mu as usize).into_owned();
         let mueff: f32 = (weights_mu.iter().sum::<f32>().powi(2)) / weights_mu.map(|x| x * x).sum();
-        let cc = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
-        let cs = (mueff + 2.) / (n + mueff + 5.);
-        let c1 = 2. / ((n + 1.3) * (n + 1.3) + mueff);
-        let cmu = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.) * (n + 2.) + mueff));
-        let damps = 2. * mueff / k + 0.3 + cs;
+        let cc: f32 = (4. + mueff / n) / (n + 4. + 2. * mueff / n);
+        let cs: f32 = (mueff + 2.) / (n + mueff + 5.);
+        let c1: f32 = 2. / ((n + 1.3) * (n + 1.3) + mueff);
+        let cmu: f32 = (1. - c1).min(2. * (mueff - 2. + 1. / mueff) / ((n + 2.) * (n + 2.) + mueff));
+        let damps: f32 = 2. * mueff / k + 0.3 + cs;
 
         let params = CmaesParams {
             // Fundamental
