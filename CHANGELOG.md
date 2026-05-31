@@ -41,6 +41,7 @@ All notable changes to this project will be documented in this file.
 - Update example run command in rust-setup.yml to use 'simple'
 - Update Python environment paths and streamline CMA-ES parameters in benchmarks
 - Standardize CMA-ES parameters in examples to improve consistency
+- Enhance publish process with clear output and error handling
 
 ### 📚 Documentation
 
