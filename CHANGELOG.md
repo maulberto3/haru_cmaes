@@ -29,6 +29,13 @@ All notable changes to this project will be documented in this file.
 - Use is_multiple_of for clarity in median function
 - Update .gitignore and remove objectives module from lib.rs
 - Streamline Makefile commands for improved clarity and efficiency
+- Enhance documentation for fitness structures and evaluator trait
+- Reorder num_gens field in CmaesParams struct and clarify variable types in implementation
+- Update Makefile to enable exam target and improve comments
+
+### 🧪 Testing
+
+- Implement express optimization test with UserFitness and CMA-ES
 
 ## [1.0.9] - 2025-02-03
 
