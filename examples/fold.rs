@@ -1,33 +1,34 @@
-use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness};
+use haru_cmaes::fitness::{MinOrMax, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
-// use nalgebra::DMatrix;
-use std::env::var;
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::time::Instant;
 
 fn main() {
-    // Define verbose or not
-    let verbose = var("VERBOSE").unwrap_or("No".to_string());
-
     // Take start time
     let start = Instant::now();
 
     // Define your objective function with required methods
-    let obj_func = UserFitness::new(
+    let objective_dim = 10;
+    let objective_function = UserFitness::new(
         |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
-        50,
+        objective_dim,
         MinOrMax::Min,
     );
+    let popsize = 15;
+
+    println!("Trying to optimize a simple sum of squares function with CMA-ES (fold mode)...");
+    println!("Number of dimensions: {}", objective_dim);
+    println!("Population size: {}", popsize);
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()
         .unwrap()
-        .set_popsize(50)
+        .set_popsize(popsize)
         .unwrap()
-        .set_xstart(obj_func.evaluator_dim().unwrap(), 0.5)
+        .set_xstart(objective_dim, 0.5)
         .unwrap()
         .set_sigma(0.5)
         .unwrap()
@@ -35,7 +36,7 @@ fn main() {
         .unwrap()
         // NOTE
         // If you set specific number of generations, you can fold easily through below
-        .set_num_gens(150)
+        .set_num_gens(50)
         .unwrap();
 
     // Create a new CMA-ES instance
@@ -45,17 +46,20 @@ fn main() {
     let state = CmaesState::init_state(&cmaes.params).unwrap();
 
     // FOLD the CMA-ES algorithm until close to objective value
-    let state = cmaes.rollout_fold(state, obj_func).unwrap();
+    let state = cmaes.rollout_fold(state, objective_function).unwrap();
 
-    // Print the average fitness of the best solutions
-    if verbose != "No" {
-        println!();
-        println!(
-            "Fitness: {:+.5?} | Duration p/step: {:.5} secs",
-            &state.best_y_fit.row(0)[0],
-            (start.elapsed().as_micros() as f32) / 1000000.0 / (cmaes.params.num_gens as f32)
-        );
-        // dbg!(state);
-        println!("{:+.5?}", &state.best_y);
-    }
+    // Extract best solution and fitness
+    let (best_y, best_y_fit) = state.get_best().unwrap();
+    let elapsed = start.elapsed().as_secs_f32();
+    let steps = cmaes.params.num_gens;
+    let time_per_step = elapsed / steps as f32;
+
+    // Print best candidate and fitness
+    println!("\n========== OPTIMIZATION COMPLETE ==========");
+    println!("Total Steps: {}", steps);
+    println!("Total Time: {:.4} seconds", elapsed);
+    println!("Time per Step: {:.6} seconds", time_per_step);
+    println!("Best Fitness: {:+.3}", best_y_fit.row(0)[0]);
+    println!("Best Individual: {:+.3}", best_y);
+    println!("=======================================\n");
 }
