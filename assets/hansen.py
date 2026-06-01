@@ -6,9 +6,9 @@ def fitness_function(x):
 
 def example():
     # Initialize CMA-ES parameters
-    dim = 50
-    popsize = 50
-    sigma = 0.75
+    dim = 10
+    popsize = 15
+    sigma = 0.5
 
     # Create a new CMA-ES instance
     es = pcma.CMAES(popsize * [0.0], sigma)

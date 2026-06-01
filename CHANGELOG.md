@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- Enhance logging for CMA-ES optimization process and results
+- Replace SquareAndSum with UserFitness closure for custom objective in benchmarks
+- Replace SquareAndSum with UserFitness closure for objective functions in examples
+- Implement UserFitness closure for custom fitness evaluation in PopulationY
+
+### 🐛 Bug Fixes
+
+- Add dev branch to push trigger in Rust setup workflow
+- Update echo quotes in cache hit messages for consistency
+- Update cache hit messages to use notice format for consistency
+- Remove notice format from cache hit messages for consistency
+- Remove unnecessary flags from cargo build and run commands for simplicity
+
+### 🚜 Refactor
+
+- Enhance Rust setup workflow with verbose build and test outputs
+- Comment out unit tests in Rust setup workflow
+- Add cache hit messages for APT packages, Cargo registry, and Rust toolchain
+- Remove legacy objective functions and related implementations
+- Replace FitnessFunction with FitnessEvaluator in CmaesAlgoOptimizer
+- Use is_multiple_of for clarity in median function
+- Update .gitignore and remove objectives module from lib.rs
+- Streamline Makefile commands for improved clarity and efficiency
+- Enhance documentation for fitness structures and evaluator trait
+- Reorder num_gens field in CmaesParams struct and clarify variable types in implementation
+- Update Makefile to enable exam target and improve comments
+
+### 🧪 Testing
+
+- Implement express optimization test with UserFitness and CMA-ES
+
+## [1.0.9] - 2025-02-03
+
 ### 🚜 Refactor
 
 - All examples no bin, only in folder

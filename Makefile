@@ -13,19 +13,22 @@ deps:
 clean:
 	cargo cache --autoclean && cargo clean
 lint:
-	cargo fmt --check && cargo clippy -- -D warnings
+	cargo fmt && cargo clippy -- -D warnings
 test:
 	cargo test
-cove:
-	cargo tarpaulin --out Html
+# cove:
+# 	cargo tarpaulin --out Html
 prep:
-	cargo machete && cargo build && cargo build --release
+	cargo build --all-targets 
+	# Compiles lib + bins + examples + benches + tests
 docu:
 	cargo doc
 exam:
 	cargo run --release --bin express_use
+all: clean lint test prep exam docu
+
 build:
-	clear && make clean && make lint && make test && make prep && make docu
+	clear && make all
 ##############################
 benc:
 	clear && cargo bench --bench mine
@@ -42,7 +45,6 @@ clif:
 	git cliff -o CHANGELOG.md
 	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
-	git push origin master
 
 publ:
 	# Check for uncommitted changes

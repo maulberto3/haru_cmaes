@@ -1,4 +1,4 @@
-use crate::fitness::{FitnessEvaluator, FitnessFunction, PopulationY, PopulationZ};
+use crate::fitness::{FitnessEvaluator, PopulationY, PopulationZ};
 // use crate::utils::median;
 use crate::{
     fitness::Fitness,
@@ -66,7 +66,6 @@ impl CmaesAlgo {
             &data,
         );
         state.z.copy_from(&z);
-        // state.z = z.clone();
         Ok(PopulationZ { z })
     }
 }
@@ -88,7 +87,7 @@ pub trait CmaesAlgoOptimizer {
     fn rollout_fold(
         &self,
         state: CmaesState,
-        objective_function: impl FitnessFunction,
+        objective_function: impl FitnessEvaluator,
     ) -> Result<Self::NewState>;
 }
 
@@ -144,10 +143,13 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             println!("Memory usage: {} Mb", format_number(get_memory_usage()?));
         }
 
+        // Prepare state for ask (in layman terms, hit eigen decomposition because we need the latest covariance matrix for sampling)
         state.prepare_ask(&self.params)?;
 
+        // Generate new standard normal population
         let z: DMatrix<f32> = self.ask_z(state)?.z;
 
+        // Get the square root of eigenvalues for scaling
         let eig_vals_sqrt: DMatrix<f32> = DMatrix::from_diagonal(
             &state
                 .eig_vals
@@ -157,18 +159,11 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
                 .into(),
         );
 
-        // println!();
-        // println!("eig_vals_sqrt {:?}", &eig_vals_sqrt.data);
-        // println!("z {:?}", &z.data);
-        // print!("sigma {:?} ", &state.sigma);
-        // io::stdout().flush().unwrap();
-
+        // Scale and rotate the population to get the new candidate solutions
         let scaled_z: DMatrix<f32> = z.map(|x| x * state.sigma) * &eig_vals_sqrt;
-        // println!("z * sigma * eig_vals_sqrt {:?}", &scaled_z.data);
-
         let rotated_z: DMatrix<f32> = scaled_z * &state.eig_vecs.transpose();
-        // println!("z * sigma * eig_vals_sqrt * eig_vecs.t {:?}", &rotated_z.data);
 
+        // Add the mean to get the final population
         let y: DMatrix<f32> = DMatrix::from_rows(
             &rotated_z
                 .row_iter()
@@ -176,6 +171,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
                 .collect::<Vec<_>>(),
         );
 
+        // Update state with new population
         state.y.copy_from(&y);
 
         Ok(PopulationY { y })
@@ -188,8 +184,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
     /// use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
     /// use haru_cmaes::state::{CmaesState, CmaesStateLogic};
-    /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
-    /// use haru_cmaes::objectives::SquareAndSum;
+    /// use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness, PopulationY, Fitness};
     ///
     /// let params = CmaesParams::new().unwrap();
     /// let cmaes = CmaesAlgo::new(params).unwrap();
@@ -198,12 +193,16 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     ///
     /// let mut y = cmaes.ask(&mut state).unwrap();
     ///
-    /// let obj_func = SquareAndSum {
-    ///     obj_dim: 5,
-    ///     dir: MinOrMax::Min,
-    /// };
+    /// // Define a custom objective with a closure (sum of squares)
+    /// let objective_function = UserFitness::new(
+    ///     |individual: &nalgebra::DVector<f32>| {
+    ///         individual.iter().map(|x| x.powi(2)).sum()
+    ///     },
+    ///     4,
+    ///     MinOrMax::Min,
+    /// );
     ///
-    /// let mut fitness = obj_func.evaluate(&y).unwrap();
+    /// let mut fitness = objective_function.evaluate(&y).unwrap();
     /// // for some reason, `cargo test --doc`` didn't like it without 'let'
     /// let state = cmaes.tell(state, &mut y, &mut fitness);
     ///
@@ -220,7 +219,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         state.evals_count += fitness.values.nrows() as i32;
         let xold = state.mean.to_owned();
 
-        // Sort fitness values and population
+        // Sort population and fitness values
         let mut indices: Vec<usize> = (0..fitness.values.nrows()).collect(); // refactor
         indices.sort_by(|&i, &j| {
             fitness.values[(i, 0)]
@@ -240,9 +239,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
         fitness.values.copy_from(&sorted_fit);
 
         // Record current best solution, update best solution if any
-        // println!("{}", &fitness.values);
-        // println!("{}", &pop.y);
-        state.best_y_hist.push(fitness.values.rows(0, 2).mean());
+        state.best_y_hist.push(fitness.values[0]);
         if fitness.values[0] < state.best_y_fit[0] {
             state.best_y.copy_from(&pop.y.row(0).transpose());
             state.best_y_fit.copy_from(&fitness.values.row(0));
@@ -291,6 +288,26 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
             },
         );
 
+        // Clamp covariance matrix values to prevent numerical instability
+        state.cov = state.cov.map(|x| {
+            if x.is_nan() || x.is_infinite() {
+                1e-6
+            } else {
+                x.clamp(-1e6, 1e6)
+            }
+        });
+
+        // Ensure symmetry and positive-definiteness of covariance matrix as required by eigen decomposition
+        state.cov = (&state.cov + &state.cov.transpose()) / 2.0;
+
+        // Add small regularization term to diagonal to ensure positive-definiteness
+        let n = state.cov.nrows() as f32;
+        let trace = state.cov.diagonal().sum();
+        let reg_term = (trace / n) * 1e-8;
+        for i in 0..state.cov.nrows() {
+            state.cov[(i, i)] += reg_term.max(1e-10);
+        }
+
         // Perform step-size sigma update
         let cn = self.params.cs / self.params.damps;
         let sum_square_ps = state.ps.map(|x| x * x).sum();
@@ -322,28 +339,24 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     /// ```
     ///
     fn is_done(&self, state: &CmaesState, step: i32) -> Result<Self::Done> {
-        ////////////////
-        // TODO
-        // Dynamic how many historicals to average
-        ////////////////
+        // Need at least 2 history points to compare convergence
+        if state.best_y_hist.is_empty() {
+            return Ok(false);
+        }
+
+        // Calculate the average of the last 10 best fitness values (or fewer if less than 10)
         let best_y_avg = if state.best_y_hist.len() > 10 {
             let data = state.best_y_hist[state.best_y_hist.len() - 10..].to_vec();
             DVector::from_vec(data).mean()
-            // median(data)
         } else {
             let data = state.best_y_hist[..].to_vec();
             DVector::from_vec(data).mean()
-            // median(data)
         };
 
         // println!("Best y fit GLOBAL {:?}", state.best_y_fit.row(0)[0]);
         // println!("Fit Hist (avg) {:?}", &state.best_y_hist);
         // println!();
 
-        ////////////////
-        // TODO
-        // Dynamic how steps to require
-        ////////////////
         if (step > 5) & ((state.best_y_fit.row(0)[0] - best_y_avg).abs() < self.params.tol) {
             // println!("\n===> Search stopped due to tolerance of closeness change met");
             Ok(true)
@@ -355,7 +368,7 @@ impl CmaesAlgoOptimizer for CmaesAlgo {
     fn rollout_fold(
         &self,
         state: CmaesState,
-        objective_function: impl FitnessFunction,
+        objective_function: impl FitnessEvaluator,
     ) -> Result<CmaesState> {
         let final_state = (0..self.params.num_gens).fold(state, |mut state, _| {
             let mut pop = self.ask(&mut state).unwrap();

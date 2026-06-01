@@ -1,7 +1,6 @@
 use anyhow::Result;
 // include!("fold.rs");
-use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax};
-use haru_cmaes::objectives::SquareAndSum;
+use haru_cmaes::fitness::{FitnessEvaluator, MinOrMax, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
@@ -12,24 +11,23 @@ use std::fs::File;
 use std::io::{self, Write};
 
 fn profile_fold() {
-    // Create cost function, i.e. see fitness.rs for an example
-    let obj_func = SquareAndSum {
-        obj_dim: 50,
-        dir: MinOrMax::Min,
-        // target: 1.0,
-        // output_dim: 2,
-        // input_dim: 2,
-        // data: DMatrix::from_row_slice(3, 4, &vec![
-        //     1.2, 3.0, 2.0, 2.5,
-        //     4.0, 5.5, 6.0, 2.5,
-        //     6.0, 8.5, 7.0, 9.5,
-        // ])
-    };
+    // Define objective function dimension
+    let objective_dim = 10;
+
+    // Define your objective function with required methods
+    let obj_func = UserFitness::new(
+        |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
+        objective_dim,
+        MinOrMax::Min,
+    );
+
+    // Define population size (required)
+    let popsize = 15;
 
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()
         .unwrap()
-        .set_popsize(50)
+        .set_popsize(popsize)
         .unwrap()
         .set_xstart(obj_func.evaluator_dim().unwrap(), 0.5)
         .unwrap()
@@ -66,6 +64,10 @@ fn main() -> Result<()> {
     if let Ok(report) = guard.report().build() {
         let mut file = File::create("examples/flamegraph.svg")?;
         report.flamegraph(&mut file)?;
+
+        // Text summary
+        let mut txt_file = File::create("examples/flamegraph.txt")?;
+        writeln!(txt_file, "{:?}", report)?;
     }
 
     println!("Flamegraph generated: examples/flamegraph.svg");

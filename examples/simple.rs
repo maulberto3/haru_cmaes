@@ -1,21 +1,17 @@
 use haru_cmaes::fitness::MinOrMax;
-use haru_cmaes::fitness::{FitnessEvaluator, FitnessFunction};
-use haru_cmaes::objectives::SquareAndSum;
+use haru_cmaes::fitness::{FitnessEvaluator, UserFitness};
 use haru_cmaes::params::{CmaesParams, CmaesParamsValidator};
 use haru_cmaes::state::{CmaesState, CmaesStateLogic};
 use haru_cmaes::strategy::{CmaesAlgo, CmaesAlgoOptimizer};
-use std::env::var;
-#[allow(unused_imports)]
-use std::io::{self, Write};
 use std::time::Instant;
 
-fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStateLogic, i32) {
+fn express_executor(objective_function: impl FitnessEvaluator, popsize: i32) -> (impl CmaesStateLogic, i32) {
     // Initialize CMA-ES parameters
     let params = CmaesParams::new()
         .unwrap()
-        .set_popsize(objective_function.cost_dim() as i32)
+        .set_popsize(popsize)
         .unwrap()
-        .set_xstart(objective_function.cost_dim(), 0.0)
+        .set_xstart(objective_function.evaluator_dim().unwrap(), 0.0)
         .unwrap()
         .set_only_diag(true)
         .unwrap();
@@ -49,31 +45,34 @@ fn express_executor(objective_function: impl FitnessFunction) -> (impl CmaesStat
 }
 
 fn main() {
-    // Define verbose or not
-    let verbose = var("VERBOSE").unwrap_or("No".to_string());
-
     // Take start time
     let start = Instant::now();
 
-    // Define your objective function with required methods
-    let obj_func = SquareAndSum {
-        obj_dim: 50,
-        dir: MinOrMax::Min,
-    };
+    // Define your objective function with required methods...
+    let objective_dim = 10;
+    let obj_func = UserFitness::new(
+        |individual: &nalgebra::DVector<f32>| individual.iter().map(|x| x.powi(2)).sum(),
+        objective_dim,
+        MinOrMax::Min,
+    );
+    let popsize = 15;
+    println!("Trying to optimize a simple sum of squares function with CMA-ES...");
+    println!("Number of dimensions: {}", objective_dim);
+    println!("Population size: {}", popsize);
 
-    // Then, pass it to the simple executor:
-    let (state, steps) = express_executor(obj_func);
+    // ...then, pass it to the executor.
+    let (state, steps) = express_executor(obj_func, popsize);
     let (best_y, best_y_fit) = state.get_best().unwrap();
 
+    let elapsed = start.elapsed().as_secs_f32();
+    let time_per_step = elapsed / steps as f32;
+
     // Print best candidate and fitness
-    if verbose != "No" {
-        println!();
-        println!(
-            "Fitness: {:+.5?} | Duration p/step: {:.5} secs",
-            best_y_fit.row(0)[0],
-            (start.elapsed().as_micros() as f32) / 1000000.0 / (steps as f32)
-        );
-        // dbg!(state);
-        println!("{:+.5?}", best_y);
-    }
+    println!("\n========== OPTIMIZATION COMPLETE ==========");
+    println!("Total Steps: {}", steps);
+    println!("Total Time: {:.4} seconds", elapsed);
+    println!("Time per Step: {:.6} seconds", time_per_step);
+    println!("Best Fitness: {:+.3}", best_y_fit.row(0)[0]);
+    println!("Best Individual: {:+.3}", best_y);
+    println!("=======================================\n");
 }
