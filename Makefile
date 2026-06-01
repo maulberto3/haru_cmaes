@@ -42,14 +42,22 @@ samp:
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:
 	# Generate the changelog and commit it in the same step
-	git cliff -o CHANGELOG.md
+	git cliff -t v$(VERSION) -o CHANGELOG.md
 	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
 
-publ:
-	# Check for uncommitted changes
-	clear && git diff-index --quiet HEAD || { echo "Uncommitted changes! Commit before publishing."; exit 1; }
-	# Perform the publish and then update changelog
-	clear && make clif && git tag -a v$(VERSION) -m "Release v$(VERSION)" && git push --tags && cargo publish
-	# Optional: Clean cache after publishing (commented out)
-	# sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
+tag:
+	@git diff-index --quiet HEAD || { echo "Error: Uncommitted changes! Commit before publishing."; exit 1; }
+	@echo "✓ Working tree clean"
+	@git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	@echo "🏷️  Tagged as v$(VERSION)"
+	@git push --tags
+	@echo "📤 Pushed tags to remote"
+
+publish:
+	@cargo publish
+	@echo "✅ Successfully published v$(VERSION) to crates.io"
+
+publ: clif tag publish
+	@clear
+	@echo "✅ Release v$(VERSION) complete!"
