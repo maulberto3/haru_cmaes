@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Include version tag in changelog generation command
 
+### 🚜 Refactor
+
+- Reorganize publishing steps and improve output messages
+
 ## [2.0.1] - 2026-06-01
 
 ### 🚀 Features
