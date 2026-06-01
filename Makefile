@@ -46,15 +46,18 @@ clif:
 	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
 
-publ:
+tag:
 	@git diff-index --quiet HEAD || { echo "Error: Uncommitted changes! Commit before publishing."; exit 1; }
 	@echo "✓ Working tree clean"
-	@clear
-	@echo "Publishing v$(VERSION)..."
-	@make clif
 	@git tag -a v$(VERSION) -m "Release v$(VERSION)"
 	@echo "🏷️  Tagged as v$(VERSION)"
 	@git push --tags
-	@echo "📤 Pushing tags..."
+	@echo "📤 Pushed tags to remote"
+
+publish:
 	@cargo publish
-	@echo "✅ Successfully published v$(VERSION)"
+	@echo "✅ Successfully published v$(VERSION) to crates.io"
+
+publ: clif tag publish
+	@clear
+	@echo "✅ Release v$(VERSION) complete!"
