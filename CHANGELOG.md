@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 
 - Reorganize publishing steps and improve output messages
 
+### Bump
+
+- Update version to 2.0.2 in Cargo.toml and Cargo.lock
+
 ## [2.0.1] - 2026-05-31
 
 ### 🚀 Features
