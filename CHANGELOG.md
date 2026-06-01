@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [2.0.1] - 2026-06-01
+
+### 🐛 Bug Fixes
+
+- Include version tag in changelog generation command
+
+## [2.0.1] - 2026-06-01
 
 ### 🚀 Features
 
