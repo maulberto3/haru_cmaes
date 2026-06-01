@@ -42,7 +42,7 @@ samp:
 VERSION := $(shell awk -F ' = ' '/^version/ {gsub(/"/, "", $$2); print $$2}' Cargo.toml)
 clif:
 	# Generate the changelog and commit it in the same step
-	git cliff -o CHANGELOG.md
+	git cliff -t v$(VERSION) -o CHANGELOG.md
 	git add CHANGELOG.md
 	git commit -m "Update changelog for v$(VERSION)"
 
